@@ -6,15 +6,15 @@ import nodes.html_node.HtmlContentNode;
 import nodes.html_node.HtmlTagNode;
 
 public class HtmlElementNode extends nodes.html_node.HtmlElementNode implements ASTNode {
-    private HtmlTagNode htmlTagNode;
+    private String htmlTagNode;
     private HtmlAttributesNode htmlAttributesNodes;
     private HtmlContentNode htmlContentNode;
 
-    public HtmlTagNode getHtmlTagNode() {
+    public String getHtmlTagNode() {
         return htmlTagNode;
     }
 
-    public void setHtmlTagNode(HtmlTagNode htmlTagNode) {
+    public void setHtmlTagNode(String htmlTagNode) {
         this.htmlTagNode = htmlTagNode;
     }
 
@@ -36,10 +36,10 @@ public class HtmlElementNode extends nodes.html_node.HtmlElementNode implements 
 
     @Override
     public String toString() {
-        return "HtmlElementNode{" +
+        return "\nHtmlElementNode{\n" +
                 "htmlTagNode=" + htmlTagNode +
                 ", htmlAttributesNodes=" + htmlAttributesNodes +
                 ", htmlContentNode=" + htmlContentNode +
-                '}';
+                "\n}";
     }
 }

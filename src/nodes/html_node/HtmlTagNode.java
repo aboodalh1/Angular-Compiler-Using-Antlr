@@ -1,7 +1,5 @@
 package nodes.html_node;
-
 import nodes.ASTNode;
-import nodes.statement.IdentifierNode;
 
 public class HtmlTagNode implements ASTNode {
     private String identifierNode;
@@ -16,8 +14,8 @@ public class HtmlTagNode implements ASTNode {
 
     @Override
     public String toString() {
-        return "HtmlTagNode{" +
+        return "\nHtmlTagNode{\n" +
                 "identifierNode=" + identifierNode +
-                '}';
+                "\n}";
     }
 }

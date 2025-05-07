@@ -13,7 +13,7 @@ public class ArrayDeclarationNode implements ASTNode {
 
     @Override
     public String toString() {
-        return "ArrayDeclaration(identifier=" + identifier + ", type=" + type + ", values=" + values + ")";
+        return "\nArrayDeclaration( \n identifier=" + identifier + ", type=" + type + ", values=" + values + " \n)";
     }
 
 

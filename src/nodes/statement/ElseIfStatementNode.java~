@@ -14,7 +14,7 @@ public class ElseIfStatementNode implements ASTNode {
 
     @Override
     public String toString() {
-        return "\nElseIfStatement(\ncondition=" + condition + ", block=" + block + "\n)";
+        return "ElseIfStatement(condition=" + condition + ", block=" + block + ")";
     }
 
     public ASTNode getCondition() {

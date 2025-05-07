@@ -15,7 +15,6 @@ public class StatementNode implements ASTNode {
     ContinueStatementNode continueStatementNodes;
     ImportStatementNode importStatementNodes;
     ComponentNode componentNodes;
-
     ClassNode classNodes ;
     ExportClassNode exportClassNode ;
     HtmlElementNode htmlElementNodes ;
@@ -143,74 +142,74 @@ public class StatementNode implements ASTNode {
     @Override
     public String toString() {
         if (arrayDeclarationNodeList != null) {
-            return "StatementNode{" +
+            return "\nStatementNode{\n" +
                     "arrayDeclarationNodeList=" + arrayDeclarationNodeList +
-                    '}';
+                    "\n}";
         }
         if (classNodes != null) {
-            return "StatementNode{" +
+            return "\nStatementNode{\n" +
                     "classNodes=" + classNodes +
-                    '}';
+                    "\n}";
         }
         if (enumNodes != null) {
-            return "StatementNode{" +
+            return "\nStatementNode{" +
                     "enumNodes=" + enumNodes +
-                    '}';
+                    "\n}";
         }
         if (variableDeclarationNodes != null) {
-            return "StatementNode{" +
+            return "\nStatementNode{\n" +
                     "variableDeclarationNodes=" + variableDeclarationNodes +
-                    '}';
+                    "\n}";
         }
         if (functionDeclarationNodes != null) {
-            return "StatementNode{" +
+            return "\nStatementNode{\n" +
                     "functionDeclarationNodes=" + functionDeclarationNodes +
-                    '}';
+                    "\n}";
         }
         if (ifStatementNodes != null) {
-            return "StatementNode{" +
+            return "\nStatementNode{\n" +
                     "ifStatementNodes=" + ifStatementNodes +
-                    '}';
+                    "\n}";
         }
         if (whileStatementNodes != null) {
-            return "StatementNode{" +
+            return "\nStatementNode{\n" +
                     "whileStatementNodes=" + whileStatementNodes +
-                    '}';
+                    "\n}";
         }
         if (assignmentStatementNodes != null) {
-            return "StatementNode{" +
+            return "\nStatementNode{\n" +
                     "assignmentStatementNodes=" + assignmentStatementNodes +
-                    '}';
+                    "\n}";
         }
         if (breakStatementNodes != null) {
-            return "StatementNode{" +
+            return "\nStatementNode{\n" +
                     "breakStatementNodes=" + breakStatementNodes +
-                    '}';
+                    "\n}";
         }
         if (continueStatementNodes != null) {
-            return "StatementNode{" +
+            return "StatementNode{\n" +
                     "continueStatementNodes=" + continueStatementNodes +
-                    '}';
+                    "\n}";
         }
         if (importStatementNodes != null) {
-            return "StatementNode{" +
+            return "\n StatementNode{\n" +
                     "importStatementNodes=" + importStatementNodes +
-                    '}';
+                    "\n}";
         }
         if (componentNodes != null) {
-            return "StatementNode{" +
+            return "\nStatementNode{\n" +
                     "componentNodes=" + componentNodes +
-                    '}';
+                    "\n}";
         }
         if(htmlNodes!=null){
-            return "StatementNode{" +
+            return "\nStatementNode{\n" +
                     "htmlNodes=" + htmlNodes +
-                    '}';
+                    "\n}";
         }
         if (htmlElementNodes != null) {
-            return "StatementNode{" +
+            return "\nStatementNode{\n" +
                     "htmlElementNodes=" + htmlElementNodes +
-                    '}';
+                    "\n}";
         }
         return "StatementNode{}";
     }

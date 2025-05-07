@@ -11,10 +11,9 @@ public class AssignmentStatementNode implements ASTNode {
     public  List<ASTNode> values;
 
 
-
     @Override
     public String toString() {
-        return "AssignmentStatement(identifier=" + identifier + ", expression=" + expression + ", values=" + values + ")";
+        return "AssignmentStatement( \n identifier=" + identifier + ", expression=" + expression + ", values=" + values + "\n )";
     }
 
     public String getIdentifier() {

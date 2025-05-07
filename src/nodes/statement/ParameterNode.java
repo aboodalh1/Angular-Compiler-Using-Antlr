@@ -12,7 +12,7 @@ public class ParameterNode implements ASTNode {
 
     @Override
     public String toString() {
-        return "Parameter(identifier=" + identifier + ", type=" + type + ", defaultValue=" + defaultValue + ")";
+        return "\nParameter(\nidentifier=" + identifier + ", type=" + type + ", defaultValue=" + defaultValue + "\n)";
     }
 
     public String getIdentifier() {

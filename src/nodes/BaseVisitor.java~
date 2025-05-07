@@ -21,7 +21,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
 
     SymbolTable symbolTable = new SymbolTable();
 
-    public void printAst() {
+    public void printAst(){
         String source = "D:\\\\Spring projects\\\\Learn\\\\angular_compiler\\\\src\\\\angular_compiler.txt";
         CharStream cs = null;
         try {
@@ -35,7 +35,6 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         ProgramNode programNode = (ProgramNode) new BaseVisitor().visitProgram(parser.program());
         System.out.println(programNode);
     }
-
     @Override
     public ASTNode visitProgram(AngularParser.ProgramContext ctx) {
         ProgramNode programNode = new ProgramNode();
@@ -143,7 +142,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             statementRow.setType("Component");
             statementRow.setValue(ctx.component().getText());
             statementRow.setScope("Global");
-//           statementRow.setName(ctx.importStatement().getText());
+//            statementRow.setName(ctx.importStatement().getText());
 
         }
         if (ctx.exportClass() != null) {
@@ -209,14 +208,14 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         if (ctx.Identifier() != null) {
             classNode.setIdentifier(ctx.Identifier().getText());
         }
-        if (ctx.classBody() != null) {
+        if(ctx.classBody()!=null){
             classNode.setClassBody(visitClassBody(ctx.classBody()));
         }
         Row classRow = new Row();
         classRow.setType(ctx.Identifier().getText());
         if (ctx.classBody() != null)
             classRow.setValue("Class Body");
-        classRow.setScope("Global");
+            classRow.setScope("Global");
         symbolTable.getRows().add(classRow);
         return classNode;
     }
@@ -438,7 +437,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
                 functionDeclarationRow.setType("Function Parameter");
                 functionDeclarationRow.setValue(ctx.parameter().get(0).getText());
                 functionDeclarationRow.setScope("Global");
-            }
+                }
         }
         symbolTable.getRows().add(functionDeclarationRow);
         return functionDeclarationNode;
@@ -529,7 +528,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
 
     @Override
     public ListLiteralNode visitListLiteral(AngularParser.ListLiteralContext ctx) {
-        ListLiteralNode listLiteralNode = new ListLiteralNode();
+        ListLiteralNode listLiteralNode =new ListLiteralNode();
         Row listLiteralRow = new Row();
         for (int i = 0; i < ctx.Identifier().size(); i++) {
             if (ctx.Identifier().get(i) != null) {
@@ -739,9 +738,9 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         Row htmlContentRow = new Row();
         if (ctx.html_element() != null) {
             for (int i = 0; i < ctx.html_element().size(); i++) {
-                htmlContentNode.getHtmlElementNode().add(visitHtml_element(ctx.html_element().get(i)));
-                htmlContentRow.setType("Html Element");
-                htmlContentRow.setValue(ctx.html_element().get(i).getText());
+            htmlContentNode.getHtmlElementNode().add(visitHtml_element(ctx.html_element().get(i)));
+            htmlContentRow.setType("Html Element");
+            htmlContentRow.setValue(ctx.html_element().get(i).getText());
             }
         }
         if (ctx.expression() != null) {
@@ -782,7 +781,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     public HtmlAttributesNode visitHtml_attributes(AngularParser.Html_attributesContext ctx) {
         HtmlAttributesNode htmlAttributesNode = new HtmlAttributesNode();
         Row htmlAttributesRow = new Row();
-        if (ctx.html_attribute() != null) {
+        if (ctx.html_attribute() != null){
             for (int i = 0; i < ctx.html_attribute().size(); i++) {
                 htmlAttributesNode.getHtmlAttributeNodes().add(visitHtml_attribute(ctx.html_attribute(i)));
                 htmlAttributesRow.setType("Html Attribute");
@@ -863,7 +862,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
                 cssContentRow.setValue(ctx.css_class_content(i).getText());
             }
         }
-        if (ctx.Identifier() != null) {
+        if(ctx.Identifier()!=null){
 //            cssContentNode.setIdentifierNode(ctx.Identifier().get());
             cssContentRow.setType("Identifier");
 //            cssContentRow.setValue(ctx.Identifier().getText());

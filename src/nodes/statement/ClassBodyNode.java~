@@ -44,7 +44,7 @@ public class ClassBodyNode implements ASTNode {
 
     @Override
     public String toString() {
-        return "\nClassBody{\n" +
+        return "ClassBody{\n" +
                 "variableDeclarationNodes=" + variableDeclarationNodes +
                 ", functionDeclarationNodes=" + functionDeclarationNodes +
                 ", objectDeclarationNodes=" + objectDeclarationNodes +

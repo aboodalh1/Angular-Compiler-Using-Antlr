@@ -15,7 +15,7 @@ public class IfStatementNode implements ASTNode {
 
     @Override
     public String toString() {
-        return "IfStatement(condition=" + condition + ", block=" + block + ", elseIfStatements=" + elseIfStatements + ", elseBlock=" + elseBlock + ")";
+        return "\nIfStatement(\ncondition=" + condition + ", block=" + block + ", elseIfStatements=" + elseIfStatements + ", elseBlock=" + elseBlock + "\n)";
     }
 
     public ASTNode getCondition() {

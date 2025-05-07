@@ -6,7 +6,7 @@ import java.util.List;
 
 // Node for block
 public class BlockNode implements ASTNode {
-    public final List<ASTNode> statements;
+    public  List<ASTNode> statements;
 
     public BlockNode(List<ASTNode> statements) {
         this.statements = statements;
@@ -14,6 +14,14 @@ public class BlockNode implements ASTNode {
 
     @Override
     public String toString() {
-        return "Block(statements=" + statements + ")";
+        return "Block(\nstatements=" + statements + "\n)";
+    }
+
+    public List<ASTNode> getStatements() {
+        return statements;
+    }
+
+    public void setStatements(List<ASTNode> statements) {
+        this.statements = statements;
     }
 }

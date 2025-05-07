@@ -8,10 +8,10 @@ public class ComponentNode implements ASTNode {
 
     @Override
     public String toString() {
-        return "ComponentNode{" +
+        return "\nComponentNode{\n" +
                 "decorator=" + decorator +
                 ", exportClass=" + exportClass +
-                '}';
+                "\n}";
     }
 
     public DecoratorNode getDecorator() {

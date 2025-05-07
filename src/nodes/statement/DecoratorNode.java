@@ -1,19 +1,17 @@
 package nodes.statement;
-
 import nodes.ASTNode;
-
 import java.util.ArrayList;
 import java.util.List;
 
 // Decorator node
 public class DecoratorNode implements ASTNode {
-    private  List<ArgumentListNode> arguments = new ArrayList<ArgumentListNode>();
+    private  List<ArgumentListNode> arguments = new ArrayList<>();
 
 
 
     @Override
     public String toString() {
-        return "DecoratorNode{" + "arguments=" + arguments + '}';
+        return "\nDecoratorNode{\n" + "arguments=" + arguments + "\n}";
     }
 
     public List<ArgumentListNode> getArguments() {

@@ -129,9 +129,9 @@ html_element:
     | '<' html_tag_name html_attributes? '>' | '<' html_tag_name html_attributes '/''>';
 
 html_tag_name: Identifier;
-
+//
 html_attributes: html_attribute*;
-
+//
 html_attribute:
       (Identifier
        |ngIfAttribute|

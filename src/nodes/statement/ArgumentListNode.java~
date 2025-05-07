@@ -7,9 +7,6 @@ import java.util.List;
 public class ArgumentListNode implements ASTNode {
     List<ArgumentNode> argumentNodeList;
 
-    public ArgumentListNode(List<ArgumentNode> argumentNodeList) {
-        this.argumentNodeList = argumentNodeList;
-    }
 
     public List<ArgumentNode> getArgumentNodeList() {
         return argumentNodeList;
@@ -21,7 +18,7 @@ public class ArgumentListNode implements ASTNode {
 
     @Override
     public String toString() {
-        return "ArgumentListNode{" +
+        return "\nArgumentListNode{" + "\n"+
                 "argumentNodeList=" + argumentNodeList +
                 '}';
     }

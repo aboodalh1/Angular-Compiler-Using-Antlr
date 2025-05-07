@@ -12,7 +12,7 @@ public class ExpressionNode implements ASTNode {
 
     @Override
     public String toString() {
-        return "Expression(operator=" + operator + ", left=" + left + ", right=" + right + ")";
+        return "\nExpression(\noperator=" + operator + ", left=" + left + ", right=" + right + "\n)";
     }
 
     public String getOperator() {

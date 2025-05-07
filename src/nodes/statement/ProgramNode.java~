@@ -7,7 +7,6 @@ import java.util.List;
 
 public class ProgramNode implements ASTNode {
     private  List<StatementNode> statements;
-
     public ProgramNode() {
         // Initialize the list
         this.statements = new ArrayList<>();

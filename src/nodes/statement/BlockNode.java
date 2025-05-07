@@ -14,7 +14,7 @@ public class BlockNode implements ASTNode {
 
     @Override
     public String toString() {
-        return "Block(statements=" + statements + ")";
+        return "\nBlock(\nstatements=" + statements + "\n)";
     }
 
     public List<ASTNode> getStatements() {

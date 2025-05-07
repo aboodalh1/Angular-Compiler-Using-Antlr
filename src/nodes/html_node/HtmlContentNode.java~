@@ -18,10 +18,13 @@ public class HtmlContentNode implements ASTNode {
         this.htmlElementNode = htmlElementNode;
     }
 
+    public ExpressionNode getExpressionNode() {
+        return expressionNode;
+    }
 
-
-
-
+    public void setExpressionNode(ExpressionNode expressionNode) {
+        this.expressionNode = expressionNode;
+    }
 
     public String getIdentifierNode() {
         return identifierNode;
@@ -35,12 +38,14 @@ public class HtmlContentNode implements ASTNode {
     public String toString() {
         if(htmlElementNode.isEmpty()){
             return "HtmlContentNode{" +
+                    ", expressionNode=" + expressionNode +
                     ", identifierNode=" + identifierNode +
                     '}';
         }
         return "HtmlContentNode{" +
                 "htmlElementNode=" +
                  htmlElementNode +
+                ", expressionNode=" + expressionNode +
                 ", identifierNode=" + identifierNode +
                 '}';
     }

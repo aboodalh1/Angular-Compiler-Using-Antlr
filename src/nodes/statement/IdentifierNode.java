@@ -8,7 +8,7 @@ public class IdentifierNode implements ASTNode {
 
     @Override
     public String toString() {
-        return "Identifier(name=" + name + ")";
+        return "\nIdentifier(\nname=" + name + "\n)";
     }
     public void setName (String name){
         this.name=name;

@@ -2,10 +2,11 @@ package nodes.statement;
 
 import nodes.ASTNode;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ArgumentListNode implements ASTNode {
-    List<ArgumentNode> argumentNodeList;
+    List<ArgumentNode> argumentNodeList = new ArrayList<>();
 
 
     public List<ArgumentNode> getArgumentNodeList() {
@@ -18,7 +19,7 @@ public class ArgumentListNode implements ASTNode {
 
     @Override
     public String toString() {
-        return "ArgumentListNode{" +
+        return "\nArgumentListNode{" + "\n"+
                 "argumentNodeList=" + argumentNodeList +
                 '}';
     }

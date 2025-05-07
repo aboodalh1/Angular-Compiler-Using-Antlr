@@ -5,7 +5,7 @@ import nodes.html_node.HtmlAttributesNode;
 import nodes.html_node.HtmlContentNode;
 import nodes.html_node.HtmlTagNode;
 
-public class HtmlElementNode implements ASTNode {
+public class HtmlElementNode extends nodes.html_node.HtmlElementNode implements ASTNode {
     private HtmlTagNode htmlTagNode;
     private HtmlAttributesNode htmlAttributesNodes;
     private HtmlContentNode htmlContentNode;
@@ -36,10 +36,10 @@ public class HtmlElementNode implements ASTNode {
 
     @Override
     public String toString() {
-        return "HtmlElementNode{" +
+        return "\nHtmlElementNode{\n" +
                 "htmlTagNode=" + htmlTagNode +
                 ", htmlAttributesNodes=" + htmlAttributesNodes +
                 ", htmlContentNode=" + htmlContentNode +
-                '}';
+                "\n}";
     }
 }

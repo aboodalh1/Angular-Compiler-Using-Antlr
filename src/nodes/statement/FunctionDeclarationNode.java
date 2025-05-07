@@ -2,12 +2,13 @@ package nodes.statement;
 
 import nodes.ASTNode;
 
+import java.util.ArrayList;
 import java.util.List;
 
 // Node for function declaration
 public class FunctionDeclarationNode implements ASTNode {
     public  String identifier;
-    public  List<ParameterNode> parameters;
+    public  List<ParameterNode> parameters = new ArrayList<>();
     public  String returnType;
     public  List<ASTNode> body;
     public  ASTNode returnExpression;
@@ -15,7 +16,7 @@ public class FunctionDeclarationNode implements ASTNode {
 
     @Override
     public String toString() {
-        return "FunctionDeclaration(identifier=" + identifier + ", parameters=" + parameters + ", returnType=" + returnType + ", body=" + body + ", returnExpression=" + returnExpression + ")";
+        return "\nFunctionDeclaration(\nidentifier=" + identifier + ", parameters=" + parameters + ", returnType=" + returnType + ", body=" + body + ", returnExpression=" + returnExpression + "\n)";
     }
 
     public String getIdentifier() {

@@ -6,6 +6,6 @@ import nodes.ASTNode;
 public class ContinueStatementNode implements ASTNode {
     @Override
     public String toString() {
-        return "ContinueStatement";
+        return "\nContinueStatement";
     }
 }

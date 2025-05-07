@@ -25,9 +25,9 @@ public class ArgumentNode implements ASTNode {
 
     @Override
     public String toString() {
-        return "ArgumentNode{" +
+        return "\nArgumentNode{ \n" +
                 "name='" + name + '\'' +
-                ", value='" + value + '\'' +
+                ", value='" + value + '\'' + "\n"+
                 '}';
     }
 }

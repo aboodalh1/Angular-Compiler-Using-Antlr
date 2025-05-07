@@ -13,7 +13,7 @@ public class AssignmentStatementNode implements ASTNode {
 
     @Override
     public String toString() {
-        return "AssignmentStatement(identifier=" + identifier + ", expression=" + expression + ", values=" + values + ")";
+        return "\nAssignmentStatement( \n identifier=" + identifier + ", expression=" + expression + ", values=" + values + "\n )";
     }
 
     public String getIdentifier() {

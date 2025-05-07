@@ -13,7 +13,7 @@ public class ArrayDeclarationNode implements ASTNode {
 
     @Override
     public String toString() {
-        return "ArrayDeclaration(identifier=" + identifier + ", type=" + type + ", values=" + values + ")";
+        return "ArrayDeclaration( \n identifier=" + identifier + ", type=" + type + ", values=" + values + " \n)";
     }
 
 
@@ -25,7 +25,7 @@ public class ArrayDeclarationNode implements ASTNode {
         return type;
     }
 
-    public List<ASTNode> getValues() {
+    public List<LiteralValueNode> getValues() {
         return values;
     }
 
@@ -37,7 +37,7 @@ public class ArrayDeclarationNode implements ASTNode {
         this.type = type;
     }
 
-    public void setValues(List<ASTNode> values) {
+    public void setValues(List<LiteralValueNode> values) {
         this.values = values;
     }
 }

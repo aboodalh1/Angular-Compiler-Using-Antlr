@@ -4,16 +4,6 @@ public class Row {
 
     String type;
     String value;
-    String name;
-    String scope;
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public String getScope() {
         return scope;
@@ -23,6 +13,7 @@ public class Row {
         this.scope = scope;
     }
 
+    String scope;
 
     public String getType() {
         return type;

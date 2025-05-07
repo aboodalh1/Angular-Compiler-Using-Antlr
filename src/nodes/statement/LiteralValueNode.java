@@ -61,13 +61,13 @@ public class LiteralValueNode implements ASTNode {
 
     @Override
     public String toString() {
-        return "LiteralValueNode{" +
-                "stirngValue='" + stirngValue + '\'' +
-                ", numValue='" + numValue + '\'' +
-                ", arrayValue='" + arrayValue + '\'' +
-                ", booleanValue='" + booleanValue + '\'' +
-                ", listLiteralNode=" + listLiteralNode +
-                ", isNull=" + isNull +
-                '}';
+        return "\nLiteralValueNode{\n" +
+                "stirngValue='" + stirngValue + '\'' +"\n"+
+                ", numValue='" + numValue + '\'' +"\n"+
+                ", arrayValue='" + arrayValue + '\'' + "\n"+
+                ", booleanValue='" + booleanValue + '\'' + "\n"+
+                ", listLiteralNode=" + listLiteralNode +"\n"+
+                ", isNull=" + isNull + "\n"+
+                "\n}";
     }
 }

@@ -11,7 +11,7 @@ public class ListLiteralNode implements ASTNode {
 
     @Override
     public String toString() {
-        return "\nListLiteral(\nidentifiers=" + identifiers + "\n)";
+        return "ListLiteral(identifiers=" + identifiers + ")";
     }
 
     public List<String> getIdentifiers() {

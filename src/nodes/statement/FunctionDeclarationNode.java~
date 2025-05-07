@@ -12,17 +12,10 @@ public class FunctionDeclarationNode implements ASTNode {
     public  List<ASTNode> body;
     public  ASTNode returnExpression;
 
-    public FunctionDeclarationNode(String identifier, List<ParameterNode> parameters, String returnType, List<ASTNode> body, ASTNode returnExpression) {
-        this.identifier = identifier;
-        this.parameters = parameters;
-        this.returnType = returnType;
-        this.body = body;
-        this.returnExpression = returnExpression;
-    }
 
     @Override
     public String toString() {
-        return "FunctionDeclaration(identifier=" + identifier + ", parameters=" + parameters + ", returnType=" + returnType + ", body=" + body + ", returnExpression=" + returnExpression + ")";
+        return "\nFunctionDeclaration(\nidentifier=" + identifier + ", parameters=" + parameters + ", returnType=" + returnType + ", body=" + body + ", returnExpression=" + returnExpression + "\n)";
     }
 
     public String getIdentifier() {

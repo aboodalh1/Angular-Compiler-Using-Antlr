@@ -21,7 +21,7 @@ public class ProgramNode implements ASTNode {
 
     @Override
     public String toString() {
-        return "ProgramNode{" + "statements=" + statements + '}';
+        return "ProgramNode{\n" + "statements=" + statements + "\n}";
     }
 
 

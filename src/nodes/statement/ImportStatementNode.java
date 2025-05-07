@@ -25,9 +25,9 @@ public class ImportStatementNode implements ASTNode {
 
     @Override
     public String toString() {
-        return "Import" +
+        return "\nImport\n" +
                 "identifier='" + identifier + '\'' +
                 ", source='" + source + '\'' +
-                '}';
+                "\n}";
     }
 }

@@ -24,9 +24,9 @@ public class FunctionCallNode implements ASTNode {
 
     @Override
     public String toString() {
-        return "FunctionCallNode{" +
+        return "\nFunctionCallNode{\n" +
                 "identifier='" + identifier + '\'' +
                 ", expression=" + expression +
-                '}';
+                "\n}";
     }
 }

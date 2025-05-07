@@ -6,7 +6,7 @@ import nodes.ASTNode;
 public class ParameterNode implements ASTNode {
     public  String identifier;
     public  TypeNode type;
-    public  ASTNode defaultValue;
+    public  LiteralValueNode defaultValue;
 
 
 
@@ -35,7 +35,7 @@ public class ParameterNode implements ASTNode {
         return defaultValue;
     }
 
-    public void setDefaultValue(ASTNode defaultValue) {
+    public void setDefaultValue(LiteralValueNode defaultValue) {
         this.defaultValue = defaultValue;
     }
 }
