@@ -148,6 +148,46 @@ public interface AngularParserListener extends ParseTreeListener {
 	 */
 	void exitEnumValue(AngularParser.EnumValueContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link AngularParser#consoleLog}.
+	 * @param ctx the parse tree
+	 */
+	void enterConsoleLog(AngularParser.ConsoleLogContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link AngularParser#consoleLog}.
+	 * @param ctx the parse tree
+	 */
+	void exitConsoleLog(AngularParser.ConsoleLogContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link AngularParser#abstractClass}.
+	 * @param ctx the parse tree
+	 */
+	void enterAbstractClass(AngularParser.AbstractClassContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link AngularParser#abstractClass}.
+	 * @param ctx the parse tree
+	 */
+	void exitAbstractClass(AngularParser.AbstractClassContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link AngularParser#interface}.
+	 * @param ctx the parse tree
+	 */
+	void enterInterface(AngularParser.InterfaceContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link AngularParser#interface}.
+	 * @param ctx the parse tree
+	 */
+	void exitInterface(AngularParser.InterfaceContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link AngularParser#accessModifier}.
+	 * @param ctx the parse tree
+	 */
+	void enterAccessModifier(AngularParser.AccessModifierContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link AngularParser#accessModifier}.
+	 * @param ctx the parse tree
+	 */
+	void exitAccessModifier(AngularParser.AccessModifierContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link AngularParser#variableDeclaration}.
 	 * @param ctx the parse tree
 	 */
@@ -167,6 +207,16 @@ public interface AngularParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitArrayDeclaration(AngularParser.ArrayDeclarationContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link AngularParser#abstractFunctionDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void enterAbstractFunctionDeclaration(AngularParser.AbstractFunctionDeclarationContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link AngularParser#abstractFunctionDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void exitAbstractFunctionDeclaration(AngularParser.AbstractFunctionDeclarationContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link AngularParser#functionDeclaration}.
 	 * @param ctx the parse tree

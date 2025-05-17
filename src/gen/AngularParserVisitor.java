@@ -95,6 +95,30 @@ public interface AngularParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitEnumValue(AngularParser.EnumValueContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link AngularParser#consoleLog}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitConsoleLog(AngularParser.ConsoleLogContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link AngularParser#abstractClass}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAbstractClass(AngularParser.AbstractClassContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link AngularParser#interface}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitInterface(AngularParser.InterfaceContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link AngularParser#accessModifier}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAccessModifier(AngularParser.AccessModifierContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link AngularParser#variableDeclaration}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -106,6 +130,12 @@ public interface AngularParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitArrayDeclaration(AngularParser.ArrayDeclarationContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link AngularParser#abstractFunctionDeclaration}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAbstractFunctionDeclaration(AngularParser.AbstractFunctionDeclarationContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link AngularParser#functionDeclaration}.
 	 * @param ctx the parse tree

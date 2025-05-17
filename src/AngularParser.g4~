@@ -10,12 +10,11 @@ program
 statement
     : arrayDeclaration | enum  | variableDeclaration     | functionDeclaration | ifStatement
     | whileStatement | assignmentStatement | breakStatement | continueStatement| html_element
-    | importStatement | component | exportClass | thisVarible | class | html ;
-
+    | importStatement | component | exportClass | thisVarible | class | abstractClass| html | consoleLog;
 component: (Service|Component) OpenParen OpenBrace decorator CloseBrace CloseParen exportClass;
 exportClass : Export class;
 class : Class Identifier OpenBrace classBody CloseBrace;
-classBody: (variableDeclaration | objectDeclataion | arrayDeclaration | functionDeclaration)*;
+classBody: (variableDeclaration | objectDeclataion | arrayDeclaration  |abstractFunctionDeclaration| functionDeclaration)*;
 decorator:  argumentList? ;
 argumentList: argument (Comma argument)* Comma?;
 argument: Identifier ':' literalValue;
@@ -24,14 +23,20 @@ thisVarible: This'.'Identifier Assign ((This('.'(Identifier|function_call))*)|(I
 enum: Enum Identifier OpenBrace enumValues* CloseBrace SemiColon;
 enumValues: (enumValue (Comma enumValue)*);
 enumValue: Identifier Assign literalValue;
-
+consoleLog: Console Dot Log OpenParen (Identifier WS)* CloseParen SemiColon?;
+abstractClass: Abstract class;
+interface: Interface OpenBrace classBody CloseBrace;
+accessModifier: Private | Public | Protected | Static;
 variableDeclaration
-    : Let_Identify? Identifier Colon (type) Assign expression SemiColon
+    : accessModifier? Let_Identify? Identifier Colon (type) Assign expression SemiColon|
+        accessModifier? Let_Identify? Identifier Assign expression SemiColon|
+        accessModifier? Let_Identify? Identifier Colon type  SemiColon|
+        accessModifier? Identifier SemiColon
     ;
 arrayDeclaration
     : Let_Identify? Identifier Colon type OpenBracket CloseBracket Assign OpenBracket (literalValue (Comma literalValue)*)? CloseBracket SemiColon
     | Identifier Assign OpenBracket literalValue? (literalValue Comma?)* CloseBracket SemiColon;
-
+abstractFunctionDeclaration: Abstract Identifier OpenParen (parameter (Comma parameter)*)? CloseParen Colon (type|Void) SemiColon;
 functionDeclaration
     : (Identifier | Constructor) OpenParen (parameter (Comma parameter)*)? CloseParen (Colon type)* OpenBrace statement* Return expression SemiColon CloseBrace
     | (Identifier | Constructor) OpenParen (parameter (Comma parameter)*)? CloseParen (Colon Void)* block
@@ -129,9 +134,9 @@ html_element:
     | '<' html_tag_name html_attributes? '>' | '<' html_tag_name html_attributes '/''>';
 
 html_tag_name: Identifier;
-//
+
 html_attributes: html_attribute*;
-//
+
 html_attribute:
       (Identifier
        |ngIfAttribute|

@@ -45,7 +45,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
                 programNode.getStatements().add(statementNode);
             }
         }
-        Row row = new Row();
+            Row row = new Row();
         row.setType("Program");
         row.setValue(ctx.getText());
         symbolTable.getRows().add(row);
