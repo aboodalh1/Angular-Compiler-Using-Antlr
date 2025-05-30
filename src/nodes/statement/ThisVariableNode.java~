@@ -1,0 +1,53 @@
+package nodes.statement;
+
+import nodes.ASTNode;
+
+public class ThisVariableNode implements ASTNode {
+     String name;
+     ThisIdentifierOrPropertyAssignmentNode thisIdentifierOrPropertyAssignmentNode;
+     ThisNewInstanceAssignmentNode thisNewInstanceAssignmentNode;
+     NestedThisAssignmentNode nestedThisAssignmentNode;
+
+
+    public ThisVariableNode() {}
+
+    public ThisVariableNode(String name, ThisIdentifierOrPropertyAssignmentNode thisIdentifierOrPropertyAssignmentNode, ThisNewInstanceAssignmentNode thisNewInstanceAssignmentNode, NestedThisAssignmentNode nestedThisAssignmentNode) {
+        this.name = name;
+        this.thisIdentifierOrPropertyAssignmentNode = thisIdentifierOrPropertyAssignmentNode;
+        this.thisNewInstanceAssignmentNode = thisNewInstanceAssignmentNode;
+        this.nestedThisAssignmentNode = nestedThisAssignmentNode;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+
+    public ThisIdentifierOrPropertyAssignmentNode getThisIdentifierOrPropertyAssignmentNode() {
+        return thisIdentifierOrPropertyAssignmentNode;
+    }
+
+    public void setThisIdentifierOrPropertyAssignmentNode(ThisIdentifierOrPropertyAssignmentNode thisIdentifierOrPropertyAssignmentNode) {
+        this.thisIdentifierOrPropertyAssignmentNode = thisIdentifierOrPropertyAssignmentNode;
+    }
+
+    public ThisNewInstanceAssignmentNode getThisNewInstanceAssignmentNode() {
+        return thisNewInstanceAssignmentNode;
+    }
+
+    public void setThisNewInstanceAssignmentNode(ThisNewInstanceAssignmentNode thisNewInstanceAssignmentNode) {
+        this.thisNewInstanceAssignmentNode = thisNewInstanceAssignmentNode;
+    }
+
+    public NestedThisAssignmentNode getNestedThisAssignmentNode() {
+        return nestedThisAssignmentNode;
+    }
+
+    public void setNestedThisAssignmentNode(NestedThisAssignmentNode nestedThisAssignmentNode) {
+        this.nestedThisAssignmentNode = nestedThisAssignmentNode;
+    }
+}

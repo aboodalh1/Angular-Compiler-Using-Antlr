@@ -1,0 +1,63 @@
+package nodes.statement;
+
+import nodes.ASTNode;
+
+public class ThisVariableAssignmentNode implements ASTNode {
+    private String thisField;           // e.g., 'service'
+    private String assignmentType;      // "new", "thisChain", "identifier"
+    private String assignedClassName;   // if 'new' then class name
+    private String fullAssignmentExpr;  // full RHS expression as string
+
+    public ThisVariableAssignmentNode(String thisField, String assignmentType, String assignedClassName, String fullAssignmentExpr) {
+        this.thisField = thisField;
+        this.assignmentType = assignmentType;
+        this.assignedClassName = assignedClassName;
+        this.fullAssignmentExpr = fullAssignmentExpr;
+    }
+
+    public String getThisField() { return thisField; }
+    public String getAssignmentType() { return assignmentType; }
+    public String getAssignedClassName() { return assignedClassName; }
+    public String getFullAssignmentExpr() { return fullAssignmentExpr; }
+
+    public void print() {
+        System.out.println(this.toString());
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("This Assignment:\n");
+
+        if (thisField != null) {
+            sb.append("  Field: ").append(thisField).append("\n");
+        }
+        if (assignmentType != null) {
+            sb.append("  Type: ").append(assignmentType).append("\n");
+        }
+        if (assignedClassName != null) {
+            sb.append("  Assigned Class: ").append(assignedClassName).append("\n");
+        }
+        if (fullAssignmentExpr != null) {
+            sb.append("  RHS: ").append(fullAssignmentExpr).append("\n");
+        }
+
+        return sb.toString();
+    }
+
+    public void setThisField(String thisField) {
+        this.thisField = thisField;
+    }
+
+    public void setAssignmentType(String assignmentType) {
+        this.assignmentType = assignmentType;
+    }
+
+    public void setAssignedClassName(String assignedClassName) {
+        this.assignedClassName = assignedClassName;
+    }
+
+    public void setFullAssignmentExpr(String fullAssignmentExpr) {
+        this.fullAssignmentExpr = fullAssignmentExpr;
+    }
+
+}

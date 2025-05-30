@@ -1,0 +1,59 @@
+import gen.AngularParserBaseListener;
+import gen.AngularParser;
+import java.util.HashMap;
+import java.util.Map;
+
+public class SemanticAnalyzer extends AngularParserBaseListener {
+    private SymbolTable symbolTable;
+    private Map<String, String> variableTypes = new HashMap<>();
+
+    public SemanticAnalyzer(SymbolTable symbolTable) {
+        this.symbolTable = symbolTable;
+    }
+
+    @Override
+    public void enterVariableDeclaration(AngularParser.VariableDeclarationContext ctx) {
+        String varName = ctx.IDENTIFIER().getText();
+        String varType = ctx.type() != null ? ctx.type().getText() : "any";
+        
+        // Check if variable is already declared
+        if (symbolTable.lookup(varName) != null) {
+            throw new SemanticException("Variable '" + varName + "' is already declared");
+        }
+        
+        variableTypes.put(varName, varType);
+        symbolTable.insert(varName, varType);
+    }
+
+    @Override
+    public void enterAssignmentStatement(AngularParser.AssignmentStatementContext ctx) {
+        String varName = ctx.IDENTIFIER().getText();
+        
+        // Check if variable exists
+        if (symbolTable.lookup(varName) == null) {
+            throw new SemanticException("Variable '" + varName + "' is not declared");
+        }
+        
+        // Type checking for assignment
+        String expectedType = variableTypes.get(varName);
+        String actualType = inferExpressionType(ctx.expression());
+        
+        if (!isTypeCompatible(expectedType, actualType)) {
+            throw new SemanticException("Type mismatch: Cannot assign " + actualType + " to " + expectedType);
+        }
+    }
+
+    private String inferExpressionType(AngularParser.ExpressionContext ctx) {
+        if (ctx.literalValue() != null) {
+            if (ctx.literalValue().NUMBER() != null) return "number";
+            if (ctx.literalValue().STRING() != null) return "string";
+            if (ctx.literalValue().BOOLEAN() != null) return "boolean";
+        }
+        return "any";
+    }
+
+    private boolean isTypeCompatible(String expected, String actual) {
+        if (expected.equals("any") || actual.equals("any")) return true;
+        return expected.equals(actual);
+    }
+} 

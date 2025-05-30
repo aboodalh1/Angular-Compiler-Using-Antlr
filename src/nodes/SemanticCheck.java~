@@ -1,0 +1,19 @@
+package nodes;
+
+public class SemanticCheck {
+    SymbolTable symbolTable;
+
+    public SymbolTable getSymbolTable() {
+        return symbolTable;
+    }
+
+    public void setSymbolTable(SymbolTable symbolTable) {
+        this.symbolTable = symbolTable;
+    }
+
+    boolean check(){
+        if(checkIfImport(this.symbolTable)){
+            
+        }
+    }
+}

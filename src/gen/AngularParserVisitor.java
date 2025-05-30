@@ -77,6 +77,24 @@ public interface AngularParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitThisVarible(AngularParser.ThisVaribleContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link AngularParser#newInstanceAssignment}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitNewInstanceAssignment(AngularParser.NewInstanceAssignmentContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link AngularParser#nestedThisAssignment}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitNestedThisAssignment(AngularParser.NestedThisAssignmentContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link AngularParser#identifierOrPropertyAssignment}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitIdentifierOrPropertyAssignment(AngularParser.IdentifierOrPropertyAssignmentContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link AngularParser#enum}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

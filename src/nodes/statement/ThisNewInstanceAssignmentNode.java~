@@ -1,0 +1,8 @@
+package nodes.statement;
+
+import nodes.ASTNode;
+
+public class ThisNewInstanceAssignmentNode implements ASTNode {
+    String name;
+    ExpressionNode expressionNode;
+}

@@ -12,7 +12,12 @@ public class ObjectDeclarationNode implements ASTNode {
 
     @Override
     public String toString() {
-        return "ObjectDeclaration(identifier=" + identifier + ", className=" + className + ", constructorArgs=" + constructorArgs + ")";
+
+        return "ObjectDeclaration(" +
+                "identifier=" + identifier +
+                ", className=" + className +
+                ", constructorArgs=" + constructorArgs +
+                ")";
     }
 
     public String getIdentifier() {

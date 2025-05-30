@@ -1,0 +1,57 @@
+import gen.AngularLexer;
+import gen.AngularParser;
+import org.junit.Test;
+import static org.junit.Assert.*;
+import nodes.BaseVisitor;
+import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.tree.*;
+
+public class SemanticErrorTest {
+    
+    private ParseTree getParseTree(String input) {
+        CharStream charStream = CharStreams.fromString(input);
+        AngularLexer lexer = new AngularLexer(charStream);
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        AngularParser parser = new AngularParser(tokens);
+        return parser.program();
+    }
+
+    @Test
+    public void testUndefinedVariable() {
+        String input = "{{ undefinedVar }}";
+        ParseTree tree = getParseTree(input);
+        BaseVisitor visitor = new BaseVisitor();
+        try {
+            visitor.visit(tree);
+            fail("Expected semantic error for undefined variable");
+        } catch (SemanticException e) {
+            assertTrue(e.getMessage().contains("undefined"));
+        }
+    }
+
+    @Test
+    public void testTypeMismatch() {
+        String input = "{{ 5 + 'text' }}";
+        ParseTree tree = getParseTree(input);
+        BaseVisitor visitor = new BaseVisitor();
+        try {
+            visitor.visit(tree);
+            fail("Expected semantic error for type mismatch");
+        } catch (SemanticException e) {
+            assertTrue(e.getMessage().contains("type mismatch"));
+        }
+    }
+
+    @Test
+    public void testInvalidFunctionArguments() {
+        String input = "function foo(x: number) { } foo('string');";
+        ParseTree tree = getParseTree(input);
+        BaseVisitor visitor = new BaseVisitor();
+        try {
+            visitor.visit(tree);
+            fail("Expected semantic error for invalid function argument type");
+        } catch (SemanticException e) {
+            assertTrue(e.getMessage().contains("type mismatch"));
+        }
+    }
+} 

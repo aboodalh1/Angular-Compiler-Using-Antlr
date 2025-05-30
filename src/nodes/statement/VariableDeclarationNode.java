@@ -2,17 +2,24 @@ package nodes.statement;
 
 import nodes.ASTNode;
 
-import java.util.List;
 
-// Node for variable declaration
 public class VariableDeclarationNode implements ASTNode {
     public  String identifier ;
     public  TypeNode type;
     public  ASTNode expression;
 
+    public AccessModifierNode getAccessModifier() {
+        return accessModifier;
+    }
+
+    public void setAccessModifier(AccessModifierNode accessModifier) {
+        this.accessModifier = accessModifier;
+    }
+
+    public  AccessModifierNode accessModifier;
     @Override
     public String toString() {
-        return "VariableDeclaration(identifier=" + identifier + ", type=" + type + ", expression=" + expression + ")";
+        return "VariableDeclaration(AccessModifier = " + accessModifier + ", identifier=" + identifier + ", type=" + type + ", expression=" + expression + ")";
     }
 
     public String getIdentifier() {

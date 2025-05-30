@@ -8,7 +8,7 @@ program
     : statement* EOF ;
 
 statement
-    : arrayDeclaration | enum  | variableDeclaration     | functionDeclaration | ifStatement
+    : arrayDeclaration | enum  | variableDeclaration  | functionDeclaration | ifStatement
     | whileStatement | assignmentStatement | breakStatement | continueStatement| html_element
     | importStatement | component | exportClass | thisVarible | class | abstractClass| html | consoleLog;
 component: (Service|Component) OpenParen OpenBrace decorator CloseBrace CloseParen exportClass;
@@ -19,7 +19,14 @@ decorator:  argumentList? ;
 argumentList: argument (Comma argument)* Comma?;
 argument: Identifier ':' literalValue;
 importStatement: Import OpenBrace Identifier CloseBrace From StringLiteral SemiColon;
-thisVarible: This'.'Identifier Assign ((This('.'(Identifier|function_call))*)|(Identifier | Identifier'.'Identifier)) SemiColon;
+thisVarible
+    : This Dot Identifier Assign
+     (newInstanceAssignment | nestedThisAssignment | identifierOrPropertyAssignment)
+     SemiColon
+    ;
+newInstanceAssignment: New Identifier OpenParen (expression (Comma expression)*)? CloseParen;
+nestedThisAssignment: This (Dot (Identifier | function_call))+;
+identifierOrPropertyAssignment: Identifier (Dot Identifier)?;
 enum: Enum Identifier OpenBrace enumValues* CloseBrace SemiColon;
 enumValues: (enumValue (Comma enumValue)*);
 enumValue: Identifier Assign literalValue;
@@ -41,7 +48,9 @@ functionDeclaration
     : (Identifier | Constructor) OpenParen (parameter (Comma parameter)*)? CloseParen (Colon type)* OpenBrace statement* Return expression SemiColon CloseBrace
     | (Identifier | Constructor) OpenParen (parameter (Comma parameter)*)? CloseParen (Colon Void)* block
     ;
-objectDeclataion: Identifier Colon Identifier Assign New Identifier OpenParen (literalValue (Comma literalValue)*)* CloseParen SemiColon;
+objectDeclataion:
+ accessModifier? Identifier Colon Identifier SemiColon|
+ accessModifier? Identifier Colon Identifier Assign New Identifier OpenParen (literalValue (Comma literalValue)*)* CloseParen SemiColon;
 type
     : TypeNumber
     | TypeString
@@ -114,14 +123,11 @@ expression
     | html #dd
     ;
 
-
-
 parameter
     : Identifier Colon type
     | Identifier Colon type Assign literalValue
     ;
 function_call: Identifier '(' (expression (',' expression)*)? ')';
-
 
 html:Backtick html_content Backtick;
 

@@ -2,13 +2,12 @@ package nodes.statement;
 
 import nodes.ASTNode;
 
-import java.util.ArrayList;
-import java.util.List;
+
 
 // Class node
 public class ClassNode implements ASTNode {
-    private  String identifier;
-    private  ClassBodyNode classBody ;
+    public   String identifier;
+    public   ClassBodyNode classBody ;
 
 
     @Override
@@ -16,11 +15,11 @@ public class ClassNode implements ASTNode {
         if(classBody!=null){
         return "\nClassNode{" +
                 "class Name='" + identifier + '\'' +
+                ", classBody=" + classBody +
                 "}\n";
         }
         return "\nClassNode{" +
                 "class Name='" + identifier + '\'' +
-                ", classBody=" + classBody +
                 "}\n";
     }
 

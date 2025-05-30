@@ -19,11 +19,18 @@ decorator:  argumentList? ;
 argumentList: argument (Comma argument)* Comma?;
 argument: Identifier ':' literalValue;
 importStatement: Import OpenBrace Identifier CloseBrace From StringLiteral SemiColon;
-thisVarible: This'.'Identifier Assign ((This('.'(Identifier|function_call))*)|(Identifier | Identifier'.'Identifier)) SemiColon;
-enum: Enum Identifier OpenBrace enumValues* CloseBrace SemiColon;
+thisVarible
+    : This Dot Identifier Assign thisAssignment SemiColon
+    ;
+
+thisAssignment
+    : New Identifier OpenParen (expression (Comma expression)*)? CloseParen         # NewInstanceAssignment
+    | This (Dot (Identifier | function_call))+                                       # NestedThisAssignment
+    | Identifier (Dot Identifier)?                                                  # IdentifierOrPropertyAssignment
+    ;enum: Enum Identifier OpenBrace enumValues* CloseBrace SemiColon;
 enumValues: (enumValue (Comma enumValue)*);
 enumValue: Identifier Assign literalValue;
-consoleLog: Console Dot Log OpenParen (Identifier WS)* CloseParen SemiColon?;
+consoleLog: Console Dot Log OpenParen Identifier CloseParen SemiColon?;
 abstractClass: Abstract class;
 interface: Interface OpenBrace classBody CloseBrace;
 accessModifier: Private | Public | Protected | Static;
@@ -41,7 +48,9 @@ functionDeclaration
     : (Identifier | Constructor) OpenParen (parameter (Comma parameter)*)? CloseParen (Colon type)* OpenBrace statement* Return expression SemiColon CloseBrace
     | (Identifier | Constructor) OpenParen (parameter (Comma parameter)*)? CloseParen (Colon Void)* block
     ;
-objectDeclataion: Identifier Colon Identifier Assign New Identifier OpenParen (literalValue (Comma literalValue)*)* CloseParen SemiColon;
+objectDeclataion:
+ accessModifier? Identifier Colon Identifier SemiColon|
+ accessModifier? Identifier Colon Identifier Assign New Identifier OpenParen (literalValue (Comma literalValue)*)* CloseParen SemiColon;
 type
     : TypeNumber
     | TypeString
@@ -89,6 +98,7 @@ continueStatement
 block
     : OpenBrace statement* CloseBrace
     ;
+
 
 expression
     : expression Multiply expression       # Multiplication

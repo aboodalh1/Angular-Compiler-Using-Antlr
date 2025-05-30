@@ -22,5 +22,19 @@ public class SymbolTable {
         }
         System.out.println("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
     }
+
+    public boolean isImported(String className) {
+        for (Row row : rows) {
+            if (row.getType().equals("import") && row.getName().equals(className)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void addImport(String className) {
+        rows.add(new Row("import", className, "global", ""));
+    }
+
     }
 

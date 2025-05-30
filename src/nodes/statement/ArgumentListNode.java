@@ -19,8 +19,11 @@ public class ArgumentListNode implements ASTNode {
 
     @Override
     public String toString() {
+        if(argumentNodeList!=null){
         return "\nArgumentListNode{" + "\n"+
                 "argumentNodeList=" + argumentNodeList +
                 '}';
+        }
+        return "no argument";
     }
 }

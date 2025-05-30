@@ -7,6 +7,16 @@ public class Row {
     String name;
     String scope;
 
+    public Row(String type, String value, String name, String scope) {
+        this.type = type;
+        this.value = value;
+        this.name = name;
+        this.scope = scope;
+    }
+
+    public Row() {
+    }
+
     public String getName() {
         return name;
     }

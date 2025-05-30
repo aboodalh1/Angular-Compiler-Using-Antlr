@@ -118,6 +118,36 @@ public interface AngularParserListener extends ParseTreeListener {
 	 */
 	void exitThisVarible(AngularParser.ThisVaribleContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link AngularParser#newInstanceAssignment}.
+	 * @param ctx the parse tree
+	 */
+	void enterNewInstanceAssignment(AngularParser.NewInstanceAssignmentContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link AngularParser#newInstanceAssignment}.
+	 * @param ctx the parse tree
+	 */
+	void exitNewInstanceAssignment(AngularParser.NewInstanceAssignmentContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link AngularParser#nestedThisAssignment}.
+	 * @param ctx the parse tree
+	 */
+	void enterNestedThisAssignment(AngularParser.NestedThisAssignmentContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link AngularParser#nestedThisAssignment}.
+	 * @param ctx the parse tree
+	 */
+	void exitNestedThisAssignment(AngularParser.NestedThisAssignmentContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link AngularParser#identifierOrPropertyAssignment}.
+	 * @param ctx the parse tree
+	 */
+	void enterIdentifierOrPropertyAssignment(AngularParser.IdentifierOrPropertyAssignmentContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link AngularParser#identifierOrPropertyAssignment}.
+	 * @param ctx the parse tree
+	 */
+	void exitIdentifierOrPropertyAssignment(AngularParser.IdentifierOrPropertyAssignmentContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link AngularParser#enum}.
 	 * @param ctx the parse tree
 	 */
