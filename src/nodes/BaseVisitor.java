@@ -1,6 +1,10 @@
 package nodes;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Stack;
+
 import gen.AngularLexer;
 import gen.AngularParser;
 import gen.AngularParserVisitor;
@@ -15,11 +19,33 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+
 import static org.antlr.v4.runtime.CharStreams.fromFileName;
 
 public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements AngularParserVisitor<ASTNode> {
 
     SymbolTable symbolTable = new SymbolTable();
+    private String currentScope = "Global";
+    Stack<String> scopeStack = new Stack<>();
+
+    private void enterScope(String newScope) {
+        scopeStack.push(newScope);
+        this.currentScope = newScope;
+    }
+
+    private void exitScope() {
+        scopeStack.pop();
+        currentScope = scopeStack.isEmpty() ? "Global" : scopeStack.peek();
+    }
+
+    private void addRowToSymbolTable(String type, String name, String value) {
+        Row row = new Row();
+        row.setType(type);
+        row.setName(name);
+        row.setValue(value);
+        row.setScope(currentScope);
+        symbolTable.getRows().add(row);
+    }
 
     public void printAst() {
         String source = "D:\\\\Spring projects\\\\Learn\\\\angular_compiler\\\\src\\\\angular_compiler.txt";
@@ -57,10 +83,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
                 programNode.getStatements().add(statementNode);
             }
         }
-        Row row = new Row();
-//        row.setType("Program");
-//        row.setValue(ctx.getText());
-//        symbolTable.getRows().add(row);
+
         System.out.println("=== Symbol Table ===");
         this.symbolTable.print();
         return programNode;
@@ -69,113 +92,87 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     @Override
     public StatementNode visitStatement(AngularParser.StatementContext ctx) {
         StatementNode statement = new StatementNode();
-        Row statementRow = new Row();
+
         if (ctx.class_() != null) {
             ClassNode anclass = visitClass(ctx.class_());
             statement.setClassNodes(anclass);
-            statementRow.setType("Class");
-            statementRow.setValue(ctx.class_().getText());
-            statementRow.setName(ctx.class_().getText());
         }
         if (ctx.arrayDeclaration() != null) {
             ArrayDeclarationNode arrayDeclarationNode = visitArrayDeclaration(ctx.arrayDeclaration());
             statement.setArrayDeclarationNodeList(arrayDeclarationNode);
-            statementRow.setType("Array Declaration");
-            statementRow.setValue(ctx.arrayDeclaration().getText());
-            statementRow.setScope("Global");
-            statementRow.setName(ctx.arrayDeclaration().getText());
+
+
         }
         if (ctx.variableDeclaration() != null) {
             VariableDeclarationNode variableDeclarationNode = visitVariableDeclaration(ctx.variableDeclaration());
             statement.setVariableDeclarationNodes(variableDeclarationNode);
-            statementRow.setType("Variable Declaration");
-            statementRow.setValue(ctx.variableDeclaration().getText());
-            statementRow.setScope("Global");
-            statementRow.setName(ctx.variableDeclaration().getText());
         }
         if (ctx.functionDeclaration() != null) {
             FunctionDeclarationNode functionDeclarationNode = visitFunctionDeclaration(ctx.functionDeclaration());
             statement.setFunctionDeclarationNodes(functionDeclarationNode);
-            statementRow.setType("Function Declaration");
-            statementRow.setValue(ctx.functionDeclaration().getText());
-            statementRow.setScope("Global");
-            statementRow.setName(ctx.getText());
+
         }
         if (ctx.ifStatement() != null) {
             IfStatementNode ifStatementNode = visitIfStatement(ctx.ifStatement());
             statement.setIfStatementNodes(ifStatementNode);
-            statementRow.setType("If Statement");
-            statementRow.setValue(ctx.ifStatement().getText());
-            statementRow.setScope("Global");
+
         }
         if (ctx.whileStatement() != null) {
             WhileStatementNode whileStatementNode = visitWhileStatement(ctx.whileStatement());
             statement.setWhileStatementNodes(whileStatementNode);
-            statementRow.setType("While Statement");
-            statementRow.setValue(ctx.whileStatement().getText());
-            statementRow.setScope("Global");
+
         }
         if (ctx.assignmentStatement() != null) {
             AssignmentStatementNode assignmentStatementNode = visitAssignmentStatement(ctx.assignmentStatement());
             statement.setAssignmentStatementNodes(assignmentStatementNode);
-            statementRow.setType("Assignment Statement");
-            statementRow.setValue(ctx.assignmentStatement().getText());
-            statementRow.setScope("Global");
+//            statementRow.setType("Assignment Statement");
+//            statementRow.setValue(ctx.assignmentStatement().getText());
+//            statementRow.setScope("Global");
         }
         if (ctx.breakStatement() != null) {
             BreakStatementNode breakStatementNode = visitBreakStatement(ctx.breakStatement());
             statement.setBreakStatementNodes(breakStatementNode);
-            statementRow.setType("Break Statement");
-            statementRow.setValue(ctx.breakStatement().getText());
+//            statementRow.setType("Break Statement");
+//            statementRow.setValue(ctx.breakStatement().getText());
         }
         if (ctx.continueStatement() != null) {
             ContinueStatementNode continueStatementNode = visitContinueStatement(ctx.continueStatement());
             statement.setContinueStatementNodes(continueStatementNode);
-            statementRow.setType("Continue Statement");
-            statementRow.setValue(ctx.continueStatement().getText());
+//            statementRow.setType("Continue Statement");
+//            statementRow.setValue(ctx.continueStatement().getText());
         }
         if (ctx.html() != null) {
             HtmlElementNode htmlElementNode = visitHtml_element(ctx.html_element());
             statement.setHtmlElementNodes(htmlElementNode);
-            statementRow.setType("Html Element");
-            statementRow.setScope("Global");
-            statementRow.setName(ctx.getText());
+//            statementRow.setType("Html Element");
+//            statementRow.setScope("Global");
+//            statementRow.setName(ctx.getText());
 //            statementRow.setValue(ctx.html_element().getText());
         }
         if (ctx.importStatement() != null) {
             ImportStatementNode importStatementNode = visitImportStatement(ctx.importStatement());
             statement.setImportStatementNodes(importStatementNode);
-            statementRow.setType("Import Statement");
-            statementRow.setValue(ctx.importStatement().getText());
-            statementRow.setScope("Global");
-            statementRow.setName(ctx.getText());
         }
         if (ctx.component() != null) {
             ComponentNode componentNode = visitComponent(ctx.component());
             statement.setComponentNodes(componentNode);
-            statementRow.setType("Component");
-            statementRow.setValue(ctx.component().getText());
-            statementRow.setScope("Global");
-//           statementRow.setName(ctx.importStatement().getText());
+
 
         }
         if (ctx.exportClass() != null) {
             ExportClassNode exportClassNode = visitExportClass(ctx.exportClass());
             statement.setExportClassNode(exportClassNode);
-            statementRow.setType("Export Class");
-            statementRow.setValue(ctx.exportClass().getText());
-            statementRow.setScope("Global");
+
 
         }
         if (ctx.html() != null) {
             HtmlNode htmlNode = visitHtml(ctx.html());
             statement.setHtmlNodes(htmlNode);
-            statementRow.setType("Html");
-            statementRow.setValue(ctx.html().getText());
-            statementRow.setScope("Global");
+//            statementRow.setType("Html");
+//            statementRow.setValue(ctx.html().getText());
+//            statementRow.setScope("Global");
 
         }
-        symbolTable.getRows().add(statementRow);
         return statement;
     }
 
@@ -186,16 +183,15 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         if (ctx.decorator() != null) {
             DecoratorNode decoratorNode = visitDecorator(ctx.decorator());
             componentNode.setDecorator(decoratorNode);
-            componentRow.setType("Decorator");
+            componentRow.setType("Component");
             componentRow.setValue(ctx.decorator().getText());
-            componentRow.setScope("Global");
+            componentRow.setScope(currentScope);
 
         }
         if (ctx.exportClass() != null) {
             componentNode.setExportClass(visitExportClass(ctx.exportClass()));
-            componentRow.setType("Export Class");
             componentRow.setValue(ctx.exportClass().getText());
-            componentRow.setScope("Global");
+            componentRow.setScope(currentScope);
         }
         symbolTable.getRows().add(componentRow);
         return componentNode;
@@ -209,7 +205,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             exportClassNode.setClassNode(visitClass(ctx.class_()));
             exportClassRow.setType("Class");
             exportClassRow.setValue(ctx.class_().getText());
-            exportClassRow.setScope("Global");
+            exportClassRow.setScope(currentScope);
         }
         symbolTable.getRows().add(exportClassRow);
         return exportClassNode;
@@ -218,23 +214,27 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     @Override
     public ClassNode visitClass(AngularParser.ClassContext ctx) {
         ClassNode classNode = new ClassNode();
-        if (ctx.Identifier() != null) {
-            classNode.setIdentifier(ctx.Identifier().getText());
-        }
+
+        String className = ctx.Identifier().getText();
+        classNode.setIdentifier(className);
+
+        addRowToSymbolTable("Class", className, ctx.getText());
+
+        enterScope(className);
+
         if (ctx.classBody() != null) {
             classNode.setClassBody(visitClassBody(ctx.classBody()));
         }
-        Row classRow = new Row();
-        classRow.setType(ctx.Identifier().getText());
-        if (ctx.classBody() != null)
-            classRow.setValue("Class Body");
-        classRow.setScope("Global");
-        symbolTable.getRows().add(classRow);
+
+        // Exit class scope
+        exitScope();
+
         return classNode;
     }
 
     @Override
     public ClassBodyNode visitClassBody(AngularParser.ClassBodyContext ctx) {
+
         ClassBodyNode classBodyNode = new ClassBodyNode();
         Row classBodyRow = new Row();
         for (int i = 0; i < ctx.variableDeclaration().size(); i++) {
@@ -242,16 +242,13 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
                 classBodyNode.getVariableDeclarationNodes().add(visitVariableDeclaration(ctx.variableDeclaration(i)));
                 classBodyRow.setType("Variable Declaration");
                 classBodyRow.setValue(ctx.variableDeclaration().get(i).getText());
-                classBodyRow.setScope("Global");
+                classBodyRow.setScope(currentScope);
 
             }
         }
         for (int i = 0; i < ctx.functionDeclaration().size(); i++) {
             if (ctx.functionDeclaration().get(i) != null) {
                 classBodyNode.getFunctionDeclarationNodes().add(visitFunctionDeclaration(ctx.functionDeclaration(i)));
-                classBodyRow.setType("Function Declaration");
-                classBodyRow.setValue(ctx.functionDeclaration().get(i).getText());
-                classBodyRow.setScope("Global");
 
             }
         }
@@ -260,16 +257,13 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
                 classBodyNode.getArrayDeclarationNodeList().add(visitArrayDeclaration(ctx.arrayDeclaration(i)));
                 classBodyRow.setType("Array Declaration");
                 classBodyRow.setValue(ctx.arrayDeclaration().get(i).getText());
-                classBodyRow.setScope("Global");
+                classBodyRow.setScope(currentScope);
             }
         }
         for (int i = 0; i < ctx.objectDeclataion().size(); i++) {
             if (ctx.objectDeclataion().get(i) != null) {
-
                 classBodyNode.getObjectDeclarationNodes().add(visitObjectDeclataion(ctx.objectDeclataion(i)));
-                classBodyRow.setType("Object Declaration");
-                classBodyRow.setValue(ctx.objectDeclataion().get(i).getText());
-                classBodyRow.setScope("Global");
+
             }
         }
         symbolTable.getRows().add(classBodyRow);
@@ -299,8 +293,9 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             if (ctx.argument().get(i) != null) {
                 argumentListNode.getArgumentNodeList().add(visitArgument(ctx.argument(i)));
                 argumentListRow.setType("Argument List");
+                argumentListRow.setName(ctx.argument().get(i).Identifier().getText());
                 argumentListRow.setValue(ctx.argument().get(i).getText());
-                argumentListRow.setScope("Global");
+                argumentListRow.setScope(currentScope);
             }
         }
         symbolTable.getRows().add(argumentListRow);
@@ -309,16 +304,14 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
 
     @Override
     public ArgumentNode visitArgument(AngularParser.ArgumentContext ctx) {
-        ArgumentNode argumentNode = new ArgumentNode();
-        Row argumentRow = new Row();
-        if (ctx.Identifier() != null) {
-            argumentNode.setName(ctx.Identifier().getText());
-            argumentRow.setType("Agrument");
-            argumentRow.setValue(ctx.getText());
-            argumentRow.setScope("Global");
-        }
-        symbolTable.getRows().add(argumentRow);
-        return argumentNode;
+        ArgumentNode node = new ArgumentNode();
+        String name = ctx.Identifier().getText();
+        String value = ctx.literalValue().getText();
+
+        node.setName(name);
+        addRowToSymbolTable("Argument", name, value);
+
+        return node;
 
     }
 
@@ -328,15 +321,13 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         Row importRow = new Row();
         if (ctx.Identifier() != null) {
             importStatementNode.setIdentifier(ctx.Identifier().getText());
-            importRow.setType("Import");
-            importRow.setValue(ctx.Identifier().getText());
-            importRow.setScope("Global");
+            importRow.setType("Import Statement");
+            importRow.setName(ctx.Identifier().getText());
+            importRow.setScope(currentScope);
         }
         if (ctx.StringLiteral() != null) {
             importStatementNode.setSource(ctx.StringLiteral().getText());
-            importRow.setType("Import from");
             importRow.setValue(ctx.StringLiteral().getText());
-            importRow.setScope("Global");
 
         }
         symbolTable.getRows().add(importRow);
@@ -356,7 +347,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         ThisNewInstanceAssignmentNode thisNewInstanceAssignmentNode = new ThisNewInstanceAssignmentNode();
         thisNewInstanceAssignmentNode.setName(ctx.getText());
         for (int i = 0; i < ctx.expression().size(); i++) {
-        thisNewInstanceAssignmentNode.getExpressionNode().add(visitExpression(ctx.expression(i)));
+            thisNewInstanceAssignmentNode.getExpressionNode().add(visitExpression(ctx.expression(i)));
         }
         return thisNewInstanceAssignmentNode;
     }
@@ -389,8 +380,8 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     @Override
     public ASTNode visitConsoleLog(AngularParser.ConsoleLogContext ctx) {
         ConsoleLogNode consoleLogNode = new ConsoleLogNode();
-            consoleLogNode.setValue(ctx.Identifier().getText());
-            return consoleLogNode;
+        consoleLogNode.setValue(ctx.Identifier().getText());
+        return consoleLogNode;
     }
 
     @Override
@@ -417,21 +408,21 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         if (ctx.Identifier() != null) {
             variableDeclarationNode.setIdentifier(ctx.Identifier().getText());
             variableRow.setType("Variable Declaration");
-            variableRow.setValue(ctx.Identifier().getText());
-            variableRow.setScope("Global");
+            variableRow.setName(ctx.Identifier().getText());
+            variableRow.setScope(currentScope);
 
         }
         if (ctx.type() != null) {
             variableDeclarationNode.setType(visitType(ctx.type()));
             variableRow.setType("Variable Type");
             variableRow.setValue(ctx.type().getText());
-            variableRow.setScope("Global");
+            variableRow.setScope(currentScope);
         }
         if (ctx.expression() != null) {
             variableDeclarationNode.setExpression(visitExpression(ctx.expression()));
             variableRow.setType("Variable Expression");
             variableRow.setValue(ctx.expression().getText());
-            variableRow.setScope("Global");
+            variableRow.setScope(currentScope);
         }
         symbolTable.getRows().add(variableRow);
         return variableDeclarationNode;
@@ -443,20 +434,19 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         if (expressionNode.operator != null) {
             expressionNode.setOperator(ctx.getText());
             expressionRow.setType("Operator");
+            expressionRow.setName(ctx.getText());
             expressionRow.setValue(ctx.getText());
-            expressionRow.setScope("Global");
+            expressionRow.setScope(currentScope);
         }
         if (expressionNode.left != null) {
             expressionNode.setLeft(expressionNode.left);
-            expressionRow.setType("Left");
             expressionRow.setValue(expressionNode.left.toString());
-            expressionRow.setScope("Global");
+            expressionRow.setScope(currentScope);
         }
         if (expressionNode.right != null) {
             expressionNode.setRight(expressionNode.right);
-            expressionRow.setType("Right");
             expressionRow.setValue(expressionNode.right.toString());
-            expressionRow.setScope("Global");
+            expressionRow.setScope(currentScope);
         }
         symbolTable.getRows().add(expressionRow);
         return expressionNode;
@@ -465,20 +455,18 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     @Override
     public ArrayDeclarationNode visitArrayDeclaration(AngularParser.ArrayDeclarationContext ctx) {
         ArrayDeclarationNode arrayDeclarationNode = new ArrayDeclarationNode();
-        Row arrayDeclarationRow = new Row();
-        if (ctx.Identifier() != null) {
-            arrayDeclarationNode.setIdentifier(ctx.Identifier().getText());
-            arrayDeclarationRow.setType("Array Declaration");
-            arrayDeclarationRow.setValue(ctx.Identifier().getText());
-            arrayDeclarationRow.setScope("Global");
+        arrayDeclarationNode.setIdentifier(ctx.Identifier().getText());
+        String arrayName = ctx.Identifier().getText();
+        List<String> arrayValues = new ArrayList<>();
+        arrayDeclarationNode.setType(visitType(ctx.type()));
+        String arrayType = ctx.type().getText();
+        if (!ctx.literalValue().isEmpty()) {
+            for (int i = 0; i < ctx.literalValue().size(); i++) {
+                arrayDeclarationNode.getValues().add(visitLiteralValue(ctx.literalValue().get(i)));
+                arrayValues.add(visitLiteralValue(ctx.literalValue().get(i)).getArrayValue());
+            }
         }
-        if (ctx.type() != null) {
-            arrayDeclarationNode.setType(visitType(ctx.type()));
-            arrayDeclarationRow.setType("Array Type");
-            arrayDeclarationRow.setValue(ctx.type().getText());
-            arrayDeclarationRow.setScope("Global");
-        }
-        symbolTable.getRows().add(arrayDeclarationRow);
+        addRowToSymbolTable("Array Declaration", arrayName, arrayValues.toString());
         return arrayDeclarationNode;
     }
 
@@ -490,22 +478,21 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     @Override
     public FunctionDeclarationNode visitFunctionDeclaration(AngularParser.FunctionDeclarationContext ctx) {
         FunctionDeclarationNode functionDeclarationNode = new FunctionDeclarationNode();
-        Row functionDeclarationRow = new Row();
+        String name = null;
+        if (ctx.Constructor() != null) {
+            name = ctx.Constructor().getText();
+            functionDeclarationNode.setIdentifier(ctx.Constructor().getText());
+        }
         if (ctx.Identifier() != null) {
             functionDeclarationNode.setIdentifier(ctx.Identifier().getText());
-            functionDeclarationRow.setType("Function Declaration");
-            functionDeclarationRow.setValue(ctx.Identifier().getText());
-            functionDeclarationRow.setScope("Global");
+            name = ctx.Identifier().getText();
         }
         for (int i = 0; i < ctx.parameter().size(); i++) {
             if (ctx.parameter().get(i) != null) {
                 functionDeclarationNode.getParameters().add(visitParameter(ctx.parameter(i)));
-                functionDeclarationRow.setType("Function Parameter");
-                functionDeclarationRow.setValue(ctx.parameter().get(0).getText());
-                functionDeclarationRow.setScope("Global");
             }
         }
-        symbolTable.getRows().add(functionDeclarationRow);
+        addRowToSymbolTable("Function Declaration", name, "params");
         return functionDeclarationNode;
     }
 
@@ -517,25 +504,25 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             typeNode.setNumber(ctx.TypeNumber().getText());
             typeRow.setType("Type");
             typeRow.setValue(ctx.TypeNumber().getText());
-            typeRow.setScope("Global");
+            typeRow.setScope(currentScope);
         }
         if (ctx.TypeBoolean() != null) {
             typeNode.setAnboolean(ctx.TypeBoolean().getText());
             typeRow.setType("Type");
             typeRow.setValue(ctx.TypeBoolean().getText());
-            typeRow.setScope("Global");
+            typeRow.setScope(currentScope);
         }
         if (ctx.TypeString() != null) {
             typeNode.setString(ctx.TypeString().getText());
             typeRow.setType("Type");
             typeRow.setValue(ctx.TypeString().getText());
-            typeRow.setScope("Global");
+            typeRow.setScope(currentScope);
         }
         if (ctx.Array() != null) {
             typeNode.setArray(ctx.Array().getText());
             typeRow.setType("Type");
             typeRow.setValue(ctx.Array().getText());
-            typeRow.setScope("Global");
+            typeRow.setScope(currentScope);
         }
         symbolTable.getRows().add(typeRow);
         return typeNode;
@@ -546,6 +533,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         ObjectDeclarationNode objectDeclarationNode = new ObjectDeclarationNode();
         if (ctx.Identifier() != null) {
             objectDeclarationNode.setIdentifier(ctx.Identifier().toString());
+            addRowToSymbolTable("Object", ctx.Identifier().get(0).getText(), ctx.Identifier().get(1).getText());
         }
         return objectDeclarationNode;
     }
@@ -553,24 +541,17 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     @Override
     public LiteralValueNode visitLiteralValue(AngularParser.LiteralValueContext ctx) {
         LiteralValueNode literalValueNode = new LiteralValueNode();
-        Row literalValueRow = new Row();
         if (ctx.StringLiteral() != null) {
             literalValueNode.setStirngValue(ctx.StringLiteral().getText());
-            literalValueRow.setType("String");
-            literalValueRow.setValue(ctx.StringLiteral().getText());
-            literalValueRow.setScope("Global");
+            addRowToSymbolTable("String", ctx.StringLiteral().getText(), ctx.StringLiteral().getText());
         }
         if (ctx.NumberLiteral() != null) {
             literalValueNode.setNumValue(ctx.NumberLiteral().getText());
-            literalValueRow.setType("Number");
-            literalValueRow.setValue(ctx.NumberLiteral().getText());
-            literalValueRow.setScope("Global");
+            addRowToSymbolTable("Number", ctx.NumberLiteral().getText(), ctx.NumberLiteral().getText());
         }
         if (ctx.BooleanLiteral() != null) {
             literalValueNode.setBooleanValue(ctx.BooleanLiteral().getText());
-            literalValueRow.setType("Boolean");
-            literalValueRow.setValue(ctx.BooleanLiteral().getText());
-            literalValueRow.setScope("Global");
+            addRowToSymbolTable("Boolean", ctx.BooleanLiteral().getText(), ctx.BooleanLiteral().getText());
         }
         if (ctx.Null().getText() == "true") {
             literalValueNode.setNull(false);
@@ -579,11 +560,8 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         }
         if (ctx.listLiteral() != null) {
             literalValueNode.setListLiteralNode(visitListLiteral(ctx.listLiteral()));
-            literalValueRow.setType("List");
-            literalValueRow.setValue(ctx.listLiteral().getText());
-            literalValueRow.setScope("Global");
+            addRowToSymbolTable("List", ctx.listLiteral().getText(), ctx.listLiteral().getText());
         }
-        symbolTable.getRows().add(literalValueRow);
         return literalValueNode;
     }
 
@@ -601,7 +579,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
                 listLiteralNode.getIdentifiers().add(ctx.Identifier().get(i).getText());
                 listLiteralRow.setType("List");
                 listLiteralRow.setValue(ctx.Identifier().get(i).getText());
-                listLiteralRow.setScope("Global");
+                listLiteralRow.setScope(currentScope);
             }
         }
         symbolTable.getRows().add(listLiteralRow);
@@ -610,7 +588,23 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
 
     @Override
     public AssignmentStatementNode visitAssignmentStatement(AngularParser.AssignmentStatementContext ctx) {
-        return null;
+        AssignmentStatementNode assignmentStatementNode = new AssignmentStatementNode();
+        assignmentStatementNode.setIdentifier(ctx.Identifier().getText());
+        List<String> values = new ArrayList<>();
+        if (!ctx.literalValue().isEmpty()) {
+            for (int i = 0; i < ctx.literalValue().size(); i++) {
+                assignmentStatementNode.getValues().add(visitLiteralValue(ctx.literalValue().get(i)));
+                values.add(visitLiteralValue(ctx.literalValue().get(i)).toString());
+            }
+        }
+        if (!ctx.expression().isEmpty()) {
+            for (int i = 0; i < ctx.expression().size(); i++) {
+                assignmentStatementNode.getExpression().add(visitExpression(ctx.expression().get(i)));
+                values.add(visitExpression(ctx.expression().get(i)).toString());
+            }
+        }
+        addRowToSymbolTable("Assignment", ctx.Identifier().getText(), values.toString());
+        return assignmentStatementNode;
     }
 
     @Override
@@ -711,7 +705,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             identifierNode.setName(ctx.Identifier().getText());
             identifierRow.setType("Identifier");
             identifierRow.setValue(ctx.Identifier().getText());
-            identifierRow.setScope("Global");
+            identifierRow.setScope(currentScope);
         }
         symbolTable.getRows().add(identifierRow);
         return identifierNode;

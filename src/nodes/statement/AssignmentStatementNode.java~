@@ -7,13 +7,13 @@ import java.util.List;
 // Node for assignment statement
 public class AssignmentStatementNode implements ASTNode {
     public  String identifier;
-    public  ASTNode expression;
-    public  List<ASTNode> values;
+    public  ExpressionNode expression;
+    public  List<LiteralValueNode> values;
 
 
     @Override
     public String toString() {
-        return "AssignmentStatement( \n identifier=" + identifier + ", expression=" + expression + ", values=" + values + "\n )";
+        return "\nAssignmentStatement( \n identifier=" + identifier + ", expression=" + expression + ", values=" + values + "\n )";
     }
 
     public String getIdentifier() {
@@ -28,15 +28,15 @@ public class AssignmentStatementNode implements ASTNode {
         return expression;
     }
 
-    public void setExpression(ASTNode expression) {
+    public void setExpression(ExpressionNode expression) {
         this.expression = expression;
     }
 
-    public List<ASTNode> getValues() {
+    public List<LiteralValueNode> getValues() {
         return values;
     }
 
-    public void setValues(List<ASTNode> values) {
+    public void setValues(List<LiteralValueNode> values) {
         this.values = values;
     }
 }

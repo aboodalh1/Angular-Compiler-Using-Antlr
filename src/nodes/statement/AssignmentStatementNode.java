@@ -7,8 +7,8 @@ import java.util.List;
 // Node for assignment statement
 public class AssignmentStatementNode implements ASTNode {
     public  String identifier;
-    public  ASTNode expression;
-    public  List<ASTNode> values;
+    public  List<ExpressionNode> expression;
+    public  List<LiteralValueNode> values;
 
 
     @Override
@@ -24,19 +24,19 @@ public class AssignmentStatementNode implements ASTNode {
         this.identifier = identifier;
     }
 
-    public ASTNode getExpression() {
+    public List<ExpressionNode> getExpression() {
         return expression;
     }
 
-    public void setExpression(ASTNode expression) {
+    public void setExpression(List<ExpressionNode> expression) {
         this.expression = expression;
     }
 
-    public List<ASTNode> getValues() {
+    public List<LiteralValueNode> getValues() {
         return values;
     }
 
-    public void setValues(List<ASTNode> values) {
+    public void setValues(List<LiteralValueNode> values) {
         this.values = values;
     }
 }

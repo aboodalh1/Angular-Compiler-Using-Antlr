@@ -2488,7 +2488,6 @@ public class AngularParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_objectDeclataion; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			System.out.println("fffffff");
 			if ( listener instanceof AngularParserListener ) ((AngularParserListener)listener).enterObjectDeclataion(this);
 		}
 		@Override
