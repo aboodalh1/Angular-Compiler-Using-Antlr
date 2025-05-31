@@ -67,6 +67,7 @@ literalValue
     | Null
     | html
     | css
+    |Identifier
     ;
 mapLiteral: OpenBrace Identifier Colon literalValue (Comma (Identifier Colon literalValue) Comma?)* CloseBrace;
 listLiteral: OpenBracket (Identifier | literalValue)* (Comma (Identifier | literalValue))* Comma? CloseBracket ;
