@@ -57,6 +57,12 @@ public class SemanticAnalyzer extends AngularParserBaseListener {
 
     @Override
     public void enterVariableDeclaration(AngularParser.VariableDeclarationContext ctx) {
+        String varName = ctx.Identifier().getText();
+        String currentScope = "Global"; // استخدم نظام النطاق لديك إذا كان متقدماً
+        if (symbolTable.variableExistsInScope(varName, currentScope)) {
+            semanticErrors.add("Semantic Error: Duplicate variable declaration in the same scope: " + varName);
+            System.err.println("Semantic Error: Duplicate variable declaration in the same scope: " + varName);
+        }
         if (ctx.type() != null) {
             String type = ctx.type().getText();
             if (!isPrimitiveType(type) && !symbolTable.isImported(type)) {

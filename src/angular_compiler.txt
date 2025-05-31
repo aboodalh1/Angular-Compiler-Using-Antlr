@@ -1,6 +1,9 @@
 import {Component} from "angular";
 import { Injectable } from '@angular/core';
 
+let user = "Ali";
+let user = "Sara";
+
 @Injectable({})
 export class NotProvidedService {
   constructor() {
