@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
-
 import gen.AngularLexer;
 import gen.AngularParser;
 import gen.AngularParserVisitor;
@@ -12,6 +11,8 @@ import nodes.css_node.CssClassContentNode;
 import nodes.css_node.CssContentNode;
 import nodes.css_node.CssNode;
 import nodes.html_node.*;
+import nodes.html_node.html_content.NgForNode;
+import nodes.html_node.html_content.NgIfNode;
 import nodes.statement.*;
 import nodes.statement.HtmlElementNode;
 import org.antlr.v4.runtime.CharStream;
@@ -70,7 +71,14 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         ParseTreeWalker walker = new ParseTreeWalker();
         SemanticAnalyzer analyzer = new SemanticAnalyzer(symbolTable);
         walker.walk(analyzer, tree);
-
+        if (!analyzer.getSemanticErrors().isEmpty()) {
+            System.out.println("\n=== Semantic Errors ===");
+            for (String error : analyzer.getSemanticErrors()) {
+                System.err.println(error);
+            }
+        } else {
+            System.out.println("\nNo semantic errors detected.");
+        }
         // Optional: Print symbol table
     }
 
@@ -168,10 +176,6 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         if (ctx.html() != null) {
             HtmlNode htmlNode = visitHtml(ctx.html());
             statement.setHtmlNodes(htmlNode);
-//            statementRow.setType("Html");
-//            statementRow.setValue(ctx.html().getText());
-//            statementRow.setScope("Global");
-
         }
         return statement;
     }
@@ -306,11 +310,10 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     public ArgumentNode visitArgument(AngularParser.ArgumentContext ctx) {
         ArgumentNode node = new ArgumentNode();
         String name = ctx.Identifier().getText();
-        String value = ctx.literalValue().getText();
-
+        node.setValue(visitLiteralValue(ctx.literalValue()));
         node.setName(name);
-        addRowToSymbolTable("Argument", name, value);
-
+        node.setName(name);
+        addRowToSymbolTable("Argument", name, "value");
         return node;
 
     }
@@ -535,6 +538,10 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             objectDeclarationNode.setIdentifier(ctx.Identifier().toString());
             addRowToSymbolTable("Object", ctx.Identifier().get(0).getText(), ctx.Identifier().get(1).getText());
         }
+        if(!symbolTable.isImported(ctx.Identifier().get(1).getText())){
+            System.err.println("error: Semantic Error: Class '" + ctx.Identifier().get(1).getText() + "' used but not imported.");
+
+        }
         return objectDeclarationNode;
     }
 
@@ -553,14 +560,15 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             literalValueNode.setBooleanValue(ctx.BooleanLiteral().getText());
             addRowToSymbolTable("Boolean", ctx.BooleanLiteral().getText(), ctx.BooleanLiteral().getText());
         }
-        if (ctx.Null().getText() == "true") {
-            literalValueNode.setNull(false);
-        } else {
+        else {
             literalValueNode.setNull(true);
         }
         if (ctx.listLiteral() != null) {
             literalValueNode.setListLiteralNode(visitListLiteral(ctx.listLiteral()));
             addRowToSymbolTable("List", ctx.listLiteral().getText(), ctx.listLiteral().getText());
+        }
+        if(ctx.html()!=null){
+            literalValueNode.setHtmlNode(visitHtml(ctx.html()));
         }
         return literalValueNode;
     }
@@ -781,6 +789,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
 
     @Override
     public HtmlNode visitHtml(AngularParser.HtmlContext ctx) {
+        System.out.println("ddddd");
         HtmlNode htmlNode = new HtmlNode();
         Row htmlRow = new Row();
         if (ctx.html_content() != null) {
@@ -987,11 +996,17 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
 
     @Override
     public ASTNode visitNgForAttribute(AngularParser.NgForAttributeContext ctx) {
-        return null;
+        NgForNode ngForNode = new NgForNode();
+        ngForNode.setExpressionNode(visitExpression(ctx.expression()));
+        addRowToSymbolTable("NgFor","*NgFor",ctx.expression().getText());
+        return ngForNode;
     }
 
     @Override
     public ASTNode visitNgIfAttribute(AngularParser.NgIfAttributeContext ctx) {
-        return null;
+        NgIfNode ngIfNode = new NgIfNode();
+        ngIfNode.setExpressionNode(visitExpression(ctx.expression()));
+        addRowToSymbolTable("NgIf","*NgIf",ctx.expression().getText());
+        return ngIfNode;
     }
 }

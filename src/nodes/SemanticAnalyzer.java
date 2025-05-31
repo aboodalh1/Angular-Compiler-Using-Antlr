@@ -18,6 +18,29 @@ public class SemanticAnalyzer extends AngularParserBaseListener {
     }
 
     @Override
+    public void enterHtml_element(AngularParser.Html_elementContext ctx) {
+        int ngIfCount = 0;
+        int ngForCount = 0;
+
+        if (ctx.html_attributes() != null) {
+            for (AngularParser.Html_attributeContext attrCtx : ctx.html_attributes().html_attribute()) {
+                if (attrCtx.ngIfAttribute() != null) {
+                    ngIfCount++;
+                }
+                if (attrCtx.ngForAttribute() != null) {
+                    ngForCount++;
+                }
+            }
+        }
+
+        // إذا العنصر فيه *ngIf و *ngFor معًا، منرفع خطأ
+        if (ngIfCount > 0 && ngForCount > 0) {
+            semanticErrors.add("Semantic Error: Element cannot have both *ngIf and *ngFor at the same time. Consider wrapping with <ng-container>.");
+            System.err.println("Semantic Error: Element cannot have both *ngIf and *ngFor at the same time. Consider wrapping with <ng-container>.");
+        }
+    }
+
+    @Override
     public void enterImportStatement(AngularParser.ImportStatementContext ctx) {
         String importedClass = ctx.Identifier().getText();
         symbolTable.addImport(importedClass);
