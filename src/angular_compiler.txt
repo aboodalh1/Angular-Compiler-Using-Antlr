@@ -1,4 +1,12 @@
 import {Component} from "angular";
+import { Injectable } from '@angular/core';
+
+@Injectable({})
+export class NotProvidedService {
+  constructor() {
+    console.log(NotProvidedServicecreated);
+  }
+}
 
 @Component({
     selector: 'app-example',
@@ -14,3 +22,13 @@ export class ExampleComponent {
         this.http = new HttpClient(); // Not imported - should trigger an error
     }
 }
+
+import { Component } from '@angular/core';
+import { NotProvidedService } from './not-provided.service';
+
+@Component({
+  selector: 'app-root',
+  template: `<h1>Hello</h1>`,
+  providers: [{ useExisting: NotProvidedService }]
+})
+export class AppComponent {}

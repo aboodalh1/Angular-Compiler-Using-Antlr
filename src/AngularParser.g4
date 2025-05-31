@@ -99,97 +99,96 @@ continueStatement
 block
     : OpenBrace statement* CloseBrace
     ;
+    expression
+        : expression Multiply expression       # Multiplication
+        | expression Divide expression         # Division
+        | expression Modulus expression        # Modulus
+        | expression Plus expression           # Addition
+        | expression Minus expression          # Subtraction
+        | expression LessThan expression       # LessThanComparison
+        | expression GreaterThan expression    # GreaterThanComparison
+        | expression LessThanEquals expression # LessThanEqualsComparison
+        | expression GreaterThanEquals expression # GreaterThanEqualsComparison
+        | expression WeakEqual expression      # WeakEqualsComparison
+        | expression StrongEqual expression    # StrongEqualsComparison
+        | expression NOT_EQUAL expression                                       # NotEqualsComparison
+        | expression And expression                                             # LogicalAndExpressionStatement
+        | expression Or expression                                              # LogicalOrExpressionStatement
+        | OpenParen expression CloseParen                                       # ParenthesizedExpression
+        | Identifier OpenBracket expression CloseBracket                        # BracketExpression
+        | AngularExpressionStart expression AngularExpressionEnd                # AngularExpreission
+        | Identifier Dot Identifier                                             # PropertyAccess
+        | literalValue                                                          # LiteralExpression
+        | Identifier     # IdentifierExpression
+        | html #dd
+        ;
 
-expression
-    : expression Multiply expression       # Multiplication
-    | expression Divide expression         # Division
-    | expression Modulus expression        # Modulus
-    | expression Plus expression           # Addition
-    | expression Minus expression          # Subtraction
-    | expression LessThan expression       # LessThanComparison
-    | expression GreaterThan expression    # GreaterThanComparison
-    | expression LessThanEquals expression # LessThanEqualsComparison
-    | expression GreaterThanEquals expression # GreaterThanEqualsComparison
-    | expression WeakEqual expression      # WeakEqualsComparison
-    | expression StrongEqual expression    # StrongEqualsComparison
-    | expression NOT_EQUAL expression                                       # NotEqualsComparison
-    | expression And expression                                             # LogicalAndExpressionStatement
-    | expression Or expression                                              # LogicalOrExpressionStatement
-    | OpenParen expression CloseParen                                       # ParenthesizedExpression
-    | Identifier OpenBracket expression CloseBracket                        # BracketExpression
-    | AngularExpressionStart expression AngularExpressionEnd                # AngularExpreission
-    | Identifier Dot Identifier                                             # PropertyAccess
-    | literalValue                                                          # LiteralExpression
-    | Identifier     # IdentifierExpression
-    | html #dd
-    ;
+    parameter
+        : Identifier Colon type
+        | Identifier Colon type Assign literalValue
+        ;
+    function_call: Identifier '(' (expression (',' expression)*)? ')';
 
-parameter
-    : Identifier Colon type
-    | Identifier Colon type Assign literalValue
-    ;
-function_call: Identifier '(' (expression (',' expression)*)? ')';
+    html:Backtick html_content Backtick;
 
-html:Backtick html_content Backtick;
+    html_content: (html_element+ |
+     '{{' expression '}}' |
+     NumberLiteral* Identifier NumberLiteral*)+;
 
-html_content: (html_element+ |
- '{{' expression '}}' |
- NumberLiteral* Identifier NumberLiteral*)+;
+    html_element:
+          '<' html_tag_name html_attributes? '>' html_content? '<' '/'html_tag_name '>'
+        | '<' html_tag_name html_attributes? '>' | '<' html_tag_name html_attributes '/''>';
 
-html_element:
-      '<' html_tag_name html_attributes? '>' html_content? '<' '/'html_tag_name '>'
-    | '<' html_tag_name html_attributes? '>' | '<' html_tag_name html_attributes '/''>';
+    html_tag_name: Identifier;
 
-html_tag_name: Identifier;
+    html_attributes: html_attribute*;
 
-html_attributes: html_attribute*;
-
-html_attribute:
-      (Identifier
-       |ngIfAttribute|
-       ngForAttribute|
-       onChangeAttribute|
-       onClickAttribute|
-       HtmlClassAttribute |
-        '[' (Identifier | ((Identifier | HtmlClassAttribute) (access_suffix)*)) ']' |
-         '(' (Identifier | HtmlClassAttribute) ')' | '*')
-      ('=' html_attribute_value)?;
-access_suffix
-    : '.' Identifier
-    | '[' expression ']'
-    | '.' function_call
-    ;
-html_attribute_value: literalValue | expression;
-css: OpenBracket Backtick css_content* Backtick CloseBracket;
-css_content: Dot? Identifier (Colon Identifier)* OpenBrace css_class_content* CloseBrace;
-css_class_content: Identifier Colon (Identifier|NumberLiteral (CssPixel | '%')? |function_call)+ (Comma (Identifier|NumberLiteral (CssPixel | '%')? |function_call)+)* SemiColon;
-checkedAttribute
-    : CheckedAttributeName Assign OpenBrace expression CloseBrace
-    ;
-onChangeAttribute
-    : OpenParen OnChangeAttributeName CloseParen Assign StringLiteral
-    ;
-onClickAttribute
-    : OpenParen OnClickAttributeName CloseParen Assign StringLiteral
-    ;
-onSubmitAttribute
-    :  OpenParen OnSubmitAttributeName CloseParen Assign StringLiteral
-    ;
-gapAttribute
-    : GapAttributeName Assign OpenBrace expression CloseBrace
-    ;
-directionAttribute
-    : DirectionAttributeName Assign StringLiteral
-    ;
-durationAttribute
-    : DurationAttributeName Assign StringLiteral
-    ;
-repeatAttribute
-    : RepeatAttributeName Assign (NumberLiteral|StringLiteral)
-    ;
-ngForAttribute
-    : NgForDirective Assign  expression
-    ;
-ngIfAttribute
-    : NgIfDirective Assign expression
-    ;
+    html_attribute:
+          (Identifier
+           |ngIfAttribute|
+           ngForAttribute|
+           onChangeAttribute|
+           onClickAttribute|
+           HtmlClassAttribute |
+            '[' (Identifier | ((Identifier | HtmlClassAttribute) (access_suffix)*)) ']' |
+             '(' (Identifier | HtmlClassAttribute) ')' | '*')
+          ('=' html_attribute_value)?;
+    access_suffix
+        : '.' Identifier
+        | '[' expression ']'
+        | '.' function_call
+        ;
+    html_attribute_value: literalValue | expression;
+    css: OpenBracket Backtick css_content* Backtick CloseBracket;
+    css_content: Dot? Identifier (Colon Identifier)* OpenBrace css_class_content* CloseBrace;
+    css_class_content: Identifier Colon (Identifier|NumberLiteral (CssPixel | '%')? |function_call)+ (Comma (Identifier|NumberLiteral (CssPixel | '%')? |function_call)+)* SemiColon;
+    checkedAttribute
+        : CheckedAttributeName Assign OpenBrace expression CloseBrace
+        ;
+    onChangeAttribute
+        : OpenParen OnChangeAttributeName CloseParen Assign StringLiteral
+        ;
+    onClickAttribute
+        : OpenParen OnClickAttributeName CloseParen Assign StringLiteral
+        ;
+    onSubmitAttribute
+        :  OpenParen OnSubmitAttributeName CloseParen Assign StringLiteral
+        ;
+    gapAttribute
+        : GapAttributeName Assign OpenBrace expression CloseBrace
+        ;
+    directionAttribute
+        : DirectionAttributeName Assign StringLiteral
+        ;
+    durationAttribute
+        : DurationAttributeName Assign StringLiteral
+        ;
+    repeatAttribute
+        : RepeatAttributeName Assign (NumberLiteral|StringLiteral)
+        ;
+    ngForAttribute
+        : NgForDirective Assign  expression
+        ;
+    ngIfAttribute
+        : NgIfDirective Assign expression
+        ;
