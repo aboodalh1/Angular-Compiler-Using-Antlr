@@ -214,7 +214,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
                 for (ArgumentListNode argList : decoratorNode.getArguments()) {
                     for (ArgumentNode arg : argList.getArgumentNodeList()) {
                         if ("providers".equals(arg.getName()) && arg.getValue() != null) {
-                            java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("[A-Za-z_][A-Za-z0-9_]*").matcher(arg.getValue());
+                            java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("[A-Za-z_][A-Za-z0-9_]*").matcher(arg.getValue().toString());
                             while (matcher.find()) {
                                 String providerName = matcher.group();
                                 if (!"useExisting".equals(providerName) && !"useClass".equals(providerName) && !"provide".equals(providerName)) {
@@ -370,7 +370,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         }
         node.setValue(visitLiteralValue(ctx.literalValue()));
         node.setName(name);
-        node.setValue(value);
+       // node.setValue(value);
         addRowToSymbolTable("Argument", name, value);
         return node;
     }
