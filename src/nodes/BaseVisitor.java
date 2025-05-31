@@ -25,6 +25,7 @@ import static org.antlr.v4.runtime.CharStreams.fromFileName;
 public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements AngularParserVisitor<ASTNode> {
 
     SymbolTable symbolTable = new SymbolTable();
+    SymbolTable multipleTemplatesSymbolTable = new SymbolTable();
     private String currentScope = "Global";
     Stack<String> scopeStack = new Stack<>();
 
@@ -45,6 +46,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         row.setValue(value);
         row.setScope(currentScope);
         symbolTable.getRows().add(row);
+        multipleTemplatesSymbolTable.getRows().add(row);
     }
 
     public void printAst() {
@@ -60,18 +62,40 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         CommonTokenStream token = new CommonTokenStream(lexer);
         AngularParser parser = new AngularParser(token);
 
-        // AST Construction
-        ProgramNode programNode = (ProgramNode) new BaseVisitor().visitProgram(parser.program());
+        // Parse ONCE and get the tree
+        ParseTree tree;
+        try {
+            tree = parser.program(); // entry rule
+            System.out.println("Parsing completed successfully");
+        } catch (Exception e) {
+            System.err.println("Parsing failed: " + e.getMessage());
+            return;
+        }
+
+        // AST Construction using Visitor pattern
+        ProgramNode programNode = (ProgramNode) new BaseVisitor().visitProgram((AngularParser.ProgramContext) tree);
         System.out.println("=== AST ===");
         System.out.println(programNode);
 
-        // Semantic Analysis
-        ParseTree tree = parser.program(); // entry rule
+        // Semantic Analysis using Listener pattern on the SAME tree
         ParseTreeWalker walker = new ParseTreeWalker();
-        SemanticAnalyzer analyzer = new SemanticAnalyzer(symbolTable);
+        SemanticAnalyzer analyzer = new SemanticAnalyzer(symbolTable); // Use consistent symbol table
         walker.walk(analyzer, tree);
 
-        // Optional: Print symbol table
+        // Print semantic errors
+        List<String> errors = analyzer.getSemanticErrors();
+        if (!errors.isEmpty()) {
+            System.out.println("\n=== Semantic Errors ===");
+            for (String error : errors) {
+                System.out.println(error);
+            }
+        } else {
+            System.out.println("\n=== No Semantic Errors Found ===");
+        }
+
+        // Print symbol table
+        System.out.println("=== Symbol Table ===");
+        this.multipleTemplatesSymbolTable.print();
     }
 
     @Override
@@ -84,8 +108,6 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             }
         }
 
-        System.out.println("=== Symbol Table ===");
-        this.symbolTable.print();
         return programNode;
     }
 

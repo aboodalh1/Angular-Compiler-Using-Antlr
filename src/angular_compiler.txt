@@ -2,7 +2,8 @@ import {Component} from "angular";
 
 @Component({
     selector: 'app-example',
-    template: `<div></div>`
+    template: '<div>Inline template</div>',
+    templateUrl: 'example.component.html',
 })
 export class ExampleComponent {
     private http: HttpClient; // Not imported - should trigger an error

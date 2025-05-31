@@ -42,6 +42,35 @@ public class SemanticAnalyzer extends AngularParserBaseListener {
         }
     }
 
+    @Override
+    public void enterComponent(AngularParser.ComponentContext ctx) {
+        System.out.println("CHCKenterComponent");
+        checkTemplateAndTemplateUrlConflict(ctx);
+    }
+
+    private void checkTemplateAndTemplateUrlConflict(AngularParser.ComponentContext ctx) {
+        if (ctx.decorator() != null && ctx.decorator().argumentList() != null) {
+            boolean hasTemplate = false;
+            boolean hasTemplateUrl = false;
+
+            for (AngularParser.ArgumentContext arg : ctx.decorator().argumentList().argument()) {
+
+                String argName = arg.Identifier().getText();
+
+                if ("template".equals(argName)) {
+                    hasTemplate = true;
+                } else if ("templateUrl".equals(argName)) {
+                    hasTemplateUrl = true;
+                }
+            }
+
+            if (hasTemplate && hasTemplateUrl) {
+                semanticErrors.add("Semantic Error: Component cannot have both 'template' and 'templateUrl' properties.");
+                System.err.printf("error: %s\n", "Semantic Error: Component cannot have both 'template' and 'templateUrl' properties.");
+            }
+        }
+    }
+
     private boolean isPrimitiveType(String type) {
         return type.equals("number") || type.equals("string") || type.equals("boolean") ||
                 type.equals("any") || type.equals("Array");
