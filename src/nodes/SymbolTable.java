@@ -24,8 +24,10 @@ public class SymbolTable {
     }
 
     public boolean isImported(String className) {
+        System.out.println("ddd");
         for (Row row : rows) {
-            if (row.getType().equals("import") && row.getName().equals(className)) {
+            System.out.println(row.getType());
+            if (row.getType()=="Import Statement" && row.getName()==className) {
                 return true;
             }
         }

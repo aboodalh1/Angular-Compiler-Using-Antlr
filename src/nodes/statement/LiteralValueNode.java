@@ -1,6 +1,7 @@
 package nodes.statement;
 
 import nodes.ASTNode;
+import nodes.html_node.HtmlNode;
 
 // Node for literal value
 public class LiteralValueNode implements ASTNode {
@@ -10,6 +11,16 @@ public class LiteralValueNode implements ASTNode {
     public String booleanValue;
     public String identifierValue;
     public ListLiteralNode listLiteralNode;
+
+    public HtmlNode getHtmlNode() {
+        return htmlNode;
+    }
+
+    public void setHtmlNode(HtmlNode htmlNode) {
+        this.htmlNode = htmlNode;
+    }
+
+    HtmlNode htmlNode;
     public boolean isNull;
 
     public String getIdentifierValue() {

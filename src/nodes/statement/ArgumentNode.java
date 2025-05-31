@@ -4,7 +4,7 @@ import nodes.ASTNode;
 
 public class ArgumentNode implements ASTNode {
     String name;
-    String value;
+    LiteralValueNode value;
 
 
     public String getName() {
@@ -15,11 +15,11 @@ public class ArgumentNode implements ASTNode {
         this.name = name;
     }
 
-    public String getValue() {
+    public LiteralValueNode getValue() {
         return value;
     }
 
-    public void setValue(String value) {
+    public void setValue(LiteralValueNode value) {
         this.value = value;
     }
 
