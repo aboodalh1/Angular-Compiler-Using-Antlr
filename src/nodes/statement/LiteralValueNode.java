@@ -8,8 +8,17 @@ public class LiteralValueNode implements ASTNode {
     public String numValue;
     public String arrayValue;
     public String booleanValue;
+    public String identifierValue;
     public ListLiteralNode listLiteralNode;
     public boolean isNull;
+
+    public String getIdentifierValue() {
+        return identifierValue;
+    }
+
+    public void setIdentifierValue(String identifierValue) {
+        this.identifierValue = identifierValue;
+    }
 
     public ListLiteralNode getListLiteralNode() {
         return listLiteralNode;
@@ -66,6 +75,7 @@ public class LiteralValueNode implements ASTNode {
                 ", numValue='" + numValue + '\'' +"\n"+
                 ", arrayValue='" + arrayValue + '\'' + "\n"+
                 ", booleanValue='" + booleanValue + '\'' + "\n"+
+                ", identifierValue='" + identifierValue + '\'' + "\n"+
                 ", listLiteralNode=" + listLiteralNode +"\n"+
                 ", isNull=" + isNull + "\n"+
                 "\n}";

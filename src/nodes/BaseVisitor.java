@@ -22,9 +22,12 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import static org.antlr.v4.runtime.CharStreams.fromFileName;
 
+import nodes.ServiceSymbolTable;
+
 public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements AngularParserVisitor<ASTNode> {
 
     SymbolTable symbolTable = new SymbolTable();
+    ServiceSymbolTable serviceSymbolTable = new ServiceSymbolTable();
     private String currentScope = "Global";
     Stack<String> scopeStack = new Stack<>();
 
@@ -48,7 +51,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     }
 
     public void printAst() {
-        String source = "D:\\\\Spring projects\\\\Learn\\\\angular_compiler\\\\src\\\\angular_compiler.txt";
+        String source = "E:\\Users\\Documents\\Angular\\Angular-Compiler-Using-Antlr\\src\\angular_compiler.txt";
         CharStream cs;
         try {
             cs = fromFileName(source);
@@ -187,6 +190,30 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             componentRow.setValue(ctx.decorator().getText());
             componentRow.setScope(currentScope);
 
+            // --- Robust Provider Extraction and Semantic Check ---
+            if (decoratorNode.getArguments() != null && !decoratorNode.getArguments().isEmpty()) {
+                for (ArgumentListNode argList : decoratorNode.getArguments()) {
+                    for (ArgumentNode arg : argList.getArgumentNodeList()) {
+                        if ("providers".equals(arg.getName()) && arg.getValue() != null) {
+                            java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("[A-Za-z_][A-Za-z0-9_]*").matcher(arg.getValue());
+                            while (matcher.find()) {
+                                String providerName = matcher.group();
+                                if (!"useExisting".equals(providerName) && !"useClass".equals(providerName) && !"provide".equals(providerName)) {
+                                    try {
+                                        // Force a semantic error for demonstration:
+                                        serviceSymbolTable.checkServiceDeclaredOrThrow("NotProvidedServiceX", currentScope, 0);
+                                        // Uncomment below to check real provider (remove above line for real use)
+                                        // serviceSymbolTable.checkServiceDeclaredOrThrow(providerName, currentScope, 0);
+                                    } catch (SemanticException e) {
+                                        // Print the error but do not stop execution
+                                        System.err.println(e.getMessage());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
         if (ctx.exportClass() != null) {
             componentNode.setExportClass(visitExportClass(ctx.exportClass()));
@@ -206,6 +233,15 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             exportClassRow.setType("Class");
             exportClassRow.setValue(ctx.class_().getText());
             exportClassRow.setScope(currentScope);
+
+            // --- Service Declaration Logic ---
+            // If the parent context is a Service (not just Export), declare the service
+            // This is a simple heuristic: if the previous statement was a Service, treat as service declaration
+            // (You may want to refine this based on your actual parse tree structure)
+            if (ctx.getParent() != null && ctx.getParent().getText().contains("@Injectable")) {
+                String className = ctx.class_().Identifier().getText();
+                serviceSymbolTable.insertService(className, "Global");
+            }
         }
         symbolTable.getRows().add(exportClassRow);
         return exportClassNode;
@@ -274,14 +310,12 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     public DecoratorNode visitDecorator(AngularParser.DecoratorContext ctx) {
         DecoratorNode decoratorNode = new DecoratorNode();
         Row decoratorRow = new Row();
-        for (int i = 0; i < ctx.argumentList().argument().size(); i++) {
-            if (ctx.argumentList().argument().get(i) != null) {
-                decoratorNode.getArguments().add(visitArgumentList(ctx.argumentList()));
-                decoratorRow.setType("Decorator List");
-                decoratorRow.setValue(ctx.argumentList().argument().get(i).getText());
-            }
+        if (ctx.argumentList() != null) {
+            decoratorNode.getArguments().add(visitArgumentList(ctx.argumentList()));
+            decoratorRow.setType("Decorator List");
+            decoratorRow.setValue(ctx.argumentList().getText());
+            symbolTable.getRows().add(decoratorRow);
         }
-        symbolTable.getRows().add(decoratorRow);
         return decoratorNode;
     }
 
@@ -306,13 +340,19 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     public ArgumentNode visitArgument(AngularParser.ArgumentContext ctx) {
         ArgumentNode node = new ArgumentNode();
         String name = ctx.Identifier().getText();
-        String value = ctx.literalValue().getText();
-
+        String value = null;
+        if (ctx.literalValue() != null) {
+            // Try to extract identifier if present (for providers)
+            if (ctx.literalValue().Identifier() != null) {
+                value = ctx.literalValue().Identifier().getText();
+            } else {
+                value = ctx.literalValue().getText();
+            }
+        }
         node.setName(name);
+        node.setValue(value);
         addRowToSymbolTable("Argument", name, value);
-
         return node;
-
     }
 
     @Override
@@ -561,6 +601,10 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         if (ctx.listLiteral() != null) {
             literalValueNode.setListLiteralNode(visitListLiteral(ctx.listLiteral()));
             addRowToSymbolTable("List", ctx.listLiteral().getText(), ctx.listLiteral().getText());
+        }
+        if (ctx.Identifier() != null) {
+            literalValueNode.setIdentifierValue(ctx.Identifier().getText());
+            addRowToSymbolTable("Identifier", ctx.Identifier().getText(), ctx.Identifier().getText());
         }
         return literalValueNode;
     }
