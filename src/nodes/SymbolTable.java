@@ -38,5 +38,14 @@ public class SymbolTable {
         rows.add(new Row("import", className, "global", ""));
     }
 
+    public boolean variableExistsInScope(String name, String scope) {
+        for (Row row : rows) {
+            if (row.getType() != null && row.getType().equals("Variable Declaration") && row.getName() != null && row.getName().equals(name) && row.getScope() != null && row.getScope().equals(scope)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     }
 

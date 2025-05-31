@@ -28,6 +28,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     SymbolTable symbolTable = new SymbolTable();
     private String currentScope = "Global";
     Stack<String> scopeStack = new Stack<>();
+    private List<String> semanticErrors = new ArrayList<>();
 
     private void enterScope(String newScope) {
         scopeStack.push(newScope);
@@ -49,7 +50,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     }
 
     public void printAst() {
-        String source = "D:\\\\Spring projects\\\\Learn\\\\angular_compiler\\\\src\\\\angular_compiler.txt";
+        String source = "C:\\compiler 2\\Angular-Compiler-Using-Antlr\\src\\angular_compiler.txt";
         CharStream cs;
         try {
             cs = fromFileName(source);
@@ -78,6 +79,13 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             }
         } else {
             System.out.println("\nNo semantic errors detected.");
+        }
+        // Print semantic errors from BaseVisitor
+        if (!semanticErrors.isEmpty()) {
+            System.out.println("\n=== Semantic Errors (from BaseVisitor) ===");
+            for (String error : semanticErrors) {
+                System.err.println(error);
+            }
         }
         // Optional: Print symbol table
     }
@@ -409,25 +417,30 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         VariableDeclarationNode variableDeclarationNode = new VariableDeclarationNode();
         Row variableRow = new Row();
         if (ctx.Identifier() != null) {
-            variableDeclarationNode.setIdentifier(ctx.Identifier().getText());
-            variableRow.setType("Variable Declaration");
-            variableRow.setName(ctx.Identifier().getText());
-            variableRow.setScope(currentScope);
-
+            String varName = ctx.Identifier().getText();
+            if (!symbolTable.variableExistsInScope(varName, currentScope)) {
+                variableRow.setType("Variable Declaration");
+                variableRow.setName(varName);
+                variableRow.setScope(currentScope);
+                symbolTable.getRows().add(variableRow);
+            } else {
+                semanticErrors.add("Semantic Error: Duplicate variable declaration in the same scope: " + varName);
+                System.err.println("Semantic Error: Duplicate variable declaration in the same scope: " + varName);
+            }
+            variableDeclarationNode.setIdentifier(varName);
         }
         if (ctx.type() != null) {
             variableDeclarationNode.setType(visitType(ctx.type()));
-            variableRow.setType("Variable Type");
-            variableRow.setValue(ctx.type().getText());
-            variableRow.setScope(currentScope);
         }
         if (ctx.expression() != null) {
             variableDeclarationNode.setExpression(visitExpression(ctx.expression()));
-            variableRow.setType("Variable Expression");
-            variableRow.setValue(ctx.expression().getText());
-            variableRow.setScope(currentScope);
+            Row exprRow = new Row();
+            exprRow.setType("Variable Expression");
+            exprRow.setName(ctx.Identifier().getText());
+            exprRow.setScope(currentScope);
+            exprRow.setValue(ctx.expression().getText());
+            symbolTable.getRows().add(exprRow);
         }
-        symbolTable.getRows().add(variableRow);
         return variableDeclarationNode;
     }
 

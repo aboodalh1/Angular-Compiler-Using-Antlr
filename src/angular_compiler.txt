@@ -1,15 +1,2 @@
-import {Component} from "angular";
-
-@Component({
-    selector: 'app-example',
-    template: `<div *ngIf="x > 0" *ngFor="let item of items">
-                   Hello
-               </div>`
-})
-export class ExampleComponent {
-    private http: HttpClient; // Not imported - should trigger an error
-    x:number = 10;
-    constructor() {
-        this.http = new HttpClient(); // Not imported - should trigger an error
-    }
-}
+let user = "Ali";
+let user = "Sara";
