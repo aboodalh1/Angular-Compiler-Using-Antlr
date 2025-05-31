@@ -2,8 +2,10 @@ import {Component} from "angular";
 
 @Component({
     selector: 'app-example',
-    template: '<div>Inline template</div>',
     templateUrl: 'example.component.html',
+    template: `<div *ngIf="x > 0" *ngFor="let item of items">
+                   Hello
+               </div>`
 })
 export class ExampleComponent {
     private http: HttpClient; // Not imported - should trigger an error

@@ -18,6 +18,26 @@ public class SemanticAnalyzer extends AngularParserBaseListener {
     }
 
     @Override
+    public void enterHtml_element(AngularParser.Html_elementContext ctx) {
+        int structuralDirectiveCount = 0;
+        String elementText = ctx.getText();
+
+        for (AngularParser.Html_attributeContext attrCtx : ctx.html_attribute()) {
+            String attrName = attrCtx.getText();
+
+            // Detect structural directives like *ngIf or *ngFor
+            if (attrName.startsWith("*ngIf") || attrName.startsWith("*ngFor")) {
+                structuralDirectiveCount++;
+            }
+        }
+
+        if (structuralDirectiveCount > 1) {
+            semanticErrors.add("Semantic Error: Element cannot have both *ngIf and *ngFor at the same time. Consider using <ng-container>.");
+            System.err.println("Semantic Error: Element cannot have both *ngIf and *ngFor at the same time. Consider using <ng-container>.");
+        }
+    }
+
+    @Override
     public void enterImportStatement(AngularParser.ImportStatementContext ctx) {
         String importedClass = ctx.Identifier().getText();
         symbolTable.addImport(importedClass);
@@ -28,7 +48,7 @@ public class SemanticAnalyzer extends AngularParserBaseListener {
         String className = ctx.Identifier(1).getText();
         if (!symbolTable.isImported(className)) {
             semanticErrors.add("Semantic Error: Class '" + className + "' used but not imported.");
-            System.err.printf("error");
+            System.err.printf("error: %s\n", "Semantic Error: Class '" + className + "' used but not imported.");
         }
     }
 
