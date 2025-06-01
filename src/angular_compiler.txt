@@ -13,6 +13,6 @@ import { NotProvidedService } from './not-provided.service';
 @Component({
   selector: 'app-root',
   template: `<h1>Hello</h1>`,
-  providers: [{ useExisting: NotProvidedService }]
+  providers: [{ useExisting: NotProvidedService }] // ❌ Semantic Error
 })
 export class AppComponent {}

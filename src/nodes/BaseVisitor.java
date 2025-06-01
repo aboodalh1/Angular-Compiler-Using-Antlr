@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
+import java.util.Set;
+import java.util.HashSet;
 import gen.AngularLexer;
 import gen.AngularParser;
 import gen.AngularParserVisitor;
@@ -31,6 +33,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     ServiceSymbolTable serviceSymbolTable = new ServiceSymbolTable();
     private String currentScope = "Global";
     Stack<String> scopeStack = new Stack<>();
+    private final Set<String> reportedSemanticErrors = new HashSet<>();
 
     private void enterScope(String newScope) {
         scopeStack.push(newScope);
@@ -199,7 +202,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
                 for (ArgumentListNode argList : decoratorNode.getArguments()) {
                     for (ArgumentNode arg : argList.getArgumentNodeList()) {
                         if ("providers".equals(arg.getName()) && arg.getValue() != null) {
-                            java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("[A-Za-z_][A-Za-z0-9_]*").matcher(arg.getValue());
+                            java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("[A-Za-z_][A-Za-z0-9_]*").matcher(arg.toString());
                             while (matcher.find()) {
                                 String providerName = matcher.group();
                                 if (!"useExisting".equals(providerName) && !"useClass".equals(providerName) && !"provide".equals(providerName)) {
@@ -209,8 +212,11 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
                                         // Uncomment below to check real provider (remove above line for real use)
                                         // serviceSymbolTable.checkServiceDeclaredOrThrow(providerName, currentScope, 0);
                                     } catch (SemanticException e) {
-                                        // Print the error but do not stop execution
-                                        System.err.println(e.getMessage());
+                                        String errorKey = e.getMessage(); // Unique key for this error
+                                        if (!reportedSemanticErrors.contains(errorKey)) {
+                                            System.err.println(e.getMessage());
+                                            reportedSemanticErrors.add(errorKey);
+                                        }
                                     }
                                 }
                             }
@@ -355,7 +361,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         }
         node.setValue(visitLiteralValue(ctx.literalValue()));
         node.setName(name);
-        node.setValue(value);
+//        node.setValue(value);
         addRowToSymbolTable("Argument", name, value);
         return node;
     }
