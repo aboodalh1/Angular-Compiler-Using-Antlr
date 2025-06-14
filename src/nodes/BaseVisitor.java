@@ -360,25 +360,18 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
      @Override
      public ExpressionNode visitExpression(AngularParser.ExpressionContext ctx) {
         ExpressionNode expressionNode = new ExpressionNode();
-        Row expressionRow = new Row();
         if (expressionNode.operator != null) {
             expressionNode.setOperator(ctx.getText());
-            expressionRow.setType("Operator");
-            expressionRow.setName(ctx.getText());
-            expressionRow.setValue(ctx.getText());
-            expressionRow.setScope(currentScope);
+            addRowToSymbolTable("Operator", ctx.getText(), ctx.getText());
         }
         if (expressionNode.left != null) {
             expressionNode.setLeft(expressionNode.left);
-            expressionRow.setValue(expressionNode.left.toString());
-            expressionRow.setScope(currentScope);
+            addRowToSymbolTable("Left", ctx.getText(), expressionNode.left.toString());
         }
         if (expressionNode.right != null) {
             expressionNode.setRight(expressionNode.right);
-            expressionRow.setValue(expressionNode.right.toString());
-            expressionRow.setScope(currentScope);
+            addRowToSymbolTable("right", ctx.getText(), expressionNode.right.toString());
         }
-        symbolTable.getRows().add(expressionRow);
         return expressionNode;
     }
 
@@ -412,11 +405,6 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         addRowToSymbolTable("Array Declaration", arrayName, valuesForSymbolTable.toString());
 
         return node;
-    }
-
-    @Override
-    public ASTNode visitAbstractFunctionDeclaration(AngularParser.AbstractFunctionDeclarationContext ctx) {
-        return null;
     }
 
     @Override
@@ -588,11 +576,6 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     }
 
     @Override
-    public ASTNode visitFunction_call(AngularParser.Function_callContext ctx) {
-        return null;
-    }
-
-    @Override
     public HtmlNode visitHtml(AngularParser.HtmlContext ctx) {
         System.out.println("ddddd");
         HtmlNode htmlNode = new HtmlNode();
@@ -653,90 +636,81 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
 
     @Override
     public HtmlAttributesNode visitHtml_attributes(AngularParser.Html_attributesContext ctx) {
-        HtmlAttributesNode htmlAttributesNode = new HtmlAttributesNode();
-        Row htmlAttributesRow = new Row();
-        if (ctx.html_attribute() != null) {
-            for (int i = 0; i < ctx.html_attribute().size(); i++) {
-                htmlAttributesNode.getHtmlAttributeNodes().add(visitHtml_attribute(ctx.html_attribute(i)));
-                htmlAttributesRow.setType("Html Attribute");
-                htmlAttributesRow.setValue(ctx.html_attribute(i).getText());
-            }
-        }
-        symbolTable.getRows().add(htmlAttributesRow);
-        return htmlAttributesNode;
+        // The job of this visitor is to build the AST.
+        HtmlAttributesNode node = new HtmlAttributesNode();
+        ctx.html_attribute().forEach(attr -> node.getHtmlAttributeNodes().add(visitHtml_attribute(attr)));
+        return node;
     }
 
     @Override
     public HtmlAttributeNode visitHtml_attribute(AngularParser.Html_attributeContext ctx) {
-        HtmlAttributeNode htmlAttributeNode = new HtmlAttributeNode();
-        Row htmlAttributeRow = new Row();
+        HtmlAttributeNode node = new HtmlAttributeNode();
+
         if (ctx.Identifier() != null) {
-            htmlAttributeNode.setIdentifierNode(ctx.Identifier().getText());
-            htmlAttributeRow.setType("Identifier");
-            htmlAttributeRow.setValue(ctx.Identifier().getText());
+            node.setIdentifierNode(ctx.Identifier().getText());
         }
-        if (ctx.html_attribute_value() != null) {
-//            htmlAttributeNode.setHtmlAttributeValueNode(visitHtml_attribute_value(ctx.html_attribute_value()));
-        }
-        if (ctx.access_suffix() != null) {
-            for (int i = 0; i < ctx.access_suffix().size(); i++) {
-                htmlAttributeNode.getAccessSufNode().add(visitAccess_suffix(ctx.access_suffix().get(i)));
-                htmlAttributeRow.setType("Access Suffix");
-                htmlAttributeRow.setValue(ctx.access_suffix().get(i).getText());
-            }
-        }
-        if (ctx.Identifier() != null) {
-//            htmlAttributeNode.setClassNode(visitClass(ctx.Identifier().getText()));
-        }
-        symbolTable.getRows().add(htmlAttributeRow);
-        return htmlAttributeNode;
+
+        Optional.ofNullable(ctx.html_attribute_value())
+                .ifPresent(val -> node.setHtmlAttributeValueNode((HtmlAttributeValueNode) visitHtml_attribute_value(val)));
+
+        ctx.access_suffix().forEach(suffix -> node.getAccessSufNode().add((AccessSufNode) visitAccess_suffix(suffix)));
+
+        // Special handling for other attribute types can be added here if needed,
+        // for example, by checking ctx.ngIfAttribute(), ctx.ngForAttribute(), etc.
+
+        return node;
     }
 
     @Override
-    public HtmlAttributeNode visitHtml_attribute_value(AngularParser.Html_attribute_valueContext ctx) {
-        HtmlAttributeNode htmlAttributeNode = new HtmlAttributeNode();
-        Row htmlAttributeRow = new Row();
-        htmlAttributeNode.setClassNode("htmlclass");
-        htmlAttributeNode.setIdentifierNode("html name");
-        htmlAttributeRow.setType("Class");
-        htmlAttributeRow.setValue("htmlclass");
-        symbolTable.getRows().add(htmlAttributeRow);
-        return htmlAttributeNode;
+    public ASTNode visitAccess_suffix(AngularParser.Access_suffixContext ctx) {
+        AccessSufNode node = new AccessSufNode();
+
+        if (ctx.expression() != null) {
+            node.setExpressionNode(visitExpression(ctx.expression()));
+        } else if (ctx.function_call() != null) {
+            node.setFunctionCallNode((FunctionCallNode) visitFunction_call(ctx.function_call()));
+        } else if (ctx.Identifier() != null) {
+            node.setIdentifierNode(ctx.Identifier().getText());
+        }
+
+        return node;
+    }
+
+
+    @Override
+    public ASTNode visitHtml_attribute_value(AngularParser.Html_attribute_valueContext ctx) {
+        // This method now correctly constructs and returns a specific HtmlAttributeValueNode
+        // wrapped as an ASTNode, which can then be safely cast by the caller.
+        HtmlAttributeValueNode attributeValueNode = new HtmlAttributeValueNode();
+        if (ctx.literalValue() != null) {
+            attributeValueNode.setValue(visitLiteralValue(ctx.literalValue()));
+        }
+        if (ctx.expression() != null) {
+            attributeValueNode.setExpression(visitExpression(ctx.expression()));
+        }
+        return attributeValueNode;
     }
 
     @Override
     public ASTNode visitCss(AngularParser.CssContext ctx) {
-        CssNode cssNode = new CssNode();
-        Row cssRow = new Row();
-        if (ctx.css_content() != null) {
-            for (int i = 0; i < ctx.css_content().size(); i++) {
-                cssNode.getCssContentNode().add(visitCss_content(ctx.css_content(i)));
-                cssRow.setType("Css Content");
-                cssRow.setValue(ctx.css_content(i).getText());
-            }
-        }
-        symbolTable.getRows().add(cssRow);
-        return cssNode;
+        CssNode node = new CssNode();
+        // CSS content is not a program symbol; symbol table logic was incorrect and removed.
+        ctx.css_content().forEach(content -> node.getCssContentNode().add(visitCss_content(content)));
+        return node;
     }
 
     @Override
     public CssContentNode visitCss_content(AngularParser.Css_contentContext ctx) {
-        CssContentNode cssContentNode = new CssContentNode();
-        Row cssContentRow = new Row();
-        if (ctx.css_class_content() != null) {
-            for (int i = 0; i < ctx.css_class_content().size(); i++) {
-                cssContentNode.getCssClassContentList().add(visitCss_class_content(ctx.css_class_content(i)));
-                cssContentRow.setType("Css Class Content");
-                cssContentRow.setValue(ctx.css_class_content(i).getText());
-            }
-        }
+        CssContentNode node = new CssContentNode();
+        // CSS classes are not program symbols; symbol table logic was incorrect and removed.
+        ctx.css_class_content().forEach(cc -> node.getCssClassContentList().add(visitCss_class_content(cc)));
+
         if (ctx.Identifier() != null) {
-//            cssContentNode.setIdentifierNode(ctx.Identifier().get());
-            cssContentRow.setType("Identifier");
-//            cssContentRow.setValue(ctx.Identifier().getText());
+            // Your grammar allows an Identifier here. You can decide how to handle it.
+            // For now, we are just building the AST correctly.
+            // node.setIdentifierNode(...);
         }
-        symbolTable.getRows().add(cssContentRow);
-        return cssContentNode;
+        return node;
     }
 
     @Override
@@ -769,7 +743,12 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     }
 
     @Override
-    public AccessSufNode visitAccess_suffix(AngularParser.Access_suffixContext ctx) {
+    public ASTNode visitFunction_call(AngularParser.Function_callContext ctx) {
+        return null;
+    }
+
+    @Override
+    public ASTNode visitAbstractFunctionDeclaration(AngularParser.AbstractFunctionDeclarationContext ctx) {
         return null;
     }
 
