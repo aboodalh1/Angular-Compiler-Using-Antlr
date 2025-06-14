@@ -117,9 +117,10 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
 
     private void printErrors(String title, List<String> errors) {
         System.out.println("\n=== " + title + " ===");
-        if (errors.isEmpty()) {
+        if (errors == null || errors.isEmpty()) {
             System.out.println("No errors found.");
         } else {
+            System.err.println("Found " + errors.size() + " error(s):");
             errors.forEach(System.err::println);
         }
     }
@@ -743,8 +744,62 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     }
 
     @Override
-    public ASTNode visitFunction_call(AngularParser.Function_callContext ctx) {
+    public ASTNode visitLiteralExpression(AngularParser.LiteralExpressionContext ctx) {
+        // A literal expression is a leaf in the expression tree.
+        // We wrap the literal's ASTNode inside an ExpressionNode for consistency.
+        ExpressionNode node = new ExpressionNode();
+        node.setLeft(visitLiteralValue(ctx.literalValue()));
+        return node;
+    }
+
+    @Override
+    public ASTNode visitAngularExpreission(AngularParser.AngularExpreissionContext ctx) {
+        // An Angular expression {{...}} is a wrapper around a standard expression.
+        // The correct implementation is to simply visit the inner expression.
+        if (ctx.expression() != null) {
+            return visitExpression(ctx.expression());
+        }
+        // Return an empty node if the expression is empty to avoid null pointers.
+        return new ExpressionNode();
+    }
+
+    @Override
+    public ASTNode visitGreaterThanEqualsComparison(AngularParser.GreaterThanEqualsComparisonContext ctx) {
         return null;
+    }
+
+    @Override
+    public ASTNode visitAddition(AngularParser.AdditionContext ctx) {
+        // This is the correct pattern for all binary expression visitors.
+        ExpressionNode node = new ExpressionNode();
+
+        // 1. Recursively call visitExpression for the left child.
+        node.setLeft(visitExpression(ctx.expression(0)));
+
+        // 2. Recursively call visitExpression for the right child.
+        node.setRight(visitExpression(ctx.expression(1)));
+
+        // 3. Get the operator text from the specific token method.
+        node.setOperator(ctx.Plus().getText());
+
+        return node;
+    }
+
+    @Override
+    public ASTNode visitFunction_call(AngularParser.Function_callContext ctx) {
+        FunctionCallNode node = new FunctionCallNode();
+
+        if (ctx.Identifier() != null) {
+            node.setIdentifier(ctx.Identifier().getText());
+        }
+
+        if (ctx.expression() != null && !ctx.expression().isEmpty()) {
+            for (AngularParser.ExpressionContext exprCtx : ctx.expression()) {
+                node.getArguments().add(visitExpression(exprCtx));
+            }
+        }
+
+        return node;
     }
 
     @Override
@@ -851,25 +906,6 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     }
 
     @Override
-    public ASTNode visitLiteralExpression(AngularParser.LiteralExpressionContext ctx) {
-        // A literal expression is a leaf in the expression tree.
-        // We wrap the literal's ASTNode inside an ExpressionNode for consistency.
-        ExpressionNode node = new ExpressionNode();
-        node.setLeft(visit(ctx.literalValue()));
-        return node;
-    }
-
-    @Override
-    public ASTNode visitAngularExpreission(AngularParser.AngularExpreissionContext ctx) {
-        return null;
-    }
-
-    @Override
-    public ASTNode visitGreaterThanEqualsComparison(AngularParser.GreaterThanEqualsComparisonContext ctx) {
-        return null;
-    }
-
-    @Override
     public ASTNode visitGreaterThanComparison(AngularParser.GreaterThanComparisonContext ctx) {
         return null;
     }
@@ -959,20 +995,4 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         return null;
     }
 
-    @Override
-    public ASTNode visitAddition(AngularParser.AdditionContext ctx) {
-        // This is the correct pattern for all binary expression visitors.
-        ExpressionNode node = new ExpressionNode();
-
-        // 1. Recursively call visitExpression for the left child.
-        node.setLeft(visitExpression(ctx.expression(0)));
-
-        // 2. Recursively call visitExpression for the right child.
-        node.setRight(visitExpression(ctx.expression(1)));
-
-        // 3. Get the operator text from the specific token method.
-        node.setOperator(ctx.Plus().getText());
-
-        return node;
-    }
 }
