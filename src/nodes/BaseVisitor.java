@@ -357,7 +357,8 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         return node;
     }
 
-    private ExpressionNode visitExpression(AngularParser.ExpressionContext ctx) {
+     @Override
+     public ExpressionNode visitExpression(AngularParser.ExpressionContext ctx) {
         ExpressionNode expressionNode = new ExpressionNode();
         Row expressionRow = new Row();
         if (expressionNode.operator != null) {
@@ -866,18 +867,17 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     }
 
     @Override
-    public ASTNode visitAddition(AngularParser.AdditionContext ctx) {
-        return null;
-    }
-
-    @Override
     public ASTNode visitStrongEqualsComparison(AngularParser.StrongEqualsComparisonContext ctx) {
         return null;
     }
 
     @Override
     public ASTNode visitLiteralExpression(AngularParser.LiteralExpressionContext ctx) {
-        return null;
+        // A literal expression is a leaf in the expression tree.
+        // We wrap the literal's ASTNode inside an ExpressionNode for consistency.
+        ExpressionNode node = new ExpressionNode();
+        node.setLeft(visit(ctx.literalValue()));
+        return node;
     }
 
     @Override
@@ -978,5 +978,22 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     @Override
     public ASTNode visitRepeatAttribute(AngularParser.RepeatAttributeContext ctx) {
         return null;
+    }
+
+    @Override
+    public ASTNode visitAddition(AngularParser.AdditionContext ctx) {
+        // This is the correct pattern for all binary expression visitors.
+        ExpressionNode node = new ExpressionNode();
+
+        // 1. Recursively call visitExpression for the left child.
+        node.setLeft(visitExpression(ctx.expression(0)));
+
+        // 2. Recursively call visitExpression for the right child.
+        node.setRight(visitExpression(ctx.expression(1)));
+
+        // 3. Get the operator text from the specific token method.
+        node.setOperator(ctx.Plus().getText());
+
+        return node;
     }
 }

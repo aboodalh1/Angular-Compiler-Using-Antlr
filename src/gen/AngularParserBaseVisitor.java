@@ -1,5 +1,6 @@
 // Generated from E:/Users/Documents/Angular/Angular-Compiler-Using-Antlr/src/AngularParser.g4 by ANTLR 4.13.2
 package gen;
+import nodes.statement.ExpressionNode;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 
 /**
@@ -166,6 +167,12 @@ public class AngularParserBaseVisitor<T> extends AbstractParseTreeVisitor<T> imp
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitVariableDeclaration(AngularParser.VariableDeclarationContext ctx) { return visitChildren(ctx); }
+
+	@Override
+	public ExpressionNode visitExpression(AngularParser.ExpressionContext ctx) {
+		return (ExpressionNode) visitChildren(ctx);
+	}
+
 	/**
 	 * {@inheritDoc}
 	 *

@@ -1,5 +1,6 @@
 // Generated from E:/Users/Documents/Angular/Angular-Compiler-Using-Antlr/src/AngularParser.g4 by ANTLR 4.13.2
 package gen;
+import nodes.statement.ExpressionNode;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
 /**
@@ -142,6 +143,9 @@ public interface AngularParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitVariableDeclaration(AngularParser.VariableDeclarationContext ctx);
+
+	ExpressionNode visitExpression(AngularParser.ExpressionContext ctx);
+
 	/**
 	 * Visit a parse tree produced by {@link AngularParser#arrayDeclaration}.
 	 * @param ctx the parse tree
