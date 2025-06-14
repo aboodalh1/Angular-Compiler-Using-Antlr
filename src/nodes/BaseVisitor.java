@@ -36,6 +36,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     private static final String DEFAULT_SOURCE_FILE = "C:\\Users\\karee\\Desktop\\Angular-Compiler-Using-Antlr-master\\src\\angular_compiler.txt";
 
     private static final String ENTER = "enter";
+
     private static final String EXIT = "exit";
 
 
@@ -247,6 +248,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
 
     @Override
     public ClassBodyNode visitClassBody(AngularParser.ClassBodyContext ctx) {
+
         ClassBodyNode classBodyNode = new ClassBodyNode();
 
         // Use streams to visit each child declaration and add it to the ClassBodyNode
@@ -267,51 +269,25 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
 
     @Override
     public DecoratorNode visitDecorator(AngularParser.DecoratorContext ctx) {
-        DecoratorNode decoratorNode = new DecoratorNode();
-        Row decoratorRow = new Row();
-        if (ctx.argumentList() != null) {
-            decoratorNode.getArguments().add(visitArgumentList(ctx.argumentList()));
-            decoratorRow.setType("Decorator List");
-            decoratorRow.setValue(ctx.argumentList().getText());
-            symbolTable.getRows().add(decoratorRow);
-        }
-        return decoratorNode;
+        DecoratorNode node = new DecoratorNode();
+        Optional.ofNullable(ctx.argumentList())
+                .ifPresent(argList -> node.getArguments().add(visitArgumentList(argList)));
+        return node;
     }
 
     @Override
     public ArgumentListNode visitArgumentList(AngularParser.ArgumentListContext ctx) {
-        ArgumentListNode argumentListNode = new ArgumentListNode();
-        Row argumentListRow = new Row();
-        for (int i = 0; i < ctx.argument().size(); i++) {
-            if (ctx.argument().get(i) != null) {
-                argumentListNode.getArgumentNodeList().add(visitArgument(ctx.argument(i)));
-                argumentListRow.setType("Argument List");
-                argumentListRow.setName(ctx.argument().get(i).Identifier().getText());
-                argumentListRow.setValue(ctx.argument().get(i).getText());
-                argumentListRow.setScope(currentScope);
-            }
-        }
-        symbolTable.getRows().add(argumentListRow);
-        return argumentListNode;
+        ArgumentListNode node = new ArgumentListNode();
+        ctx.argument().forEach(argCtx -> node.getArgumentNodeList().add(visitArgument(argCtx)));
+        return node;
     }
 
     @Override
     public ArgumentNode visitArgument(AngularParser.ArgumentContext ctx) {
         ArgumentNode node = new ArgumentNode();
-        String name = ctx.Identifier().getText();
-        String value = null;
-        if (ctx.literalValue() != null) {
-            // Try to extract identifier if present (for providers)
-            if (ctx.literalValue().Identifier() != null) {
-                value = ctx.literalValue().Identifier().getText();
-            } else {
-                value = ctx.literalValue().getText();
-            }
-        }
-        node.setValue(visitLiteralValue(ctx.literalValue()));
-        node.setName(name);
-       // node.setValue(value);
-        addRowToSymbolTable("Argument", name, value);
+        node.setName(ctx.Identifier().getText());
+        Optional.ofNullable(ctx.literalValue())
+                .ifPresent(val -> node.setValue(visitLiteralValue(val)));
         return node;
     }
 
@@ -367,34 +343,18 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
 
     @Override
     public VariableDeclarationNode visitVariableDeclaration(AngularParser.VariableDeclarationContext ctx) {
-        VariableDeclarationNode variableDeclarationNode = new VariableDeclarationNode();
-        Row variableRow = new Row();
-        if (ctx.Identifier() != null) {
-            String varName = ctx.Identifier().getText();
-            if (!symbolTable.variableExistsInScope(varName, currentScope)) {
-                variableRow.setType("Variable Declaration");
-                variableRow.setName(varName);
-                variableRow.setScope(currentScope);
-                symbolTable.getRows().add(variableRow);
-            } else {
-                semanticErrors.add("Semantic Error: Duplicate variable declaration in the same scope: " + varName);
-                System.err.println("Semantic Error: Duplicate variable declaration in the same scope: " + varName);
-            }
-            variableDeclarationNode.setIdentifier(varName);
-        }
-        if (ctx.type() != null) {
-            variableDeclarationNode.setType(visitType(ctx.type()));
-        }
-        if (ctx.expression() != null) {
-            variableDeclarationNode.setExpression(visitExpression(ctx.expression()));
-            Row exprRow = new Row();
-            exprRow.setType("Variable Expression");
-            exprRow.setName(ctx.Identifier().getText());
-            exprRow.setScope(currentScope);
-            exprRow.setValue(ctx.expression().getText());
-            symbolTable.getRows().add(exprRow);
-        }
-        return variableDeclarationNode;
+        VariableDeclarationNode node = new VariableDeclarationNode();
+
+        // 1. Build the AST node.
+        String varName = ctx.Identifier().getText();
+        node.setIdentifier(varName);
+        Optional.ofNullable(ctx.type()).ifPresent(t -> node.setType(visitType(t)));
+        Optional.ofNullable(ctx.expression()).ifPresent(e -> node.setExpression(visitExpression(e)));
+
+        String value = (ctx.expression() != null) ? ctx.expression().getText() : null;
+        addRowToSymbolTable("Variable Declaration", varName, value);
+
+        return node;
     }
 
     private ExpressionNode visitExpression(AngularParser.ExpressionContext ctx) {
@@ -423,20 +383,34 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
 
     @Override
     public ArrayDeclarationNode visitArrayDeclaration(AngularParser.ArrayDeclarationContext ctx) {
-        ArrayDeclarationNode arrayDeclarationNode = new ArrayDeclarationNode();
-        arrayDeclarationNode.setIdentifier(ctx.Identifier().getText());
+       // Create the node and get the array name.
+        ArrayDeclarationNode node = new ArrayDeclarationNode();
         String arrayName = ctx.Identifier().getText();
-        List<String> arrayValues = new ArrayList<>();
-        arrayDeclarationNode.setType(visitType(ctx.type()));
-        String arrayType = ctx.type().getText();
-        if (!ctx.literalValue().isEmpty()) {
-            for (int i = 0; i < ctx.literalValue().size(); i++) {
-                arrayDeclarationNode.getValues().add(visitLiteralValue(ctx.literalValue().get(i)));
-                arrayValues.add(visitLiteralValue(ctx.literalValue().get(i)).getArrayValue());
+        node.setIdentifier(arrayName);
+
+        // Set the type for the array node.
+        node.setType(visitType(ctx.type()));
+
+        // Process the array's literal values efficiently.
+        List<String> valuesForSymbolTable = new ArrayList<>();
+        ctx.literalValue().forEach(literalContext -> {
+
+            // Visit each literal value only ONCE to avoid duplicate work and side effects.
+            LiteralValueNode valueNode = visitLiteralValue(literalContext);
+            
+            // Add the created AST node to our ArrayDeclarationNode.
+            node.getValues().add(valueNode);
+            
+            // Get the string representation for the symbol table entry.
+            if (valueNode.getArrayValue() != null) {
+                valuesForSymbolTable.add(valueNode.getArrayValue());
             }
-        }
-        addRowToSymbolTable("Array Declaration", arrayName, arrayValues.toString());
-        return arrayDeclarationNode;
+        });
+
+        // Add a single, consolidated entry for the array to the symbol table.
+        addRowToSymbolTable("Array Declaration", arrayName, valuesForSymbolTable.toString());
+
+        return node;
     }
 
     @Override
@@ -468,84 +442,75 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     @Override
     public TypeNode visitType(AngularParser.TypeContext ctx) {
         TypeNode typeNode = new TypeNode();
-        Row typeRow = new Row();
-        if (ctx.TypeNumber() != null) {
-            typeNode.setNumber(ctx.TypeNumber().getText());
-            typeRow.setType("Type");
-            typeRow.setValue(ctx.TypeNumber().getText());
-            typeRow.setScope(currentScope);
-        }
-        if (ctx.TypeBoolean() != null) {
-            typeNode.setAnboolean(ctx.TypeBoolean().getText());
-            typeRow.setType("Type");
-            typeRow.setValue(ctx.TypeBoolean().getText());
-            typeRow.setScope(currentScope);
-        }
-        if (ctx.TypeString() != null) {
-            typeNode.setString(ctx.TypeString().getText());
-            typeRow.setType("Type");
-            typeRow.setValue(ctx.TypeString().getText());
-            typeRow.setScope(currentScope);
-        }
-        if (ctx.Array() != null) {
-            typeNode.setArray(ctx.Array().getText());
-            typeRow.setType("Type");
-            typeRow.setValue(ctx.Array().getText());
-            typeRow.setScope(currentScope);
-        }
-        symbolTable.getRows().add(typeRow);
+
+        Optional.ofNullable(ctx.TypeNumber()).ifPresent(typeNumber -> {
+            String value = typeNumber.getText();
+            typeNode.setNumber(value);
+            addRowToSymbolTable("Type", null, value);
+        });
+
+        Optional.ofNullable(ctx.TypeBoolean()).ifPresent(typeBoolean -> {
+            String value = typeBoolean.getText();
+            typeNode.setAnboolean(value);
+            addRowToSymbolTable("Type", null, value);
+        });
+
+        Optional.ofNullable(ctx.TypeString()).ifPresent(typeString -> {
+            String value = typeString.getText();
+            typeNode.setString(value);
+            addRowToSymbolTable("Type", null, value);
+        });
+
+        Optional.ofNullable(ctx.Array()).ifPresent(array -> {
+            String value = array.getText();
+            typeNode.setArray(value);
+            addRowToSymbolTable("Type", null, value);
+        });
+
         return typeNode;
     }
 
     @Override
     public ObjectDeclarationNode visitObjectDeclataion(AngularParser.ObjectDeclataionContext ctx) {
-        ObjectDeclarationNode objectDeclarationNode = new ObjectDeclarationNode();
-        if (ctx.Identifier() != null) {
-            objectDeclarationNode.setIdentifier(ctx.Identifier().toString());
-            addRowToSymbolTable("Object", ctx.Identifier().get(0).getText(), ctx.Identifier().get(1).getText());
-        }
-        if(!symbolTable.isImported(ctx.Identifier().get(1).getText())){
-            System.err.println("error: Semantic Error: Class '" + ctx.Identifier().get(1).getText() + "' used but not imported.");
+        ObjectDeclarationNode node = new ObjectDeclarationNode();
 
+        if (ctx.Identifier() != null && ctx.Identifier().size() == 2) {
+            String objectName = ctx.Identifier().get(0).getText();
+            String typeName = ctx.Identifier().get(1).getText();
+
+            node.setIdentifier(objectName);
+            node.setClassName(typeName);
+
+            addRowToSymbolTable("Object", objectName, typeName);
+
+        } else {
+            semanticErrors.add("Syntax Error: Invalid object declaration structure found: " + ctx.getText());
         }
-        return objectDeclarationNode;
+
+        return node;
     }
 
     @Override
     public LiteralValueNode visitLiteralValue(AngularParser.LiteralValueContext ctx) {
-        LiteralValueNode literalValueNode = new LiteralValueNode();
-        if (ctx.StringLiteral() != null) {
-            literalValueNode.setStirngValue(ctx.StringLiteral().getText());
-            addRowToSymbolTable("String", ctx.StringLiteral().getText(), ctx.StringLiteral().getText());
-        }
-        if (ctx.NumberLiteral() != null) {
-            literalValueNode.setNumValue(ctx.NumberLiteral().getText());
-            addRowToSymbolTable("Number", ctx.NumberLiteral().getText(), ctx.NumberLiteral().getText());
-        }
-        if (ctx.BooleanLiteral() != null) {
-            literalValueNode.setBooleanValue(ctx.BooleanLiteral().getText());
-            addRowToSymbolTable("Boolean", ctx.BooleanLiteral().getText(), ctx.BooleanLiteral().getText());
-        }
-        else {
-            literalValueNode.setNull(true);
-        }
-        if (ctx.listLiteral() != null) {
-            literalValueNode.setListLiteralNode(visitListLiteral(ctx.listLiteral()));
-            addRowToSymbolTable("List", ctx.listLiteral().getText(), ctx.listLiteral().getText());
-        }
-        if (ctx.Identifier() != null) {
-            literalValueNode.setIdentifierValue(ctx.Identifier().getText());
-            addRowToSymbolTable("Identifier", ctx.Identifier().getText(), ctx.Identifier().getText());
-        }
-        if(ctx.html()!=null){
-            literalValueNode.setHtmlNode(visitHtml(ctx.html()));
-        }
-        return literalValueNode;
-    }
+        LiteralValueNode node = new LiteralValueNode();
 
-    @Override
-    public ASTNode visitMapLiteral(AngularParser.MapLiteralContext ctx) {
-        return null;
+        // This method's sole responsibility is to build the AST node for a literal.
+
+        if (ctx.StringLiteral() != null) {
+            node.setStirngValue(ctx.StringLiteral().getText());
+        } else if (ctx.NumberLiteral() != null) {
+            node.setNumValue(ctx.NumberLiteral().getText());
+        } else if (ctx.BooleanLiteral() != null) {
+            node.setBooleanValue(ctx.BooleanLiteral().getText());
+        } else if (ctx.listLiteral() != null) {
+            node.setListLiteralNode(visitListLiteral(ctx.listLiteral()));
+        } else if (ctx.Identifier() != null) {
+            node.setIdentifierValue(ctx.Identifier().getText());
+        } else if (ctx.html() != null) {
+            node.setHtmlNode(visitHtml(ctx.html()));
+        }
+
+        return node;
     }
 
     @Override
@@ -727,12 +692,6 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     }
 
     @Override
-    public AccessSufNode visitAccess_suffix(AngularParser.Access_suffixContext ctx) {
-        return null;
-    }
-
-
-    @Override
     public HtmlAttributeNode visitHtml_attribute_value(AngularParser.Html_attribute_valueContext ctx) {
         HtmlAttributeNode htmlAttributeNode = new HtmlAttributeNode();
         Row htmlAttributeRow = new Row();
@@ -806,6 +765,16 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         ngIfNode.setExpressionNode(visitExpression(ctx.expression()));
         addRowToSymbolTable("NgIf","*NgIf",ctx.expression().getText());
         return ngIfNode;
+    }
+
+    @Override
+    public AccessSufNode visitAccess_suffix(AngularParser.Access_suffixContext ctx) {
+        return null;
+    }
+
+    @Override
+    public ASTNode visitMapLiteral(AngularParser.MapLiteralContext ctx) {
+        return null;
     }
 
     @Override
