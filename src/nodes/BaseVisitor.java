@@ -9,6 +9,7 @@ import gen.AngularLexer;
 import gen.AngularParser;
 import gen.AngularParserVisitor;
 import nodes.SymbolTables.ComponentSymbolTable;
+import nodes.SymbolTables.ServiceSemanticValidator;
 import nodes.SymbolTables.SymbolTable;
 import nodes.SymbolTables.mainSymbolTable;
 import nodes.css_node.CssClassContentNode;
@@ -34,9 +35,11 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
 
     mainSymbolTable symbolTable = new mainSymbolTable();
     ComponentSymbolTable componentSymbolTable = new ComponentSymbolTable();
-    ServiceSymbolTable serviceSymbolTable = new ServiceSymbolTable();
+    ServiceSemanticValidator serviceSymbolTable = new ServiceSemanticValidator();
     private String currentScope = GLOBAL;
     Stack<String> scopeStack = new Stack<>();
+    private final List<String> componentScopeNames = new ArrayList<>();
+    private boolean isInsideComponent = false;
 
     private List<String> semanticErrors = new ArrayList<>();
 
@@ -64,13 +67,49 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         row.setValue(value);
         row.setScope(currentScope);
         symbolTable.getRows().add(row);
-        //TODO :: FIX
+    }
+
+    private void addRowToComponentSymbolTable(String type, String name, String value) {
+        Row row = new Row();
+        row.setType(type);
+        row.setName(name);
+        row.setValue(value);
+        row.setScope(currentScope);
         componentSymbolTable.getRows().add(row);
     }
 
+    private void addRowToServiceSymbolTable(String name, String scope) {
+        serviceSymbolTable.insertService(name, scope);
+    }
+
     public void initialize() throws IOException {
+        // 1. Parse the input and build the initial parse tree
         ParseTree tree = initializeProgram();
-        initializeComponentSymbolTable(tree);
+
+        // 2. Create a single SemanticAnalyzer with all necessary symbol tables
+        SemanticAnalyzer analyzer = new SemanticAnalyzer(symbolTable, serviceSymbolTable, componentSymbolTable);
+
+        // 3. Walk the tree to perform semantic analysis
+        ParseTreeWalker walker = new ParseTreeWalker();
+        walker.walk(analyzer, tree);
+
+        // 4. Print the collected semantic errors and symbol tables
+        System.out.println("\n--- Semantic Analysis Results ---");
+        List<String> semanticErrors = analyzer.getSemanticErrors();
+        if (semanticErrors.isEmpty()) {
+            System.out.println("No semantic errors found.");
+        } else {
+            System.err.println("Found " + semanticErrors.size() + " error(s):");
+            semanticErrors.forEach(System.err::println);
+        }
+
+        System.out.println("\n--- Symbol Tables ---");
+        System.out.println("--- Main Symbol Table ---");
+        symbolTable.print();
+        System.out.println("\n--- Service Symbol Table ---");
+        serviceSymbolTable.print();
+        System.out.println("\n--- Component Symbol Table ---");
+        componentSymbolTable.print();
     }
 
     public ParseTree initializeProgram() throws IOException {
@@ -86,14 +125,6 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         printAST(programNode);
 
         return tree;
-    }
-
-    public void initializeComponentSymbolTable(ParseTree tree) throws IOException {
-        ParseTreeWalker walker = new ParseTreeWalker();
-        SemanticAnalyzer analyzer = new SemanticAnalyzer(componentSymbolTable);
-        walker.walk(analyzer, tree);
-
-        printSemanticError(analyzer, semanticErrors, componentSymbolTable);
     }
 
     @Override
@@ -132,47 +163,43 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
 
     @Override
     public ComponentNode visitComponent(AngularParser.ComponentContext ctx) {
-        ComponentNode componentNode = new ComponentNode();
-        Row componentRow = new Row();
-        if (ctx.decorator() != null) {
-            DecoratorNode decoratorNode = visitDecorator(ctx.decorator());
-            componentNode.setDecorator(decoratorNode);
-            componentRow.setType(COMPONENT);
-            componentRow.setValue(ctx.decorator().getText());
-            componentRow.setScope(currentScope);
+        isInsideComponent = true;
+        try {
+            ComponentNode componentNode = new ComponentNode();
+            String componentName = "UnknownComponent"; // Default name
 
-            // --- Robust Provider Extraction and Semantic Check ---
-            if (decoratorNode.getArguments() != null && !decoratorNode.getArguments().isEmpty()) {
-                for (ArgumentListNode argList : decoratorNode.getArguments()) {
-                    for (ArgumentNode arg : argList.getArgumentNodeList()) {
-                        if (PROVIDERS.equals(arg.getName()) && arg.getValue() != null) {
-                            java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("[A-Za-z_][A-Za-z0-9_]*").matcher(arg.getValue().toString());
-                            while (matcher.find()) {
-                                String providerName = matcher.group();
-                                if (!USE_EXISTING.equals(providerName) && !USE_CLASS.equals(providerName) && !PROVIDE.equals(providerName)) {
-                                    try {
-                                        // Force a semantic error for demonstration:
-                                        serviceSymbolTable.checkServiceDeclaredOrThrow(NOT_PROVIDED_SERVICE_X, currentScope, 0);
-                                        // Uncomment below to check real provider (remove above line for real use)
-                                        // serviceSymbolTable.checkServiceDeclaredOrThrow(providerName, currentScope, 0);
-                                    } catch (SemanticException e) {
-                                        // Print the error but do not stop execution
-                                        System.err.println(e.getMessage());
-                                    }
-                                }
-                            }
-                        }
-                    }
+            if (ctx.decorator() != null) {
+                componentNode.setDecorator(visitDecorator(ctx.decorator()));
+            }
+
+            if (ctx.exportClass() != null) {
+                ExportClassNode exportClassNode = visitExportClass(ctx.exportClass());
+                componentNode.setExportClass(exportClassNode);
+
+                // Extract component name from the class declaration
+                if (exportClassNode.getClassNode() != null && exportClassNode.getClassNode().getIdentifier() != null) {
+                    componentName = exportClassNode.getClassNode().getIdentifier();
                 }
             }
+            
+            // Track the scope name as a component scope
+            componentScopeNames.add(componentName);
+
+            // Add component to the main symbol table for global visibility
+            addRowToSymbolTable(COMPONENT, componentName, ctx.decorator() != null ? ctx.decorator().getText() : "");
+
+            // Add component to its own symbol table for internal lookup
+            Row componentRow = new Row();
+            componentRow.setType(COMPONENT);
+            componentRow.setName(componentName);
+            componentRow.setValue(ctx.decorator() != null ? ctx.decorator().getText() : "");
+            componentRow.setScope(componentName);
+            componentSymbolTable.getRows().add(componentRow);
+
+            return componentNode;
+        } finally {
+            isInsideComponent = false;
         }
-        if (ctx.exportClass() != null) {
-            componentNode.setExportClass(visitExportClass(ctx.exportClass()));
-            componentRow.setValue(ctx.exportClass().getText());
-            componentRow.setScope(currentScope);
-        }
-        symbolTable.getRows().add(componentRow);
-        return componentNode;
     }
 
     @Override
@@ -180,12 +207,17 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         ExportClassNode exportClassNode = new ExportClassNode();
         if (ctx.class_() != null) {
             exportClassNode.setClassNode(visitClass(ctx.class_()));
-            if (ctx.getParent() != null && ctx.getParent().getText().contains(INJECTABLE)) {
-                String className = ctx.class_().Identifier().getText();
-                serviceSymbolTable.insertService(className, GLOBAL);
+        }
+
+        // Heuristic to identify a service: a class exported outside of a @Component decorator.
+        if (!isInsideComponent && exportClassNode.getClassNode() != null) {
+            String className = exportClassNode.getClassNode().getIdentifier();
+            if (className != null) {
+                addRowToServiceSymbolTable(className, GLOBAL);
+                // Also add to the main symbol table for general lookup.
+                addRowToSymbolTable("Service", className, "Exported Service Class");
             }
         }
-        addRowToSymbolTable(CLASS,null,ctx.class_().getText());
         return exportClassNode;
     }
 
@@ -311,6 +343,11 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         String value = (ctx.expression() != null) ? ctx.expression().getText() : null;
         addRowToSymbolTable(VARIABLE_DECLARATION, varName, value);
 
+        // If inside a component's scope, add to the component's symbol table as well.
+        if (componentScopeNames.contains(currentScope)) {
+            addRowToComponentSymbolTable(VARIABLE_DECLARATION, varName, value);
+        }
+
         return node;
     }
 
@@ -382,6 +419,12 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             }
         }
         addRowToSymbolTable(FUNCTION_DECLARATION, name, PARAMS);
+
+        // If inside a component's scope, add to the component's symbol table as well.
+        if (componentScopeNames.contains(currentScope)) {
+            addRowToComponentSymbolTable(FUNCTION_DECLARATION, name, PARAMS);
+        }
+
         return functionDeclarationNode;
     }
 
@@ -692,12 +735,12 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     }
 
     @Override
-    public ASTNode visitGreaterThanEqualsComparison(AngularParser.GreaterThanEqualsComparisonContext ctx) {
+    public ExpressionNode visitGreaterThanEqualsComparison(AngularParser.GreaterThanEqualsComparisonContext ctx) {
         return null;
     }
 
     @Override
-    public ASTNode visitAddition(AngularParser.AdditionContext ctx) {
+    public ExpressionNode visitAddition(AngularParser.AdditionContext ctx) {
         // This is the correct pattern for all binary expression visitors.
         ExpressionNode node = new ExpressionNode();
 
@@ -714,7 +757,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     }
 
     @Override
-    public ASTNode visitFunction_call(AngularParser.Function_callContext ctx) {
+    public FunctionCallNode visitFunction_call(AngularParser.Function_callContext ctx) {
         FunctionCallNode node = new FunctionCallNode();
 
         if (ctx.Identifier() != null) {
@@ -732,7 +775,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
 
     @Override
     public ASTNode visitAbstractFunctionDeclaration(AngularParser.AbstractFunctionDeclarationContext ctx) {
-        return null;
+        return new ExpressionNode();
     }
 
     @Override

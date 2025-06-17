@@ -13,17 +13,12 @@ public class methods {
             System.out.println(programNode);
     }
 
-
-
-    public static void printSemanticError(SemanticAnalyzer analyzer , List<String> semanticErrors , SymbolTable symbolTable) {
+    public static void printSemanticError(SemanticAnalyzer analyzer  , SymbolTable symbolTable) {
 
         System.out.println("\n--- Semantic Analysis Results ---");
 
         // Print semantic errors from the analyzer
         printErrors("Semantic Errors (from Analyzer)", analyzer.getSemanticErrors());
-
-        // Print semantic errors from this visitor
-        printErrors("Semantic Errors (from Visitor)", semanticErrors);
 
         // Print symbol table
         System.out.println("\n=== Symbol Table ===");

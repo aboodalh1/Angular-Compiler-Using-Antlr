@@ -599,7 +599,7 @@ public class AngularParser extends Parser {
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof AngularParserVisitor ) return ((AngularParserVisitor<? extends T>)visitor).visitClass(this);
+			if ( visitor instanceof AngularParserVisitor ) return (T) ((AngularParserVisitor<? extends T>)visitor).visitClass(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -3676,7 +3676,7 @@ public class AngularParser extends Parser {
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof AngularParserVisitor ) return ((AngularParserVisitor<? extends T>)visitor).visitAddition(this);
+			if ( visitor instanceof AngularParserVisitor ) return (T) ((AngularParserVisitor<? extends T>)visitor).visitAddition(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -3766,7 +3766,7 @@ public class AngularParser extends Parser {
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof AngularParserVisitor ) return ((AngularParserVisitor<? extends T>)visitor).visitGreaterThanEqualsComparison(this);
+			if ( visitor instanceof AngularParserVisitor ) return (T) ((AngularParserVisitor<? extends T>)visitor).visitGreaterThanEqualsComparison(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -4432,7 +4432,7 @@ public class AngularParser extends Parser {
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof AngularParserVisitor ) return ((AngularParserVisitor<? extends T>)visitor).visitFunction_call(this);
+			if ( visitor instanceof AngularParserVisitor ) return (T) ((AngularParserVisitor<? extends T>)visitor).visitFunction_call(this);
 			else return visitor.visitChildren(this);
 		}
 	}

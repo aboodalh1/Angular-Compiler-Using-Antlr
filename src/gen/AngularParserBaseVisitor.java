@@ -1,6 +1,8 @@
 // Generated from E:/Users/Documents/Angular/Angular-Compiler-Using-Antlr/src/AngularParser.g4 by ANTLR 4.13.2
 package gen;
+import nodes.statement.ClassNode;
 import nodes.statement.ExpressionNode;
+import nodes.statement.FunctionCallNode;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 
 /**
@@ -47,7 +49,7 @@ public class AngularParserBaseVisitor<T> extends AbstractParseTreeVisitor<T> imp
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitClass(AngularParser.ClassContext ctx) { return visitChildren(ctx); }
+	@Override public ClassNode visitClass(AngularParser.ClassContext ctx) { return (ClassNode) visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -319,7 +321,7 @@ public class AngularParserBaseVisitor<T> extends AbstractParseTreeVisitor<T> imp
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitAddition(AngularParser.AdditionContext ctx) { return visitChildren(ctx); }
+	@Override public ExpressionNode visitAddition(AngularParser.AdditionContext ctx) { return (ExpressionNode) visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -347,7 +349,7 @@ public class AngularParserBaseVisitor<T> extends AbstractParseTreeVisitor<T> imp
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitGreaterThanEqualsComparison(AngularParser.GreaterThanEqualsComparisonContext ctx) { return visitChildren(ctx); }
+	@Override public ExpressionNode visitGreaterThanEqualsComparison(AngularParser.GreaterThanEqualsComparisonContext ctx) { return (ExpressionNode) visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -438,7 +440,7 @@ public class AngularParserBaseVisitor<T> extends AbstractParseTreeVisitor<T> imp
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitFunction_call(AngularParser.Function_callContext ctx) { return visitChildren(ctx); }
+	@Override public FunctionCallNode visitFunction_call(AngularParser.Function_callContext ctx) { return (FunctionCallNode) visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *

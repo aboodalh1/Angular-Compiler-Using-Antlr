@@ -1,6 +1,8 @@
 // Generated from E:/Users/Documents/Angular/Angular-Compiler-Using-Antlr/src/AngularParser.g4 by ANTLR 4.13.2
 package gen;
+import nodes.statement.ClassNode;
 import nodes.statement.ExpressionNode;
+import nodes.statement.FunctionCallNode;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
 /**
@@ -40,7 +42,7 @@ public interface AngularParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitClass(AngularParser.ClassContext ctx);
+	ClassNode visitClass(AngularParser.ClassContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link AngularParser#classBody}.
 	 * @param ctx the parse tree
@@ -277,7 +279,7 @@ public interface AngularParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitAddition(AngularParser.AdditionContext ctx);
+	ExpressionNode visitAddition(AngularParser.AdditionContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code StrongEqualsComparison}
 	 * labeled alternative in {@link AngularParser#expression}.
@@ -305,7 +307,7 @@ public interface AngularParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitGreaterThanEqualsComparison(AngularParser.GreaterThanEqualsComparisonContext ctx);
+	ExpressionNode visitGreaterThanEqualsComparison(AngularParser.GreaterThanEqualsComparisonContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code GreaterThanComparison}
 	 * labeled alternative in {@link AngularParser#expression}.
@@ -394,7 +396,7 @@ public interface AngularParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitFunction_call(AngularParser.Function_callContext ctx);
+	FunctionCallNode visitFunction_call(AngularParser.Function_callContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link AngularParser#html}.
 	 * @param ctx the parse tree

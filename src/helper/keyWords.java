@@ -23,6 +23,7 @@ public class keyWords {
     public static final String TEMPLATE = "template";
     public static final String NGIF = "NgIf";
     public static final String NGFOR = "NgFor";
+    public static final String SERVICE = "service";
     public static final String INJECTABLE = "@Injectable";
     public static final String PARAMETER = "Parameter";
     public static final String ASSIGNMENT = "Assignment";

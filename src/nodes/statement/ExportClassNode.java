@@ -4,18 +4,18 @@ import nodes.ASTNode;
 
 // Export class node
 public class ExportClassNode implements ASTNode {
-    private  ASTNode classNode;
+    private ClassNode classNode;
 
     @Override
     public String toString() {
         return "ExportClassNode{" + "classNode=" + classNode + '}';
     }
 
-    public ASTNode getClassNode() {
+    public ClassNode getClassNode() {
         return classNode;
     }
 
-    public void setClassNode(ASTNode classNode) {
+    public void setClassNode(ClassNode classNode) {
         this.classNode = classNode;
     }
 }
