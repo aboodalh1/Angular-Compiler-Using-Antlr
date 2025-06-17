@@ -8,6 +8,9 @@ import java.util.Optional;
 import gen.AngularLexer;
 import gen.AngularParser;
 import gen.AngularParserVisitor;
+import nodes.SymbolTables.ComponentSymbolTable;
+import nodes.SymbolTables.SymbolTable;
+import nodes.SymbolTables.mainSymbolTable;
 import nodes.css_node.CssClassContentNode;
 import nodes.css_node.CssContentNode;
 import nodes.css_node.CssNode;
@@ -23,12 +26,14 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import static helper.keyWords.*;
+import static helper.methods.printAST;
+import static helper.methods.printSemanticError;
 import static org.antlr.v4.runtime.CharStreams.fromFileName;
 
 public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements AngularParserVisitor<ASTNode> {
 
-    SymbolTable symbolTable = new SymbolTable();
-    SymbolTable multipleTemplatesSymbolTable = new SymbolTable();
+    mainSymbolTable symbolTable = new mainSymbolTable();
+    ComponentSymbolTable componentSymbolTable = new ComponentSymbolTable();
     ServiceSymbolTable serviceSymbolTable = new ServiceSymbolTable();
     private String currentScope = GLOBAL;
     Stack<String> scopeStack = new Stack<>();
@@ -59,58 +64,36 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         row.setValue(value);
         row.setScope(currentScope);
         symbolTable.getRows().add(row);
-        multipleTemplatesSymbolTable.getRows().add(row);
+        //TODO :: FIX
+        componentSymbolTable.getRows().add(row);
     }
 
-    public void initialize() {
-        printAST(DEFAULT_SOURCE_FILE);
+    public void initialize() throws IOException {
+        ParseTree tree = initializeProgram();
+        initializeComponentSymbolTable(tree);
     }
 
-    public void printAST(String source) {
-        try {
-            CharStream cs = fromFileName(source);
-            AngularLexer lexer = new AngularLexer(cs);
-            CommonTokenStream token = new CommonTokenStream(lexer);
-            AngularParser parser = new AngularParser(token);
+    public ParseTree initializeProgram() throws IOException {
+        CharStream charStream = fromFileName(DEFAULT_SOURCE_FILE);
+        AngularLexer lexer = new AngularLexer(charStream);
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        AngularParser parser = new AngularParser(tokens);
 
-            // Parse ONCE and get the tree
-            ParseTree tree = parser.program();
-            System.out.println("Parsing completed successfully.");
+        ParseTree tree = parser.program();
+        System.out.println("Parsing completed successfully.");
 
-            // AST Construction using THIS visitor instance to correctly populate the symbol table
-            ProgramNode programNode = (ProgramNode) this.visitProgram((AngularParser.ProgramContext) tree);
-            System.out.println("\n=== AST ===");
-            System.out.println(programNode);
+        ProgramNode programNode = (ProgramNode) this.visitProgram((AngularParser.ProgramContext) tree);
+        printAST(programNode);
 
-            // Perform semantic analysis using the now-populated symbol table
-            System.out.println("\n=== Semantic Errors ===");
-            printSemanticError(tree);
-
-        } catch (IOException e) {
-            System.err.println("Error reading source file '" + source + "': " + e.getMessage());
-            throw new RuntimeException(e);
-        } catch (Exception e) {
-            System.err.println("An error occurred during processing: " + e.getMessage());
-        }
+        return tree;
     }
 
-    public void printSemanticError(ParseTree tree) {
-        // Semantic Analysis using Listener pattern
+    public void initializeComponentSymbolTable(ParseTree tree) throws IOException {
         ParseTreeWalker walker = new ParseTreeWalker();
-        SemanticAnalyzer analyzer = new SemanticAnalyzer(symbolTable);
+        SemanticAnalyzer analyzer = new SemanticAnalyzer(componentSymbolTable);
         walker.walk(analyzer, tree);
 
-        System.out.println("\n--- Semantic Analysis Results ---");
-
-        // Print semantic errors from the analyzer
-        printErrors("Semantic Errors (from Analyzer)", analyzer.getSemanticErrors());
-
-        // Print semantic errors from this visitor
-        printErrors("Semantic Errors (from Visitor)", this.semanticErrors);
-
-        // Print symbol table
-        System.out.println("\n=== Symbol Table ===");
-        this.multipleTemplatesSymbolTable.print();
+        printSemanticError(analyzer, semanticErrors, componentSymbolTable);
     }
 
     private void printErrors(String title, List<String> errors) {
@@ -470,11 +453,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             node.setClassName(typeName);
 
             addRowToSymbolTable(OBJECT, objectName, typeName);
-
-        } else {
-            semanticErrors.add("Syntax Error: Invalid object declaration structure found: " + ctx.getText());
         }
-
         return node;
     }
 
