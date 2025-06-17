@@ -1,5 +1,7 @@
 package helper;
 
+import java.nio.file.Paths;
+
 public class keyWords {
     public static final String ENTER = "enter";
     public static final String EXIT = "exit";
@@ -36,6 +38,5 @@ public class keyWords {
     public static final String FUNCTION_DECLARATION = "Function Declaration";
     public static final String VARIABLE_DECLARATION = "Variable Declaration";
     public static final String NOT_PROVIDED_SERVICE_X = "NotProvidedServiceX";
-    public static final String DEFAULT_SOURCE_FILE = "C:\\Users\\karee\\Desktop\\Angular-Compiler-Using-Antlr-master\\src\\angular_compiler.txt";
-
+    public static final String DEFAULT_SOURCE_FILE = Paths.get(System.getProperty("user.dir"), "src", "angular_compiler.txt").toString();
 }
