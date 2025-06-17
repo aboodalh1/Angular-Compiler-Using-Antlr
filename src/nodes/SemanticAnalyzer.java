@@ -2,6 +2,8 @@ package nodes;
 
 import gen.AngularParser;
 import gen.AngularParserBaseListener;
+import nodes.SymbolTables.SymbolTable;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,7 +37,7 @@ public class SemanticAnalyzer extends AngularParserBaseListener {
             }
         }
 
-        // إذا العنصر فيه *ngIf و *ngFor معًا، منرفع خطأ
+        // If element has both *ngIf and *ngFor, raise an error
         if (ngIfCount > 0 && ngForCount > 0) {
             semanticErrors.add("Semantic Error: Element cannot have both *ngIf and *ngFor at the same time. Consider wrapping with <ng-container>.");
             System.err.println("Semantic Error: Element cannot have both *ngIf and *ngFor at the same time. Consider wrapping with <ng-container>.");
@@ -50,6 +52,13 @@ public class SemanticAnalyzer extends AngularParserBaseListener {
 
     @Override
     public void enterObjectDeclataion(AngularParser.ObjectDeclataionContext ctx) {
+
+        if (ctx.Identifier() == null || ctx.Identifier().size() != 2) {
+            semanticErrors.add("Syntax Error: Invalid object declaration structure found: " + ctx.getText());
+            System.err.println("Syntax Error: Invalid object declaration structure found: " + ctx.getText());
+            return;
+        }
+
         String className = ctx.Identifier(1).getText();
         if (!symbolTable.isImported(className)) {
             semanticErrors.add("Semantic Error: Class '" + className + "' used but not imported.");
@@ -60,7 +69,7 @@ public class SemanticAnalyzer extends AngularParserBaseListener {
     @Override
     public void enterVariableDeclaration(AngularParser.VariableDeclarationContext ctx) {
         String varName = ctx.Identifier().getText();
-        String currentScope = GLOBAL; // استخدم نظام النطاق لديك إذا كان متقدماً
+        String currentScope = GLOBAL; // Use your scope system if more advanced
         if (symbolTable.variableExistsInScope(varName, currentScope)) {
             semanticErrors.add("Semantic Error: Duplicate variable declaration in the same scope: " + varName);
             System.err.println("Semantic Error: Duplicate variable declaration in the same scope: " + varName);

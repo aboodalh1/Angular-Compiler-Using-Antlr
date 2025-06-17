@@ -1,24 +1,29 @@
-package nodes;
+package nodes.SymbolTables;
+
+import nodes.Row;
+
 import java.util.ArrayList;
 import java.util.List;
-public class SymbolTable {
 
-    List<Row>rows = new ArrayList<>();
+public abstract class SymbolTable {
+
+    List<Row> rows = new ArrayList<>();
 
     public List<Row> getRows() {
         return rows;
     }
+
     public void setRows(List<Row> rows) {
         this.rows = rows;
     }
 
-    public void print(){
+    public void print() {
         System.out.println("Symbol table: ");
         System.out.println("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
-        System.out.printf("%-40s | %-40s| %-40s | %-40s\n", "Type", "Name" ,"Scope" ,"Value");
+        System.out.printf("%-40s | %-40s| %-40s | %-40s\n", "Type", "Name", "Scope", "Value");
         System.out.println("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
         for (Row row : rows) {
-            System.out.printf("%-40s |%-40s  | %-40s |%-40s\n", row.getType() , row.getName(), row.getScope() ,row.getValue());
+            System.out.printf("%-40s |%-40s  | %-40s |%-40s\n", row.getType(), row.getName(), row.getScope(), row.getValue());
         }
         System.out.println("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
     }
@@ -27,7 +32,7 @@ public class SymbolTable {
         System.out.println("ddd");
         for (Row row : rows) {
             System.out.println(row.getType());
-            if (row.getType()=="Import Statement" && row.getName()==className) {
+            if (row.getType() == "Import Statement" && row.getName() == className) {
                 return true;
             }
         }
@@ -47,5 +52,5 @@ public class SymbolTable {
         return false;
     }
 
-    }
+}
 
