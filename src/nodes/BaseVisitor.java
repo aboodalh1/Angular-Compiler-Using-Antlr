@@ -22,6 +22,7 @@ import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
+import static helper.keyWords.*;
 import static org.antlr.v4.runtime.CharStreams.fromFileName;
 
 public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements AngularParserVisitor<ASTNode> {
@@ -29,15 +30,12 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     SymbolTable symbolTable = new SymbolTable();
     SymbolTable multipleTemplatesSymbolTable = new SymbolTable();
     ServiceSymbolTable serviceSymbolTable = new ServiceSymbolTable();
-    private String currentScope = "Global";
+    private String currentScope = GLOBAL;
     Stack<String> scopeStack = new Stack<>();
 
     private List<String> semanticErrors = new ArrayList<>();
-    private static final String DEFAULT_SOURCE_FILE = "C:\\Users\\karee\\Desktop\\Angular-Compiler-Using-Antlr-master\\src\\angular_compiler.txt";
 
-    private static final String ENTER = "enter";
-
-    private static final String EXIT = "exit";
+  
 
 
     private void scoopAction(String action, String newScope) {
@@ -48,7 +46,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
                 break;
             case EXIT:
                 scopeStack.pop();
-                currentScope = scopeStack.isEmpty() ? "Global" : scopeStack.peek();
+                currentScope = scopeStack.isEmpty() ? GLOBAL : scopeStack.peek();
                 break;
             default:
                 throw new IllegalArgumentException("Unknown action: " + action);
@@ -166,7 +164,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         if (ctx.decorator() != null) {
             DecoratorNode decoratorNode = visitDecorator(ctx.decorator());
             componentNode.setDecorator(decoratorNode);
-            componentRow.setType("Component");
+            componentRow.setType(COMPONENT);
             componentRow.setValue(ctx.decorator().getText());
             componentRow.setScope(currentScope);
 
@@ -174,14 +172,14 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             if (decoratorNode.getArguments() != null && !decoratorNode.getArguments().isEmpty()) {
                 for (ArgumentListNode argList : decoratorNode.getArguments()) {
                     for (ArgumentNode arg : argList.getArgumentNodeList()) {
-                        if ("providers".equals(arg.getName()) && arg.getValue() != null) {
+                        if (PROVIDERS.equals(arg.getName()) && arg.getValue() != null) {
                             java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("[A-Za-z_][A-Za-z0-9_]*").matcher(arg.getValue().toString());
                             while (matcher.find()) {
                                 String providerName = matcher.group();
-                                if (!"useExisting".equals(providerName) && !"useClass".equals(providerName) && !"provide".equals(providerName)) {
+                                if (!USE_EXISTING.equals(providerName) && !USE_CLASS.equals(providerName) && !PROVIDE.equals(providerName)) {
                                     try {
                                         // Force a semantic error for demonstration:
-                                        serviceSymbolTable.checkServiceDeclaredOrThrow("NotProvidedServiceX", currentScope, 0);
+                                        serviceSymbolTable.checkServiceDeclaredOrThrow(NOT_PROVIDED_SERVICE_X, currentScope, 0);
                                         // Uncomment below to check real provider (remove above line for real use)
                                         // serviceSymbolTable.checkServiceDeclaredOrThrow(providerName, currentScope, 0);
                                     } catch (SemanticException e) {
@@ -210,7 +208,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         Row exportClassRow = new Row();
         if (ctx.class_() != null) {
             exportClassNode.setClassNode(visitClass(ctx.class_()));
-            exportClassRow.setType("Class");
+            exportClassRow.setType(CLASS);
             exportClassRow.setValue(ctx.class_().getText());
             exportClassRow.setScope(currentScope);
 
@@ -218,9 +216,9 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             // If the parent context is a Service (not just Export), declare the service
             // This is a simple heuristic: if the previous statement was a Service, treat as service declaration
             // (You may want to refine this based on your actual parse tree structure)
-            if (ctx.getParent() != null && ctx.getParent().getText().contains("@Injectable")) {
+            if (ctx.getParent() != null && ctx.getParent().getText().contains(INJECTABLE)) {
                 String className = ctx.class_().Identifier().getText();
-                serviceSymbolTable.insertService(className, "Global");
+                serviceSymbolTable.insertService(className, GLOBAL);
             }
         }
         symbolTable.getRows().add(exportClassRow);
@@ -234,7 +232,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         String className = ctx.Identifier().getText();
         classNode.setIdentifier(className);
 
-        addRowToSymbolTable("Class", className, ctx.getText());
+        addRowToSymbolTable(CLASS, className, ctx.getText());
 
         scoopAction(ENTER, className);
         try {
@@ -298,7 +296,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         Row importRow = new Row();
         if (ctx.Identifier() != null) {
             importStatementNode.setIdentifier(ctx.Identifier().getText());
-            importRow.setType("Import Statement");
+            importRow.setType(IMPORT_STATEMENT);
             importRow.setName(ctx.Identifier().getText());
             importRow.setScope(currentScope);
         }
@@ -353,7 +351,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         Optional.ofNullable(ctx.expression()).ifPresent(e -> node.setExpression(visitExpression(e)));
 
         String value = (ctx.expression() != null) ? ctx.expression().getText() : null;
-        addRowToSymbolTable("Variable Declaration", varName, value);
+        addRowToSymbolTable(VARIABLE_DECLARATION, varName, value);
 
         return node;
     }
@@ -363,15 +361,15 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         ExpressionNode expressionNode = new ExpressionNode();
         if (expressionNode.operator != null) {
             expressionNode.setOperator(ctx.getText());
-            addRowToSymbolTable("Operator", ctx.getText(), ctx.getText());
+            addRowToSymbolTable(OPERATOR, ctx.getText(), ctx.getText());
         }
         if (expressionNode.left != null) {
             expressionNode.setLeft(expressionNode.left);
-            addRowToSymbolTable("Left", ctx.getText(), expressionNode.left.toString());
+            addRowToSymbolTable(LEFT, ctx.getText(), expressionNode.left.toString());
         }
         if (expressionNode.right != null) {
             expressionNode.setRight(expressionNode.right);
-            addRowToSymbolTable("right", ctx.getText(), expressionNode.right.toString());
+            addRowToSymbolTable(RIGHT, ctx.getText(), expressionNode.right.toString());
         }
         return expressionNode;
     }
@@ -403,7 +401,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         });
 
         // Add a single, consolidated entry for the array to the symbol table.
-        addRowToSymbolTable("Array Declaration", arrayName, valuesForSymbolTable.toString());
+        addRowToSymbolTable(ARRAY_DECLARATION, arrayName, valuesForSymbolTable.toString());
 
         return node;
     }
@@ -425,7 +423,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
                 functionDeclarationNode.getParameters().add(visitParameter(ctx.parameter(i)));
             }
         }
-        addRowToSymbolTable("Function Declaration", name, "params");
+        addRowToSymbolTable(FUNCTION_DECLARATION, name, PARAMS);
         return functionDeclarationNode;
     }
 
@@ -436,25 +434,25 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         Optional.ofNullable(ctx.TypeNumber()).ifPresent(typeNumber -> {
             String value = typeNumber.getText();
             typeNode.setNumber(value);
-            addRowToSymbolTable("Type", null, value);
+            addRowToSymbolTable(TYPE, null, value);
         });
 
         Optional.ofNullable(ctx.TypeBoolean()).ifPresent(typeBoolean -> {
             String value = typeBoolean.getText();
             typeNode.setAnboolean(value);
-            addRowToSymbolTable("Type", null, value);
+            addRowToSymbolTable(TYPE, null, value);
         });
 
         Optional.ofNullable(ctx.TypeString()).ifPresent(typeString -> {
             String value = typeString.getText();
             typeNode.setString(value);
-            addRowToSymbolTable("Type", null, value);
+            addRowToSymbolTable(TYPE, null, value);
         });
 
         Optional.ofNullable(ctx.Array()).ifPresent(array -> {
             String value = array.getText();
             typeNode.setArray(value);
-            addRowToSymbolTable("Type", null, value);
+            addRowToSymbolTable(TYPE, null, value);
         });
 
         return typeNode;
@@ -471,7 +469,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             node.setIdentifier(objectName);
             node.setClassName(typeName);
 
-            addRowToSymbolTable("Object", objectName, typeName);
+            addRowToSymbolTable(OBJECT, objectName, typeName);
 
         } else {
             semanticErrors.add("Syntax Error: Invalid object declaration structure found: " + ctx.getText());
@@ -510,7 +508,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         for (int i = 0; i < ctx.Identifier().size(); i++) {
             if (ctx.Identifier().get(i) != null) {
                 listLiteralNode.getIdentifiers().add(ctx.Identifier().get(i).getText());
-                listLiteralRow.setType("List");
+                listLiteralRow.setType(LIST);
                 listLiteralRow.setValue(ctx.Identifier().get(i).getText());
                 listLiteralRow.setScope(currentScope);
             }
@@ -536,7 +534,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
                 values.add(visitExpression(ctx.expression().get(i)).toString());
             }
         }
-        addRowToSymbolTable("Assignment", ctx.Identifier().getText(), values.toString());
+        addRowToSymbolTable(ASSIGNMENT, ctx.Identifier().getText(), values.toString());
         return assignmentStatementNode;
     }
 
@@ -546,7 +544,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         Row identifierRow = new Row();
         if (ctx.Identifier() != null) {
             identifierNode.setName(ctx.Identifier().getText());
-            identifierRow.setType("Identifier");
+            identifierRow.setType(IDENTIFIER);
             identifierRow.setValue(ctx.Identifier().getText());
             identifierRow.setScope(currentScope);
         }
@@ -559,17 +557,17 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         Row parameterRow = new Row();
         if (ctx.Identifier() != null) {
             parameterNode.setIdentifier(ctx.Identifier().getText());
-            parameterRow.setType("Parameter");
+            parameterRow.setType(PARAMETER);
             parameterRow.setValue(ctx.Identifier().getText());
         }
         if (ctx.type() != null) {
             parameterNode.setType(visitType(ctx.type()));
-            parameterRow.setType("Type");
+            parameterRow.setType(TYPE);
             parameterRow.setValue(ctx.type().getText());
         }
         if (ctx.literalValue() != null) {
             parameterNode.setDefaultValue(visitLiteralValue(ctx.literalValue()));
-            parameterRow.setType("DefaultValue");
+            parameterRow.setType(DEFAULT_VALUE);
             parameterRow.setValue(ctx.literalValue().getText());
         }
         symbolTable.getRows().add(parameterRow);
@@ -583,7 +581,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         Row htmlRow = new Row();
         if (ctx.html_content() != null) {
             htmlNode.setContent(visitHtml_content(ctx.html_content()));
-            htmlRow.setType("Content");
+            htmlRow.setType(CONTENT);
             htmlRow.setValue(ctx.html_content().getText());
         }
         symbolTable.getRows().add(htmlRow);
@@ -597,13 +595,13 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         if (ctx.html_element() != null) {
             for (int i = 0; i < ctx.html_element().size(); i++) {
                 htmlContentNode.getHtmlElementNode().add(visitHtml_element(ctx.html_element().get(i)));
-                htmlContentRow.setType("Html Element");
+                htmlContentRow.setType(HTML_ELEMENT);
                 htmlContentRow.setValue(ctx.html_element().get(i).getText());
             }
         }
         if (ctx.expression() != null) {
             htmlContentNode.setIdentifierNode("ff");
-            htmlContentRow.setType("Identifier");
+            htmlContentRow.setType(IDENTIFIER);
             htmlContentRow.setValue("ff");
         }
         symbolTable.getRows().add(htmlContentRow);
@@ -628,7 +626,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         Row htmlTagRow = new Row();
         if (ctx.Identifier() != null) {
             htmlTagNode.setIdentifierNode(ctx.Identifier().getText());
-            htmlTagRow.setType("Identifier");
+            htmlTagRow.setType(IDENTIFIER);
             htmlTagRow.setValue(ctx.Identifier().getText());
         }
         symbolTable.getRows().add(htmlTagRow);
@@ -720,7 +718,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         Row cssClassContentRow = new Row();
         if (ctx.Identifier() != null) {
             cssClassContentNode.setName(ctx.Identifier().get(0).getText());
-            cssClassContentRow.setType("Name");
+            cssClassContentRow.setType(NAME);
             cssClassContentRow.setValue(ctx.Identifier().get(0).getText());
         }
         symbolTable.getRows().add(cssClassContentRow);
@@ -731,7 +729,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     public ASTNode visitNgForAttribute(AngularParser.NgForAttributeContext ctx) {
         NgForNode ngForNode = new NgForNode();
         ngForNode.setExpressionNode(visitExpression(ctx.expression()));
-        addRowToSymbolTable("NgFor","*NgFor",ctx.expression().getText());
+        addRowToSymbolTable(NGFOR,STAR_NGFOR,ctx.expression().getText());
         return ngForNode;
     }
 
@@ -739,7 +737,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     public ASTNode visitNgIfAttribute(AngularParser.NgIfAttributeContext ctx) {
         NgIfNode ngIfNode = new NgIfNode();
         ngIfNode.setExpressionNode(visitExpression(ctx.expression()));
-        addRowToSymbolTable("NgIf","*NgIf",ctx.expression().getText());
+        addRowToSymbolTable(NGIF,STAR_NGIF,ctx.expression().getText());
         return ngIfNode;
     }
 

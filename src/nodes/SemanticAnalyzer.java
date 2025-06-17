@@ -5,6 +5,8 @@ import gen.AngularParserBaseListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import static helper.keyWords.*;
+
 public class SemanticAnalyzer extends AngularParserBaseListener {
     private SymbolTable symbolTable;
     private List<String> semanticErrors = new ArrayList<>();
@@ -58,7 +60,7 @@ public class SemanticAnalyzer extends AngularParserBaseListener {
     @Override
     public void enterVariableDeclaration(AngularParser.VariableDeclarationContext ctx) {
         String varName = ctx.Identifier().getText();
-        String currentScope = "Global"; // استخدم نظام النطاق لديك إذا كان متقدماً
+        String currentScope = GLOBAL; // استخدم نظام النطاق لديك إذا كان متقدماً
         if (symbolTable.variableExistsInScope(varName, currentScope)) {
             semanticErrors.add("Semantic Error: Duplicate variable declaration in the same scope: " + varName);
             System.err.println("Semantic Error: Duplicate variable declaration in the same scope: " + varName);
@@ -86,9 +88,9 @@ public class SemanticAnalyzer extends AngularParserBaseListener {
 
                 String argName = arg.Identifier().getText();
 
-                if ("template".equals(argName)) {
+                if (TEMPLATE.equals(argName)) {
                     hasTemplate = true;
-                } else if ("templateUrl".equals(argName)) {
+                } else if (TEMPLATE_URL.equals(argName)) {
                     hasTemplateUrl = true;
                 }
             }
