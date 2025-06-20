@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 // Decorator node
-public class DecoratorNode implements ASTNode {
+public class DecoratorNode extends ComponentNode {
     private  List<ArgumentListNode> arguments = new ArrayList<>();
 
 

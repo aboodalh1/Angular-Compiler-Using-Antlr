@@ -1,7 +1,7 @@
 package nodes.statement;
 import nodes.ASTNode;
 
-public class ConsoleLogNode implements ASTNode {
+public class ConsoleLogNode extends StatementNode {
     private String value;
 
     public String getValue() {

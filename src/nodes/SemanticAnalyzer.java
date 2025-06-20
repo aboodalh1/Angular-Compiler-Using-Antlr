@@ -12,10 +12,15 @@ import java.util.List;
 import static helper.keyWords.*;
 
 public class SemanticAnalyzer extends AngularParserBaseListener {
-    private final mainSymbolTable symbolTable;
+    private mainSymbolTable symbolTable;
     private final ServiceSemanticValidator serviceSymbolTable;
     private final ComponentSymbolTable componentSymbolTable;
     private final List<String> semanticErrors = new ArrayList<>();
+
+    public SemanticAnalyzer(ServiceSemanticValidator serviceSymbolTable, ComponentSymbolTable componentSymbolTable) {
+        this.serviceSymbolTable = serviceSymbolTable;
+        this.componentSymbolTable = componentSymbolTable;
+    }
 
     public SemanticAnalyzer(mainSymbolTable symbolTable, ServiceSemanticValidator serviceSymbolTable, ComponentSymbolTable componentSymbolTable) {
         this.symbolTable = symbolTable;
@@ -52,7 +57,7 @@ public class SemanticAnalyzer extends AngularParserBaseListener {
     @Override
     public void enterImportStatement(AngularParser.ImportStatementContext ctx) {
         String importedClass = ctx.Identifier().getText();
-        symbolTable.addImport(importedClass);
+//        symbolTable.addImport(importedClass);
     }
 
     @Override
@@ -64,23 +69,23 @@ public class SemanticAnalyzer extends AngularParserBaseListener {
         }
 
         String className = ctx.Identifier(1).getText();
-        if (!symbolTable.isImported(className)) {
-            semanticErrors.add("Semantic Error: Class '" + className + "' used but not imported.");
-        }
+//        if (!symbolTable.isImported(className)) {
+//            semanticErrors.add("Semantic Error: Class '" + className + "' used but not imported.");
+//        }
     }
 
     @Override
     public void enterVariableDeclaration(AngularParser.VariableDeclarationContext ctx) {
         String varName = ctx.Identifier().getText();
         String currentScope = GLOBAL; // Use your scope system if more advanced
-        if (symbolTable.variableExistsInScope(varName, currentScope)) {
-            semanticErrors.add("Semantic Error: Duplicate variable declaration in the same scope: " + varName);
-        }
+//        if (symbolTable.variableExistsInScope(varName, currentScope)) {
+//            semanticErrors.add("Semantic Error: Duplicate variable declaration in the same scope: " + varName);
+//        }
         if (ctx.type() != null) {
             String type = ctx.type().getText();
-            if (!isPrimitiveType(type) && !symbolTable.isImported(type)) {
-                semanticErrors.add("Semantic Error: Type '" + type + "' used but not imported.");
-            }
+//            if (!isPrimitiveType(type) && !symbolTable.isImported(type)) {
+//                semanticErrors.add("Semantic Error: Type '" + type + "' used but not imported.");
+//            }
         }
     }
 

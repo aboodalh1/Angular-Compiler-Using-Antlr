@@ -2,7 +2,7 @@ package nodes.statement;
 import nodes.ASTNode;
 
 // Component node
-public class ComponentNode implements ASTNode {
+public class ComponentNode extends StatementNode {
     private  DecoratorNode decorator ;
     private  ExportClassNode exportClass ;
 

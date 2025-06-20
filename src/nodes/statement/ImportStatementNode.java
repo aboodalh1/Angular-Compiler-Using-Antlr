@@ -3,7 +3,7 @@ package nodes.statement;
 import nodes.ASTNode;
 
 // Import statement node
-public class ImportStatementNode implements ASTNode {
+public class ImportStatementNode extends StatementNode  {
     private String identifier;
     private  String source;
 

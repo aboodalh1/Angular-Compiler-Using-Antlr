@@ -1,11 +1,11 @@
 package nodes.statement;
 
-import nodes.ASTNode;
 import nodes.enum_node.EnumValue;
 
 import java.util.List;
 
-public class EnumNode implements ASTNode {
+public class EnumNode extends StatementNode
+{
     private String name;
     private List<EnumValue> values;
 

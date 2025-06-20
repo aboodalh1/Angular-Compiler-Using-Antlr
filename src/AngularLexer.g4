@@ -10,8 +10,6 @@ Extends:'extends';
 Implements:'implements';
 Console:'console';
 Log:'log';
-Component:'@Component';
-Service:'@Injectable';
 Class: 'class';
 InlineAttributeName: 'inline';
 BackgroundColorAttributeName: 'backgroundColor';
@@ -89,6 +87,13 @@ BooleanLiteral: 'true' | 'false';
 Backtick: '`';
 Identifier: [a-zA-Z_][a-zA-Z0-9_-]*;
 CssPixel: 'px';
+
+// Whitespace and Comments (standard for most languages)
+
+// WS            : [ \t\r\n]+ -> skip;
+// LINE_COMMENT  : '//' ~[\r\n]* -> skip;
+// BLOCK_COMMENT : '/*' .*? '*/' -> skip;
+
 SingleLineComment
     : '//' ~[\r\n]* -> channel(HIDDEN)
     ;
@@ -96,3 +101,12 @@ MultiLineComment
     : '/*' .*? '*/' -> channel(HIDDEN)
     ;
 WS: [ \t\r\n]+ -> skip;
+
+
+// Angular
+
+Component       : '@Component';
+Injectable      : '@Injectable';
+Pipe            : '@Pipe';
+Directive       : '@Directive';
+Module          : '@NgModule';

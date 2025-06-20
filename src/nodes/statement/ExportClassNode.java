@@ -3,7 +3,7 @@ package nodes.statement;
 import nodes.ASTNode;
 
 // Export class node
-public class ExportClassNode implements ASTNode {
+public class ExportClassNode extends StatementNode {
     private ClassNode classNode;
 
     @Override

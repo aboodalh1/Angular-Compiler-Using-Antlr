@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 // Node for function declaration
-public class FunctionDeclarationNode implements ASTNode {
+public class FunctionDeclarationNode extends StatementNode {
     public  String identifier;
     public  List<ParameterNode> parameters = new ArrayList<>();
     public  String returnType;

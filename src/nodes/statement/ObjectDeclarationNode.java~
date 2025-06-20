@@ -17,7 +17,7 @@ public class ObjectDeclarationNode implements ASTNode {
                 "identifier=" + identifier +
                 ", className=" + className +
                 ", constructorArgs=" + constructorArgs +
-                "   )";
+                ")";
     }
 
     public String getIdentifier() {
