@@ -5,7 +5,7 @@ import nodes.ASTNode;
 
 
 // Class node
-public class ClassNode implements ASTNode {
+public class ClassNode extends StatementNode{
     public   String identifier;
     public   ClassBodyNode classBody ;
 

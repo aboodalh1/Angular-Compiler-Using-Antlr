@@ -5,7 +5,7 @@ import nodes.ASTNode;
 import java.util.List;
 
 // Node for assignment statement
-public class AssignmentStatementNode implements ASTNode {
+public class AssignmentStatementNode extends StatementNode {
     public  String identifier;
     public  List<ExpressionNode> expression;
     public  List<LiteralValueNode> values;

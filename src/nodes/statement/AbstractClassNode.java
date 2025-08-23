@@ -3,7 +3,7 @@ package nodes.statement;
 
 import nodes.ASTNode;
 
-public class AbstractClassNode implements ASTNode {
+public class AbstractClassNode extends StatementNode {
 
         private  String identifier;
         private  ClassBodyNode classBody ;

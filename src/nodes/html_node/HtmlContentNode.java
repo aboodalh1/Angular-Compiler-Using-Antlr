@@ -1,14 +1,22 @@
 package nodes.html_node;
 
-import nodes.ASTNode;
-import nodes.statement.ExpressionNode;
-
 import java.util.ArrayList;
 import java.util.List;
+import nodes.ASTNode;
+import nodes.statement.ExpressionNode;
 
 public class HtmlContentNode implements ASTNode {
     private List<HtmlElementNode> htmlElementNode= new ArrayList<>();
     private String identifierNode ;
+    private ExpressionNode expression;
+
+    public ExpressionNode getExpression() {
+        return expression;
+    }
+
+    public void setExpression(ExpressionNode expression) {
+        this.expression = expression;
+    }
 
     public List<HtmlElementNode> getHtmlElementNode() {
         return htmlElementNode;
@@ -35,12 +43,14 @@ public class HtmlContentNode implements ASTNode {
     public String toString() {
         if(htmlElementNode.isEmpty()){
             return "HtmlContentNode{" +
+                    "expression=" + expression +
                     ", identifierNode=" + identifierNode +
                     '}';
         }
         return "HtmlContentNode{" +
                 "htmlElementNode=" +
                  htmlElementNode +
+                ", expression=" + expression +
                 ", identifierNode=" + identifierNode +
                 '}';
     }

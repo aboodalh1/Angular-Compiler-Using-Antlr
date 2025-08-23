@@ -38,4 +38,4 @@ public class AbstractClassNode implements ASTNode {
         }
     }
 
-}
+

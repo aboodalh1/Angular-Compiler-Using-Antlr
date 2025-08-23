@@ -3,7 +3,7 @@ package nodes.statement;
 import nodes.ASTNode;
 
 
-public class VariableDeclarationNode implements ASTNode {
+public class VariableDeclarationNode extends StatementNode{
     public  String identifier ;
     public  TypeNode type;
     public  ASTNode expression;

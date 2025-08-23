@@ -5,7 +5,7 @@ import nodes.ASTNode;
 import java.util.List;
 
 // Node for if statement
-public class IfStatementNode extends StatementNode {
+public class IfStatementNode implements ASTNode {
     public  ASTNode condition;
     public  BlockNode block;
     public  List<ElseIfStatementNode> elseIfStatements;

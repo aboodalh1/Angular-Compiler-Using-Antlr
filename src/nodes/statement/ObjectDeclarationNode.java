@@ -5,7 +5,7 @@ import nodes.ASTNode;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ObjectDeclarationNode implements ASTNode {
+public class ObjectDeclarationNode extends StatementNode {
     public  String identifier;
     public  String className;
     public  List<LiteralValueNode> constructorArgs = new ArrayList<>();

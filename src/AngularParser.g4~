@@ -1,78 +1,192 @@
+// AngularTypeScriptParser.g4
+// For parsing TypeScript/JavaScript subset of Angular components logic.
+
 parser grammar AngularParser;
 
 options {
-    tokenVocab = AngularLexer;
-    }
 
+tokenVocab = AngularLexer;
+
+}
+// Top-level rule for a TypeScript file
 program
-    : statement* EOF ;
+    : statement* EOF
+    ;
 
+// Defines what a top-level statement in a .ts file can be
 statement
-    : arrayDeclaration | enum  | variableDeclaration     | functionDeclaration | ifStatement
-    | whileStatement | assignmentStatement | breakStatement | continueStatement| html_element
-    | importStatement | component | exportClass | thisVarible | class | abstractClass| html | consoleLog;
-component: (Service|Component) OpenParen OpenBrace decorator CloseBrace CloseParen exportClass;
-exportClass : Export class;
-class : Class Identifier OpenBrace classBody CloseBrace;
-classBody: (variableDeclaration | objectDeclataion | arrayDeclaration  |abstractFunctionDeclaration| functionDeclaration)*;
-decorator:  argumentList? ;
-argumentList: argument (Comma argument)* Comma?;
-argument: Identifier ':' literalValue;
-importStatement: Import OpenBrace Identifier CloseBrace From StringLiteral SemiColon;
-thisVarible
-    : This Dot Identifier Assign thisAssignment SemiColon
+    : importStatement
+    | exportClass      // Covers classes that are exported
+    | component        // Special rule for Angular @Component, @Service etc.
+    | class            // Non-exported classes
+    | abstractClass
+    | interface
+    | enum
+    | variableDeclaration
+    | functionDeclaration
+    | ifStatement
+    | whileStatement
+    | assignmentStatement
+    | breakStatement
+    | continueStatement
+    | consoleLog
+    | objectDeclataion // Renamed for clarity: assuming this is object instantiation/declaration
     ;
 
-thisAssignment
-    : New Identifier OpenParen (expression (Comma expression)*)? CloseParen         # NewInstanceAssignment
-    | This (Dot (Identifier | function_call))+                                       # NestedThisAssignment
-    | Identifier (Dot Identifier)?                                                  # IdentifierOrPropertyAssignment
-    ;enum: Enum Identifier OpenBrace enumValues* CloseBrace SemiColon;
-enumValues: (enumValue (Comma enumValue)*);
-enumValue: Identifier Assign literalValue;
-consoleLog: Console Dot Log OpenParen Identifier CloseParen SemiColon?;
-abstractClass: Abstract class;
-interface: Interface OpenBrace classBody CloseBrace;
-accessModifier: Private | Public | Protected | Static;
+// --- Angular Specific Constructs ---
+
+// Rule for Angular decorators like @Component, @Service, @Injectable, etc.
+// The decorator type (Service, Component etc.) should be lexer tokens.
+// Example: @Component({ selector: '...', templateUrl: '...', ... })
+component
+    : (Service | Component | Injectable | Pipe | Directive | Module) OpenParen OpenBrace decoratorArgs CloseBrace CloseParen exportClass
+    ;
+
+// Arguments within a decorator (e.g., selector: 'app-root', templateUrl: './app.component.html')
+// This is where you'd extract 'template' or 'templateUrl' for subsequent HTML parsing.
+decoratorArgs
+    : argument (Comma argument)* Comma?
+    ;
+
+// A single key-value pair argument in a decorator
+argument
+    : Identifier ':' literalValue
+    ;
+
+// --- Class and Interface Definitions ---
+
+// Exported class
+exportClass
+    : Export Class Identifier OpenBrace classBody CloseBrace
+    ;
+
+// Non-exported class
+class
+    : Class Identifier OpenBrace classBody* CloseBrace
+    ;
+
+// Body of a class: members (variables, functions, objects)
+classBody
+    : variableDeclaration          #ClassVariableDeclaration|
+     objectDeclataion             #ClassObjectDeclaration |
+     arrayDeclaration             #ClassArrayDeclaration|
+     abstractFunctionDeclaration  #ClassAbstractFunction|
+     functionDeclaration          #ClassFunction
+
+    ;
+
+abstractClass
+    : Abstract Class Identifier OpenBrace classBody CloseBrace
+    ;
+
+interface
+    : Interface Identifier OpenBrace interfaceBody CloseBrace // Interface uses its own body rule
+    ;
+
+interfaceBody
+    : (variableDeclaration | abstractFunctionDeclaration)* // Interfaces usually only have declarations
+    ;
+
+
+// --- Variable and Type Definitions ---
+
+// Access modifiers (public, private, protected, static)
+accessModifier
+    : Private | Public | Protected | Static
+    ;
+
+// General variable declaration including 'let', 'const', 'var' or implicit
 variableDeclaration
-    : accessModifier? Let_Identify? Identifier Colon (type) Assign expression SemiColon|
-        accessModifier? Let_Identify? Identifier Assign expression SemiColon|
-        accessModifier? Let_Identify? Identifier Colon type  SemiColon|
-        accessModifier? Identifier SemiColon
+    : accessModifier? (Let_Identify)? Identifier (Colon type)? (Assign expression)? SemiColon
     ;
+
+// Array declaration
 arrayDeclaration
-    : Let_Identify? Identifier Colon type OpenBracket CloseBracket Assign OpenBracket (literalValue (Comma literalValue)*)? CloseBracket SemiColon
-    | Identifier Assign OpenBracket literalValue? (literalValue Comma?)* CloseBracket SemiColon;
-abstractFunctionDeclaration: Abstract Identifier OpenParen (parameter (Comma parameter)*)? CloseParen Colon (type|Void) SemiColon;
-functionDeclaration
-    : (Identifier | Constructor) OpenParen (parameter (Comma parameter)*)? CloseParen (Colon type)* OpenBrace statement* Return expression SemiColon CloseBrace
-    | (Identifier | Constructor) OpenParen (parameter (Comma parameter)*)? CloseParen (Colon Void)* block
+    : (Let_Identify)? Identifier Colon type OpenBracket CloseBracket Assign OpenBracket (literalValue (Comma literalValue)*)? CloseBracket SemiColon
+    | Identifier Assign OpenBracket (literalValue (Comma literalValue)*)? CloseBracket SemiColon
     ;
+
+// Object declaration/instantiation (assuming `objectDeclataion` is for class instances or plain objects)
 objectDeclataion:
- accessModifier? Identifier Colon Identifier SemiColon|
- accessModifier? Identifier Colon Identifier Assign New Identifier OpenParen (literalValue (Comma literalValue)*)* CloseParen SemiColon;
+    accessModifier? Identifier Colon Identifier SemiColon | // type declaration, e.g., 'myObj: MyClass;'
+    accessModifier? Identifier Colon Identifier Assign New Identifier OpenParen (expression (Comma expression)*)* CloseParen SemiColon | // instantiation, e.g., 'myObj: MyClass = new MyClass(arg);'
+    accessModifier? Identifier Assign OpenBrace (Identifier Colon literalValue (Comma Identifier Colon literalValue)*)? CloseBrace SemiColon // simple object literal, e.g., 'myObj = { key: value };'
+    ;
+
+// Defined types (assuming TypeNumber, TypeString, etc., are tokens)
 type
     : TypeNumber
     | TypeString
     | TypeBoolean
-    | Array
+    | Array        // Consider making Array a generic type if possible, e.g., `Array OpenAngle type CloseAngle`
     | Any
+    | Identifier   // For custom types/interfaces/classes, e.g., 'myVariable: MyCustomType;'
     ;
-literalValue
-    : NumberLiteral
-    | StringLiteral
-    | BooleanLiteral
-    | listLiteral
-    | mapLiteral
-    | Null
-    | html
-    | css
+
+// Enum declaration
+enum
+    : Enum Identifier OpenBrace enumValues CloseBrace SemiColon
     ;
-mapLiteral: OpenBrace Identifier Colon literalValue (Comma (Identifier Colon literalValue) Comma?)* CloseBrace;
-listLiteral: OpenBracket (Identifier | literalValue)* (Comma (Identifier | literalValue))* Comma? CloseBracket ;
+
+// List of enum values
+enumValues
+    : enumValue (Comma enumValue)* Comma? // Added Comma? for trailing comma support
+    ;
+
+// Single enum value, potentially with assignment
+enumValue
+    : Identifier (Assign literalValue)?
+    ;
+
+// --- Function Definitions ---
+
+abstractFunctionDeclaration
+    : Abstract Identifier OpenParen (parameter (Comma parameter)*)? CloseParen (Colon (type|Void)) SemiColon
+    ;
+
+// Function declaration including constructor
+functionDeclaration
+    : (Identifier | Constructor) OpenParen (parameter (Comma parameter)*)? CloseParen (Colon (type|Void))? block // Optional return type
+    | (Identifier | Constructor) OpenParen (parameter (Comma parameter)*)? CloseParen (Colon (type|Void))? (statement* Return expression SemiColon)? CloseBrace // If you want a non-block body
+    ;
+
+// Function parameters
+parameter
+    : Identifier (Colon type)? (Assign literalValue)? // Parameter can have optional type and default value
+    ;
+
+// Function call (e.g., myFunction(arg1, arg2))
+function_call
+    : Identifier OpenParen (expression (Comma expression)*)? CloseParen
+    ;
+
+// --- Statements ---
+
+// Assignment statement
 assignmentStatement
-    : Identifier Assign expression (Comma expression)* SemiColon
-    | Identifier Assign OpenBracket (literalValue (Comma literalValue)*)? CloseBracket SemiColon
+    : (Identifier | nestedThisAccess | identifierOrPropertyAccess) Assign expression SemiColon
+    ;
+
+// Specifically for 'this' assignments (e.g., this.prop = value;)
+// Renamed from `thisVarible` to `thisAssignment` for clarity
+thisAssignment
+    : This Dot Identifier Assign
+      (newInstanceAssignment | nestedThisAccess | identifierOrPropertyAccess) // Changed to Access as it's not always an assignment on the right
+      SemiColon
+    ;
+
+newInstanceAssignment
+    : New Identifier OpenParen (expression (Comma expression)*)? CloseParen
+    ;
+
+// Accessing nested properties/methods of 'this' (e.g., this.prop.subprop, this.method().prop)
+nestedThisAccess
+    : This (Dot (Identifier | function_call))+
+    ;
+
+// Accessing an identifier or its property (e.g., myVar, myObj.prop)
+identifierOrPropertyAccess
+    : Identifier (Dot Identifier)?
     ;
 
 ifStatement
@@ -99,100 +213,114 @@ block
     : OpenBrace statement* CloseBrace
     ;
 
+// Import statement (e.g., import { NgModule } from '@angular/core';)
+importStatement
+    : Import OpenBrace Identifier (Comma Identifier)* CloseBrace From StringLiteral SemiColon
+    | Import Identifier From StringLiteral SemiColon // import MyModule from '...' (default import)
+    | Import Star As Identifier From StringLiteral SemiColon // import * as name from '...'
+    ;
+
+// console.log() call
+consoleLog
+    : Console Dot Log OpenParen expression CloseParen SemiColon?
+    ;
+
 
 expression
-    : expression Multiply expression       # Multiplication
-    | expression Divide expression         # Division
-    | expression Modulus expression        # Modulus
-    | expression Plus expression           # Addition
-    | expression Minus expression          # Subtraction
-    | expression LessThan expression       # LessThanComparison
-    | expression GreaterThan expression    # GreaterThanComparison
-    | expression LessThanEquals expression # LessThanEqualsComparison
-    | expression GreaterThanEquals expression # GreaterThanEqualsComparison
-    | expression WeakEqual expression      # WeakEqualsComparison
-    | expression StrongEqual expression    # StrongEqualsComparison
-    | expression NOT_EQUAL expression                                       # NotEqualsComparison
-    | expression And expression                                             # LogicalAndExpressionStatement
-    | expression Or expression                                              # LogicalOrExpressionStatement
-    | OpenParen expression CloseParen                                       # ParenthesizedExpression
-    | Identifier OpenBracket expression CloseBracket                        # BracketExpression
-    | AngularExpressionStart expression AngularExpressionEnd                # AngularExpreission
-    | Identifier Dot Identifier                                             # PropertyAccess
-    | literalValue                                                          # LiteralExpression
-    | Identifier     # IdentifierExpression
-    | html #dd
+    : expression (Multiply | Divide | Modulus | Plus | Minus) expression  // Arithmetic ops
+    | expression (LessThan | GreaterThan | LessThanEquals | GreaterThanEquals) expression // Comparison ops
+    | expression (WeakEqual | StrongEqual | NOT_EQUAL) expression       // Equality ops
+    | expression And expression                                         // Logical AND
+    | expression Or expression                                          // Logical OR
+    | OpenParen expression CloseParen                                   // Parenthesized expression
+    | Identifier OpenBracket expression CloseBracket                    // Array/object index access: `arr[index]`, `obj['key']`
+    | Identifier Dot Identifier                                         // Property access: `obj.prop`
+    | function_call                                                     // Function calls
+    | literalValue                                                      // Basic literals (number, string, boolean, null, list, map)
+    | Identifier                                                        // Simple identifier (variable, constant)
+    | This                                                              // 'this' keyword
     ;
 
+// --- Literal Values (Pure JS/TS literals, NO HTML/CSS here) ---
+literalValue
+    : NumberLiteral
+    | StringLiteral
+    | BooleanLiteral
+    | listLiteral
+    | mapLiteral
+    | Null
+    ;
 
+// Map/Object literal (e.g., { key: value })
+mapLiteral
+    : OpenBrace (Identifier Colon literalValue (Comma (Identifier Colon literalValue) Comma?)*)? CloseBrace // Optional content for empty object
+    ;
 
-parameter
-    : Identifier Colon type
-    | Identifier Colon type Assign literalValue
+// List/Array literal (e.g., [1, 2, "three"])
+listLiteral
+    : OpenBracket (literalValue (Comma literalValue)*)? CloseBracket // Only literal values for simplicity, could be `expression`
     ;
-function_call: Identifier '(' (expression (',' expression)*)? ')';
 
+    html:Backtick html_content Backtick;
 
-html:Backtick html_content Backtick;
+    html_content: (html_element+ |
+     '{{' expression '}}' |
+     NumberLiteral* Identifier NumberLiteral*)+;
 
-html_content: (html_element+ |
- '{{' expression '}}' |
- NumberLiteral* Identifier NumberLiteral*)+;
+    html_element:
+          '<' html_tag_name html_attributes? '>' html_content? '<' '/'html_tag_name '>'
+        | '<' html_tag_name html_attributes? '>' | '<' html_tag_name html_attributes '/''>';
 
-html_element:
-      '<' html_tag_name html_attributes? '>' html_content? '<' '/'html_tag_name '>'
-    | '<' html_tag_name html_attributes? '>' | '<' html_tag_name html_attributes '/''>';
+    html_tag_name: Identifier;
 
-html_tag_name: Identifier;
+    html_attributes: html_attribute*;
 
-html_attributes: html_attribute*;
-
-html_attribute:
-      (Identifier
-       |ngIfAttribute|
-       ngForAttribute|
-       onChangeAttribute|
-       onClickAttribute|
-       HtmlClassAttribute |
-        '[' (Identifier | ((Identifier | HtmlClassAttribute) (access_suffix)*)) ']' |
-         '(' (Identifier | HtmlClassAttribute) ')' | '*')
-      ('=' html_attribute_value)?;
-access_suffix
-    : '.' Identifier
-    | '[' expression ']'
-    | '.' function_call
-    ;
-html_attribute_value: literalValue | expression;
-css: OpenBracket Backtick css_content* Backtick CloseBracket;
-css_content: Dot? Identifier (Colon Identifier)* OpenBrace css_class_content* CloseBrace;
-css_class_content: Identifier Colon (Identifier|NumberLiteral (CssPixel | '%')? |function_call)+ (Comma (Identifier|NumberLiteral (CssPixel | '%')? |function_call)+)* SemiColon;
-checkedAttribute
-    : CheckedAttributeName Assign OpenBrace expression CloseBrace
-    ;
-onChangeAttribute
-    : OpenParen OnChangeAttributeName CloseParen Assign StringLiteral
-    ;
-onClickAttribute
-    : OpenParen OnClickAttributeName CloseParen Assign StringLiteral
-    ;
-onSubmitAttribute
-    :  OpenParen OnSubmitAttributeName CloseParen Assign StringLiteral
-    ;
-gapAttribute
-    : GapAttributeName Assign OpenBrace expression CloseBrace
-    ;
-directionAttribute
-    : DirectionAttributeName Assign StringLiteral
-    ;
-durationAttribute
-    : DurationAttributeName Assign StringLiteral
-    ;
-repeatAttribute
-    : RepeatAttributeName Assign (NumberLiteral|StringLiteral)
-    ;
-ngForAttribute
-    : NgForDirective Assign  expression
-    ;
-ngIfAttribute
-    : NgIfDirective Assign expression
-    ;
+    html_attribute:
+          (Identifier
+           |ngIfAttribute|
+           ngForAttribute|
+           onChangeAttribute|
+           onClickAttribute|
+           HtmlClassAttribute |
+            '[' (Identifier | ((Identifier | HtmlClassAttribute) (access_suffix)*)) ']' |
+             '(' (Identifier | HtmlClassAttribute) ')' | '*')
+          ('=' html_attribute_value)?;
+    access_suffix
+        : '.' Identifier
+        | '[' expression ']'
+        | '.' function_call
+        ;
+    html_attribute_value: literalValue | expression;
+    css: OpenBracket Backtick css_content* Backtick CloseBracket;
+    css_content: Dot? Identifier (Colon Identifier)* OpenBrace css_class_content* CloseBrace;
+    css_class_content: Identifier Colon (Identifier|NumberLiteral (CssPixel | '%')? |function_call)+ (Comma (Identifier|NumberLiteral (CssPixel | '%')? |function_call)+)* SemiColon;
+    checkedAttribute
+        : CheckedAttributeName Assign OpenBrace expression CloseBrace
+        ;
+    onChangeAttribute
+        : OpenParen OnChangeAttributeName CloseParen Assign StringLiteral
+        ;
+    onClickAttribute
+        : OpenParen OnClickAttributeName CloseParen Assign StringLiteral
+        ;
+    onSubmitAttribute
+        :  OpenParen OnSubmitAttributeName CloseParen Assign StringLiteral
+        ;
+    gapAttribute
+        : GapAttributeName Assign OpenBrace expression CloseBrace
+        ;
+    directionAttribute
+        : DirectionAttributeName Assign StringLiteral
+        ;
+    durationAttribute
+        : DurationAttributeName Assign StringLiteral
+        ;
+    repeatAttribute
+        : RepeatAttributeName Assign (NumberLiteral|StringLiteral)
+        ;
+    ngForAttribute
+        : NgForDirective Assign  expression
+        ;
+    ngIfAttribute
+        : NgIfDirective Assign expression
+        ;

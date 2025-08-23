@@ -1,3 +1,5 @@
+// AngularTypeScriptParser.g4 For parsing TypeScript/JavaScript subset of Angular components logic.
+
 parser grammar AngularParser;
 
 options {
@@ -237,14 +239,15 @@ expression:
 	| Identifier Dot Identifier				# PropertyAccess
 	| literalValue							# LiteralExpression
 	| Identifier							# IdentifierExpression
-	| html									# dd;
+	| html									# HtmlExpression;
 
 parameter:
 	Identifier Colon type
 	| Identifier Colon type Assign literalValue
 	| Identifier; // Allow parameters without type annotation
+
 function_call:
-	Identifier '(' (expression (',' expression)*)? ')';
+	Identifier OpenParen (expression (Comma expression)*)? CloseParen;
 
 html: Backtick html_content Backtick;
 
@@ -274,14 +277,19 @@ html_attribute:
 		| '(' (Identifier) ')'
 		| '*'
 	) ('=' html_attribute_value)?;
+
 access_suffix:
 	'.' Identifier
 	| '[' expression ']'
 	| '.' function_call;
+
 html_attribute_value: literalValue | expression;
+
 css: OpenBracket Backtick css_content* Backtick CloseBracket;
+
 css_content:
 	Dot? Identifier (Colon Identifier)* OpenBrace css_class_content* CloseBrace;
+
 css_class_content:
 	Identifier Colon (
 		Identifier
@@ -294,19 +302,29 @@ css_class_content:
 			| function_call
 		)+
 	)* SemiColon;
+
 checkedAttribute:
 	CheckedAttributeName Assign OpenBrace expression CloseBrace;
+
 onChangeAttribute:
 	OpenParen OnChangeAttributeName CloseParen Assign StringLiteral;
+
 onClickAttribute:
 	OpenParen OnClickAttributeName CloseParen Assign StringLiteral;
+
 onSubmitAttribute:
 	OpenParen OnSubmitAttributeName CloseParen Assign StringLiteral;
+
 gapAttribute:
 	GapAttributeName Assign OpenBrace expression CloseBrace;
+
 directionAttribute: DirectionAttributeName Assign StringLiteral;
+
 durationAttribute: DurationAttributeName Assign StringLiteral;
+
 repeatAttribute:
 	RepeatAttributeName Assign (NumberLiteral | StringLiteral);
+
 ngForAttribute: NgForDirective Assign expression;
+
 ngIfAttribute: NgIfDirective Assign expression;

@@ -3,7 +3,7 @@ package nodes.statement;
 import nodes.ASTNode;
 
 // Import statement node
-public class ImportStatementNode implements ASTNode {
+public class ImportStatementNode extends StatementNode implements ASTNode  {
     private String identifier;
     private  String source;
 
@@ -25,9 +25,9 @@ public class ImportStatementNode implements ASTNode {
 
     @Override
     public String toString() {
-        return "Import" +
+        return "\nImport\n" +
                 "identifier='" + identifier + '\'' +
                 ", source='" + source + '\'' +
-                '}';
+                "\n}";
     }
 }

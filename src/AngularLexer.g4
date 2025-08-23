@@ -37,8 +37,6 @@ Extends: 'extends';
 Implements: 'implements';
 Console: 'console';
 Log: 'log';
-Component: '@Component';
-Service: '@Injectable';
 Class: 'class';
 InlineAttributeName: 'inline';
 BackgroundColorAttributeName: 'backgroundColor';
@@ -141,3 +139,10 @@ MultiLineComment: '/*' .*? '*/' -> channel(HIDDEN);
 
 // Whitespace
 WS: [ \t\r\n]+ -> skip;
+
+// Angular Decorators
+Component: '@Component';
+Injectable: '@Injectable';
+Pipe: '@Pipe';
+Directive: '@Directive';
+Module: '@NgModule';
