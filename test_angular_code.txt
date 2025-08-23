@@ -1,0 +1,42 @@
+@Component({
+  selector: 'app-product-manager',
+  template: `
+    <div class="container">
+      <nav class="navbar">
+        <a routerLink="/add-product" class="nav-link">إضافة منتج</a>
+        <a routerLink="/products" class="nav-link">عرض المنتجات</a>
+      </nav>
+      
+      <div class="content">
+        <router-outlet></router-outlet>
+      </div>
+    </div>
+  `
+})
+export class ProductManagerComponent {
+  @State() products: Product[] = [];
+  @State() currentProduct: Product | null = null;
+  
+  @Action() addProduct(product: Product) {
+    this.products.push(product);
+    this.state.update({ products: this.products });
+  }
+  
+  @Action() deleteProduct(id: string) {
+    this.products = this.products.filter(p => p.id !== id);
+    this.state.update({ products: this.products });
+  }
+  
+  @Action() selectProduct(id: string) {
+    this.currentProduct = this.products.find(p => p.id === id) || null;
+    this.state.update({ currentProduct: this.currentProduct });
+    this.router.navigate(['/product-details', id]);
+  }
+  
+  @Action() onSubmit() {
+    if (this.product.name && this.product.price > 0) {
+      this.store.dispatch(addProduct(this.product));
+      this.router.navigate(['/products']);
+    }
+  }
+}

@@ -1,17 +1,44 @@
 lexer grammar AngularLexer;
 
+// Existing Angular Directives
 NgIfDirective: '*ngIf';
 NgForDirective: '*ngFor';
-Import:'import';
-Export:'export';
-Abstract:'abstract';
-Interface:'interface';
-Extends:'extends';
-Implements:'implements';
-Console:'console';
-Log:'log';
-Component:'@Component';
-Service:'@Injectable';
+
+// New State Management Keywords
+State: '@State';
+Action: '@Action';
+Store: 'store';
+Dispatch: 'dispatch';
+Select: 'select';
+
+// New Navigation Keywords
+RouterLink: 'routerLink';
+RouterOutlet: 'router-outlet';
+Router: 'router';
+Navigate: 'navigate';
+
+// New Angular Template Keywords
+NgModel: '[(ngModel)]';
+NgSubmit: '(ngSubmit)';
+NgClick: '(click)';
+
+// New HTML Attributes
+Name: 'name';
+Id: 'id';
+Src: 'src';
+Alt: 'alt';
+
+// Existing Keywords
+Import: 'import';
+Export: 'export';
+Abstract: 'abstract';
+Interface: 'interface';
+Extends: 'extends';
+Implements: 'implements';
+Console: 'console';
+Log: 'log';
+Component: '@Component';
+Service: '@Injectable';
 Class: 'class';
 InlineAttributeName: 'inline';
 BackgroundColorAttributeName: 'backgroundColor';
@@ -29,6 +56,9 @@ HeadingLevelAttributeName: 'level';
 DirectionAttributeName: 'direction';
 DurationAttributeName: 'duration';
 RepeatAttributeName: 'repeat';
+GapAttributeName: 'gap';
+
+// Punctuation
 OpenBracket: '[';
 CloseBracket: ']';
 OpenParen: '(';
@@ -44,7 +74,7 @@ Dot: '.';
 Plus: '+';
 Minus: '-';
 Multiply: '*';
-At:'@';
+At: '@';
 Divide: '/';
 Modulus: '%';
 Not: '!';
@@ -54,11 +84,15 @@ LessThanEquals: '<=';
 GreaterThanEquals: '>=';
 NOT_EQUAL: '!=';
 WeakEqual: '==';
-StrongEqual:'===';
-And:'&&';
-Or:'||';
-AngularExpressionStart : '{{';
-AngularExpressionEnd : '}}';
+StrongEqual: '===';
+And: '&&';
+Or: '||';
+
+// Angular Expressions
+AngularExpressionStart: '{{';
+AngularExpressionEnd: '}}';
+
+// Control Flow
 Let_Identify: 'let';
 If: 'if';
 Else: 'else';
@@ -73,9 +107,16 @@ Null: 'null';
 Enum: 'enum';
 Array: 'Array';
 Any: 'any';
+
+// Arrow Function Support
+Arrow: '=>';
+
+// Types
 TypeNumber: 'number';
 TypeString: 'string';
 TypeBoolean: 'boolean';
+
+// Keywords
 This: 'this';
 Constructor: 'constructor';
 Private: 'private';
@@ -83,16 +124,20 @@ Public: 'public';
 Static: 'static';
 Protected: 'protected';
 New: 'new';
+
+// Literals
 NumberLiteral: [0-9]+ ('.' [0-9]+)?;
 StringLiteral: '"' .*? '"' | ('\'' .*? '\'');
 BooleanLiteral: 'true' | 'false';
 Backtick: '`';
+
+// Identifiers
 Identifier: [a-zA-Z_][a-zA-Z0-9_-]*;
 CssPixel: 'px';
-SingleLineComment
-    : '//' ~[\r\n]* -> channel(HIDDEN)
-    ;
-MultiLineComment
-    : '/*' .*? '*/' -> channel(HIDDEN)
-    ;
+
+// Comments
+SingleLineComment: '//' ~[\r\n]* -> channel(HIDDEN);
+MultiLineComment: '/*' .*? '*/' -> channel(HIDDEN);
+
+// Whitespace
 WS: [ \t\r\n]+ -> skip;

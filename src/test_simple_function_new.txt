@@ -1,0 +1,7 @@
+export class SimpleFunction {
+  name = "test";
+  
+  simpleMethod() {
+    console.log("hello");
+  }
+}

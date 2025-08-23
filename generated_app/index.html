@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إدارة المنتجات - Angular Compiler</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    /* Add CSS for product specs */
+    .product-specs {
+      margin-top: 15px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border: 1px solid #e9ecef;
+    }
+
+    .spec-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #dee2e6;
+    }
+
+    .spec-item:last-child {
+      border-bottom: none;
+    }
+
+    .spec-label {
+      font-weight: 600;
+      color: #495057;
+      min-width: 80px;
+    }
+
+    .spec-value {
+      color: #6c757d;
+      font-weight: 500;
+    }
+
+    .product-availability {
+      margin-top: 10px;
+    }
+
+    .availability-label {
+      font-weight: 600;
+      color: #495057;
+    }
+
+    .availability-status {
+      color: #28a745;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+  </style>
+</head>
+
+<body>
+  <header class="header">
+    <div class="container">
+      <h1 class="logo">
+        <i class="fas fa-box"></i>
+        Product Management System
+      </h1>
+      <nav class="nav">
+        <a href="#add-product" class="nav-link active">
+          <i class="fas fa-plus"></i>
+          Add Product
+        </a>
+        <a href="#products" class="nav-link">
+          <i class="fas fa-list"></i>
+          View Products
+        </a>
+      </nav>
+    </div>
+  </header>
+  <main class="main-content">
+    <section id="add-product" class="section">
+      <div class="container">
+        <h2 class="section-title">
+          <i class="fas fa-plus"></i>
+          Add New Product
+        </h2>
+        <div class="form-container">
+          <form id="addProductForm" class="product-form">
+            <div class="form-section">
+              <h3 class="form-section-title">
+                <i class="fas fa-info-circle"></i>
+                Basic Information
+              </h3>
+              <div class="form-row">
+                <div class="form-col">
+                  <div class="form-group">
+                    <label for="productName" class="form-label">Product Name *</label>
+                    <input type="text" id="productName" name="productName" class="form-control"
+                      placeholder="Enter product name" required>
+                  </div>
+                </div>
+                <div class="form-col">
+                  <div class="form-group">
+                    <label for="productCategory" class="form-label">Category *</label>
+                    <select id="productCategory" name="productCategory" class="form-control" required>
+                      <option value="">Select Category</option>
+                      <option value="electronics">Electronics</option>
+                      <option value="clothing">Clothing</option>
+                      <option value="books">Books</option>
+                      <option value="home">Home & Garden</option>
+                      <option value="sports">Sports</option>
+                      <option value="automotive">Automotive</option>
+                      <option value="health">Health & Beauty</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-col">
+                  <div class="form-group">
+                    <label for="productPrice" class="form-label">Price *</label>
+                    <input type="number" id="productPrice" name="productPrice" class="form-control" placeholder="0.00"
+                      step="0.01" min="0" required>
+                  </div>
+                </div>
+                <div class="form-col">
+                  <div class="form-group">
+                    <label for="productStock" class="form-label">Stock Quantity *</label>
+                    <input type="number" id="productStock" name="productStock" class="form-control" placeholder="0"
+                      min="0" required>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="productDescription" class="form-label">Description *</label>
+                <textarea id="productDescription" name="productDescription" class="form-control"
+                  placeholder="Enter detailed product description" required rows="4"></textarea>
+              </div>
+              <div class="form-group">
+                <label for="productFeatures" class="form-label">Features</label>
+                <textarea id="productFeatures" name="productFeatures" class="form-control"
+                  placeholder="Enter product features (optional)" rows="4"></textarea>
+              </div>
+            </div>
+            <div class="form-section">
+              <h3 class="form-section-title">
+                <i class="fas fa-images"></i>
+                Product Images
+              </h3>
+              <div class="image-upload-container">
+                <div class="image-upload-area" id="imageUploadArea">
+                  <i class="fas fa-cloud-upload-alt"></i>
+                  <p>Drag images here or click to select</p>
+                  <input type="file" id="productImages" name="productImages" multiple accept="image/*"
+                    class="image-input">
+                </div>
+                <div class="image-preview" id="imagePreview"></div>
+              </div>
+            </div>
+            <div class="form-section">
+              <h3 class="form-section-title">
+                <i class="fas fa-cogs"></i>
+                Additional Information
+              </h3>
+              <div class="form-row">
+                <div class="form-col">
+                  <div class="form-group">
+                    <label for="productBrand" class="form-label">Brand</label>
+                    <input type="text" id="productBrand" name="productBrand" class="form-control"
+                      placeholder="Enter brand name">
+                  </div>
+                </div>
+                <div class="form-col">
+                  <div class="form-group">
+                    <label for="productModel" class="form-label">Model</label>
+                    <input type="text" id="productModel" name="productModel" class="form-control"
+                      placeholder="Enter product model">
+                  </div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-col">
+                  <div class="form-group">
+                    <label for="productWeight" class="form-label">Weight (kg)</label>
+                    <input type="number" id="productWeight" name="productWeight" class="form-control" placeholder="0.0">
+                  </div>
+                </div>
+                <div class="form-col">
+                  <div class="form-group">
+                    <label for="productDimensions" class="form-label">Dimensions</label>
+                    <input type="text" id="productDimensions" name="productDimensions" class="form-control"
+                      placeholder="Length × Width × Height">
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                <i class="fas fa-undo"></i>
+                Reset
+              </button>
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i>
+                Save Product
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+    <section id="products" class="section">
+      <div class="container">
+        <h2 class="section-title">
+          <i class="fas fa-list"></i>
+          Products List
+          <span class="product-count" id="productCount">(0 products)</span>
+        </h2>
+        <div class="products-controls">
+          <div class="search-filter-container">
+            <div class="search-box">
+              <input type="text" id="searchProducts" class="search-input" placeholder="Search products...">
+              <i class="fas fa-search search-icon"></i>
+            </div>
+            <div class="filter-controls">
+              <select id="categoryFilter" class="filter-select">
+                <option value="">All Categories</option>
+                <option value="electronics">Electronics</option>
+                <option value="clothing">Clothing</option>
+                <option value="books">Books</option>
+                <option value="home">Home & Garden</option>
+                <option value="sports">Sports</option>
+                <option value="automotive">Automotive</option>
+                <option value="health">Health & Beauty</option>
+              </select>
+              <select id="sortProducts" class="filter-select">
+                <option value="newest">Newest</option>
+                <option value="oldest">Oldest</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+                <option value="name-az">Name: A-Z</option>
+                <option value="name-za">Name: Z-A</option>
+              </select>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="window.clearFilters()">
+                <i class="fas fa-times"></i> Clear Filters
+              </button>
+            </div>
+          </div>
+          <div class="view-controls">
+            <button class="view-btn active" data-view="grid" onclick="changeView('grid')">
+              <i class="fas fa-th"></i>
+            </button>
+            <button class="view-btn" data-view="list" onclick="changeView('list')">
+              <i class="fas fa-list"></i>
+            </button>
+          </div>
+        </div>
+        <div class="products-grid" id="productsGrid">
+          <div class="product-card sample-card" style="display: none;">
+            <div class="product-image">
+              <img src="placeholder.svg" alt="Product Image" class="product-img">
+            </div>
+            <div class="product-info">
+              <h3 class="product-name">Product Name</h3>
+              <p class="product-description">Product Description</p>
+              <div class="product-meta">
+                <span class="product-price">$0.00</span>
+                <span class="product-category">Category</span>
+              </div>
+              <div class="product-actions">
+                <button class="btn btn-info btn-sm" onclick="viewProductDetails('1')">
+                  <i class="fas fa-eye"></i>
+                  View
+                </button>
+                <button class="btn btn-warning btn-sm" onclick="editProduct('1')">
+                  <i class="fas fa-edit"></i>
+                  Edit
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="deleteProduct('1')">
+                  <i class="fas fa-trash"></i>
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="products-list" id="productsList" style="display: none;">
+          <!-- Products will be populated by JavaScript -->
+        </div>
+        <div id="noProductsMessage" class="no-products-message" style="display: none;">
+          <i class="fas fa-box-open"></i>
+          <p>No products available</p>
+          <button class="btn btn-primary" onclick="showAddProductForm()">
+            <i class="fas fa-plus"></i>
+            Add First Product
+          </button>
+        </div>
+        <div class="pagination" id="pagination">
+          <button class="pagination-btn" onclick="previousPage()">
+            <i class="fas fa-chevron-right"></i>
+            Previous
+          </button>
+          <div class="page-numbers" id="pageNumbers">
+            <span class="page-number active">1</span>
+          </div>
+          <button class="pagination-btn" onclick="nextPage()">
+            Next
+            <i class="fas fa-chevron-left"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+    <section id="product-details" class="section">
+      <div class="container">
+        <h2 class="section-title">
+          <i class="fas fa-info-circle"></i>
+          Product Details
+        </h2>
+        <div id="productDetailsContent" class="product-details-content">
+          <div class="product-details-placeholder">
+            <i class="fas fa-search"></i>
+            <p>Select a product to view details</p>
+          </div>
+          <div class="product-details-template" id="productDetailsTemplate" style="display: none;">
+            <div class="product-details-header">
+              <div class="product-breadcrumb">
+                <a href="#products">Products</a>
+                <i class="fas fa-chevron-left"></i>
+                <span id="productBreadcrumbName">Product Name</span>
+              </div>
+              <div class="product-title-section">
+                <h1 id="productDetailTitle">Product Name</h1>
+                <div class="product-meta-info">
+                  <span class="product-category-badge" id="productDetailCategory">Category</span>
+                  <span class="product-brand" id="productDetailBrand">Brand</span>
+                  <span class="product-model" id="productDetailModel">Model</span>
+                </div>
+              </div>
+            </div>
+            <div class="product-details-body">
+              <div class="product-images-section">
+                <div class="main-image-container">
+                  <img id="productMainImage" src="placeholder.svg" alt="Main Product Image" class="main-product-image">
+                  <div class="image-overlay">
+                    <button class="zoom-btn" onclick="zoomImage()">
+                      <i class="fas fa-search-plus"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="thumbnail-images" id="thumbnailImages">
+                  <!-- Thumbnail images will be populated by JavaScript -->
+                </div>
+              </div>
+              <div class="product-info-section">
+                <div class="product-price-section">
+                  <div class="current-price">
+                    <span class="price-label">Price:</span>
+                    <span class="price-value" id="productDetailPrice">$0.00</span>
+                  </div>
+                  <div class="product-availability">
+                    <span class="availability-label">Stock:</span>
+                    <span class="availability-status" id="productDetailStock">0</span>
+                  </div>
+                </div>
+                <div class="product-specs">
+                  <div class="spec-item">
+                    <span class="spec-label">Weight:</span>
+                    <span class="spec-value" id="productDetailWeight">-</span>
+                  </div>
+                  <div class="spec-item">
+                    <span class="spec-label">Dimensions:</span>
+                    <span class="spec-value" id="productDetailDimensions">-</span>
+                  </div>
+                </div>
+                <div class="product-actions">
+                  <!-- Removed cart, wishlist, and share buttons -->
+                </div>
+              </div>
+            </div>
+            <div class="product-tabs">
+              <div class="tabs-header">
+                <button class="tab-btn active" data-tab="description" onclick="switchTab('description')">
+                  <i class="fas fa-align-left"></i>
+                  Description
+                </button>
+                <!-- Removed specifications, reviews, and related products tabs -->
+              </div>
+              <div class="tabs-content">
+                <div class="tab-content active" id="description-tab">
+                  <div class="description-content">
+                    <h3>Product Description</h3>
+                    <p id="productDetailDescription">Product description will appear here...</p>
+                    <div class="product-features" id="productDetailFeatures">
+                      <h4>Main Features</h4>
+                      <ul id="featuresList">
+                        <!-- Features will be populated by JavaScript -->
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                <!-- Removed specifications, reviews, and related products tabs -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+</body>
+<script src="script.js"></script>
+
+</html>
