@@ -1113,4 +1113,24 @@ public interface AngularParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitNgIfAttribute(AngularParser.NgIfAttributeContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link AngularParser#templateString}.
+	 * @param ctx the parse tree
+	 */
+	void enterTemplateString(AngularParser.TemplateStringContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link AngularParser#templateString}.
+	 * @param ctx the parse tree
+	 */
+	void exitTemplateString(AngularParser.TemplateStringContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link AngularParser#templateContent}.
+	 * @param ctx the parse tree
+	 */
+	void enterTemplateContent(AngularParser.TemplateContentContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link AngularParser#templateContent}.
+	 * @param ctx the parse tree
+	 */
+	void exitTemplateContent(AngularParser.TemplateContentContext ctx);
 }

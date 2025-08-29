@@ -41,3 +41,176 @@ identifier=onClick, parameters=[], returnType=null, body=null, returnExpression=
 [INFO] [2025-08-29 18:14:04] 
 No semantic errors detected.
 [INFO] [2025-08-29 18:14:04] === Symbol Table ===
+[INFO] [2025-08-29 20:56:59] Logger initialized successfully
+[INFO] [2025-08-29 20:57:06] Logger closing...
+[INFO] [2025-08-29 21:02:12] Logger initialized successfully
+[INFO] [2025-08-29 21:02:54] Logger closing...
+[INFO] [2025-08-29 21:06:09] Logger initialized successfully
+[INFO] [2025-08-29 21:06:38] Testing file: test_ngif_ngfor_error.txt
+[INFO] [2025-08-29 21:06:38] Using file: src/test_ngif_ngfor_error.txt
+[INFO] [2025-08-29 21:06:39] === Symbol Table ===
+[INFO] [2025-08-29 21:06:39] === AST ===
+[INFO] [2025-08-29 21:06:39] ProgramNode{
+statements=[
+ StatementNode{
+importStatementNodes=
+Import
+identifier='Component', source=''@angular/core''
+}
+}, 
+StatementNode{
+componentNodes=
+ComponentNode{
+decorator=null, exportClass=ExportClassNode{classNode=
+ClassNode{class Name='TestComponent', classBody=
+ClassBody{
+variableDeclarationNodes=[VariableDeclaration(AccessModifier = null, identifier=title, type=TypeNode{number='null', anboolean='null', array='null', string='string'}, expression=
+Expression(
+operator="Test Component", left=null, right=null
+)), VariableDeclaration(AccessModifier = null, identifier=showItems, type=TypeNode{number='null', anboolean='boolean', array='null', string='null'}, expression=
+Expression(
+operator=true, left=null, right=null
+)), VariableDeclaration(AccessModifier = null, identifier=items, type=TypeNode{number='null', anboolean='null', array='Array', string='null'}, expression=
+Expression(
+operator=["Item 1","Item 2","Item 3"], left=null, right=null
+))], functionDeclarationNodes=[
+FunctionDeclaration(
+identifier=onClick, parameters=[], returnType=null, body=null, returnExpression=null
+)], objectDeclarationNodes=[], arrayDeclarationNodeList=[]
+}}
+}
+}
+}, 
+StatementNode{
+variableDeclarationNodes=VariableDeclaration(AccessModifier = null, identifier=templateWithSemanticError, type=TypeNode{number='null', anboolean='null', array='null', string='string'}, expression=
+Expression(
+operator=`<divclass="container"><div*ngIf="showItems"*ngFor="let item of items"class="item">{{item}}</div></div>`, left=null, right=null
+))
+}, 
+StatementNode{
+variableDeclarationNodes=VariableDeclaration(AccessModifier = null, identifier=correctTemplate, type=TypeNode{number='null', anboolean='null', array='null', string='string'}, expression=
+Expression(
+operator=`<divclass="container"><div*ngIf="showItems"><div*ngFor="let item of items"class="item">{{item}}</div></div></div>`, left=null, right=null
+))
+}]
+}
+[INFO] [2025-08-29 21:06:39] 
+No semantic errors detected.
+[INFO] [2025-08-29 21:06:39] === Symbol Table ===
+[INFO] [2025-08-29 21:06:52] Logger closing...
+[INFO] [2025-08-29 21:07:58] Logger initialized successfully
+[INFO] [2025-08-29 21:08:23] Testing file: test_ngif_ngfor_error.txt
+[INFO] [2025-08-29 21:08:23] Using file: src/test_ngif_ngfor_error.txt
+[INFO] [2025-08-29 21:08:24] === Symbol Table ===
+[INFO] [2025-08-29 21:08:24] === AST ===
+[INFO] [2025-08-29 21:08:24] ProgramNode{
+statements=[
+ StatementNode{
+importStatementNodes=
+Import
+identifier='Component', source=''@angular/core''
+}
+}, 
+StatementNode{
+componentNodes=
+ComponentNode{
+decorator=null, exportClass=ExportClassNode{classNode=
+ClassNode{class Name='TestComponent', classBody=
+ClassBody{
+variableDeclarationNodes=[VariableDeclaration(AccessModifier = null, identifier=title, type=TypeNode{number='null', anboolean='null', array='null', string='string'}, expression=
+Expression(
+operator="Test Component", left=null, right=null
+)), VariableDeclaration(AccessModifier = null, identifier=showItems, type=TypeNode{number='null', anboolean='boolean', array='null', string='null'}, expression=
+Expression(
+operator=true, left=null, right=null
+)), VariableDeclaration(AccessModifier = null, identifier=items, type=TypeNode{number='null', anboolean='null', array='Array', string='null'}, expression=
+Expression(
+operator=["Item 1","Item 2","Item 3"], left=null, right=null
+))], functionDeclarationNodes=[
+FunctionDeclaration(
+identifier=onClick, parameters=[], returnType=null, body=null, returnExpression=null
+)], objectDeclarationNodes=[], arrayDeclarationNodeList=[]
+}}
+}
+}
+}, 
+StatementNode{
+variableDeclarationNodes=VariableDeclaration(AccessModifier = null, identifier=templateWithSemanticError, type=TypeNode{number='null', anboolean='null', array='null', string='string'}, expression=
+Expression(
+operator=`<divclass="container"><div*ngIf="showItems"*ngFor="let item of items"class="item">{{item}}</div></div>`, left=null, right=null
+))
+}, 
+StatementNode{
+variableDeclarationNodes=VariableDeclaration(AccessModifier = null, identifier=correctTemplate, type=TypeNode{number='null', anboolean='null', array='null', string='string'}, expression=
+Expression(
+operator=`<divclass="container"><div*ngIf="showItems"><div*ngFor="let item of items"class="item">{{item}}</div></div></div>`, left=null, right=null
+))
+}]
+}
+[INFO] [2025-08-29 21:08:24] 
+No semantic errors detected.
+[INFO] [2025-08-29 21:08:24] === Symbol Table ===
+[INFO] [2025-08-29 21:08:27] Logger closing...
+[INFO] [2025-08-29 21:27:01] Logger initialized successfully
+[INFO] [2025-08-29 21:27:16] Testing file: test_ngif_ngfor_error.txt
+[INFO] [2025-08-29 21:27:16] Using file: src/test_ngif_ngfor_error.txt
+[INFO] [2025-08-29 21:27:17] === Symbol Table ===
+[INFO] [2025-08-29 21:27:18] === AST ===
+[INFO] [2025-08-29 21:27:18] ProgramNode{
+statements=[
+ StatementNode{
+importStatementNodes=
+Import
+identifier='Component', source=''@angular/core''
+}
+}, 
+StatementNode{
+componentNodes=
+ComponentNode{
+decorator=null, exportClass=ExportClassNode{classNode=
+ClassNode{class Name='TestComponent', classBody=
+ClassBody{
+variableDeclarationNodes=[VariableDeclaration(AccessModifier = null, identifier=title, type=TypeNode{number='null', anboolean='null', array='null', string='string'}, expression=
+Expression(
+operator="Test Component", left=null, right=null
+)), VariableDeclaration(AccessModifier = null, identifier=showItems, type=TypeNode{number='null', anboolean='boolean', array='null', string='null'}, expression=
+Expression(
+operator=true, left=null, right=null
+)), VariableDeclaration(AccessModifier = null, identifier=items, type=TypeNode{number='null', anboolean='null', array='Array', string='null'}, expression=
+Expression(
+operator=["Item 1","Item 2","Item 3"], left=null, right=null
+))], functionDeclarationNodes=[
+FunctionDeclaration(
+identifier=onClick, parameters=[], returnType=null, body=null, returnExpression=null
+)], objectDeclarationNodes=[], arrayDeclarationNodeList=[]
+}}
+}
+}
+}, 
+StatementNode{
+variableDeclarationNodes=VariableDeclaration(AccessModifier = null, identifier=templateWithSemanticError, type=TypeNode{number='null', anboolean='null', array='null', string='string'}, expression=
+Expression(
+operator=`<divclass="container"><div*ngIf="showItems"*ngFor="let item of items"class="item">{{item}}</div></div>`, left=null, right=null
+))
+}, 
+StatementNode{
+variableDeclarationNodes=VariableDeclaration(AccessModifier = null, identifier=correctTemplate, type=TypeNode{number='null', anboolean='null', array='null', string='string'}, expression=
+Expression(
+operator=`<divclass="container"><div*ngIf="showItems"><div*ngFor="let item of items"class="item">{{item}}</div></div></div>`, left=null, right=null
+))
+}]
+}
+[INFO] [2025-08-29 21:27:18] === Symbol Table ===
+[INFO] [2025-08-29 21:27:29] Logger closing...
+[INFO] [2025-08-29 21:32:52] Logger initialized successfully
+[INFO] [2025-08-29 21:32:59] Logger closing...
+[INFO] [2025-08-29 21:35:27] Logger initialized successfully
+[INFO] [2025-08-29 21:36:12] Logger closing...
+[INFO] [2025-08-29 21:36:41] Logger initialized successfully
+[INFO] [2025-08-29 21:36:41] Logger closing...
+[INFO] [2025-08-29 21:36:45] Logger initialized successfully
+[INFO] [2025-08-29 21:36:55] Logger closing...
+[INFO] [2025-08-29 21:40:32] Logger initialized successfully
+[INFO] [2025-08-29 21:40:44] Logger closing...
+[INFO] [2025-08-29 21:43:43] Logger initialized successfully
+[INFO] [2025-08-29 21:43:45] Logger closing...

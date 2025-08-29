@@ -3,13 +3,20 @@ package nodes;
 import gen.AngularParser;
 import gen.AngularParserBaseListener;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import utils.Logger;
 
 public class SemanticAnalyzer extends AngularParserBaseListener {
     private SymbolTable symbolTable;
     private List<String> semanticErrors = new ArrayList<>();
     private Logger logger = Logger.getInstance();
+    
+    // نظام تتبع منفصل للمتغيرات - لا يعتمد على SymbolTable
+    private final Map<String, Set<String>> declaredVars = new HashMap<>();
 
     public SemanticAnalyzer(SymbolTable symbolTable) {
         this.symbolTable = symbolTable;
@@ -17,6 +24,12 @@ public class SemanticAnalyzer extends AngularParserBaseListener {
 
     public List<String> getSemanticErrors() {
         return semanticErrors;
+    }
+    
+    // إعادة تعيين النظام المحلي عند بدء تحليل ملف جديد
+    public void reset() {
+        declaredVars.clear();
+        semanticErrors.clear();
     }
 
     @Override
@@ -26,10 +39,10 @@ public class SemanticAnalyzer extends AngularParserBaseListener {
 
         if (ctx.html_attributes() != null) {
             for (AngularParser.Html_attributeContext attrCtx : ctx.html_attributes().html_attribute()) {
-                if (attrCtx.ngIfAttribute() != null) {
+                if (attrCtx.ngIfAttribute() != null || attrCtx.NgIfDirective() != null) {
                     ngIfCount++;
                 }
-                if (attrCtx.ngForAttribute() != null) {
+                if (attrCtx.ngForAttribute() != null || attrCtx.NgForDirective() != null) {
                     ngForCount++;
                 }
             }
@@ -61,10 +74,16 @@ public class SemanticAnalyzer extends AngularParserBaseListener {
     public void enterVariableDeclaration(AngularParser.VariableDeclarationContext ctx) {
         String varName = ctx.Identifier().getText();
         String currentScope = "Global"; // استخدم نظام النطاق لديك إذا كان متقدماً
-        if (symbolTable.variableExistsInScope(varName, currentScope)) {
+        
+        // استخدم النظام المحلي بدلاً من SymbolTable لتجنب التضارب
+        Set<String> inScope = declaredVars.computeIfAbsent(currentScope, k -> new HashSet<>());
+        if (inScope.contains(varName)) {
             semanticErrors.add("Semantic Error: Duplicate variable declaration in the same scope: " + varName);
             logger.error("Semantic Error: Duplicate variable declaration in the same scope: " + varName);
+        } else {
+            inScope.add(varName);
         }
+        
         if (ctx.type() != null) {
             String type = ctx.type().getText();
             if (!isPrimitiveType(type) && !symbolTable.isImported(type)) {

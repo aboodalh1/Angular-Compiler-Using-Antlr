@@ -1,0 +1,33 @@
+// Test File for ngIf + ngFor Semantic Error
+import { Component } from '@angular/core';
+
+@Component()
+export class TestComponent {
+    title: string = "Test Component";
+    showItems: boolean = true;
+    items: Array = ["Item 1", "Item 2", "Item 3"];
+    
+    onClick() {
+        console.log("Button clicked!");
+    }
+}
+
+// Component, نفس التعريف عندك
+
+// ❌ قالب فيه خطأ دلالي: *ngIf + *ngFor على نفس العنصر
+templateWithSemanticError: string = `
+<div class="container">
+  <div *ngIf="showItems" *ngFor="let item of items" class="item">
+    {{ item }}
+  </div>
+</div>`;
+  
+// ✅ القالب الصحيح: الفصل بين التوجيهين
+correctTemplate: string = `
+<div class="container">
+  <div *ngIf="showItems">
+    <div *ngFor="let item of items" class="item">
+      {{ item }}
+    </div>
+  </div>
+</div>`;

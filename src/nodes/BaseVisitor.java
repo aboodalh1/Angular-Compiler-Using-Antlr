@@ -16,6 +16,7 @@ import nodes.html_node.html_content.NgIfNode;
 import nodes.statement.*;
 import nodes.statement.HtmlElementNode;
 import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -52,6 +53,10 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     }
 
     public void printAst() {
+        // Reset symbol table and semantic errors for new file
+        this.symbolTable = new SymbolTable();
+        this.semanticErrors.clear();
+        
         // Try multiple possible file paths
         String[] possiblePaths = {
             "angular_compiler.txt",
@@ -86,16 +91,17 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         CommonTokenStream token = new CommonTokenStream(lexer);
         AngularParser parser = new AngularParser(token);
 
-        // AST Construction
-        ProgramNode programNode = (ProgramNode) new BaseVisitor().visitProgram(parser.program());
+        // AST Construction and Semantic Analysis using the same parse tree
+        AngularParser.ProgramContext tree = parser.program();
+        ProgramNode programNode = (ProgramNode) this.visitProgram(tree);
         logger.info("=== AST ===");
         logger.info(programNode.toString());
 
-        // Semantic Analysis
-        ParseTree tree = parser.program(); // entry rule
-        ParseTreeWalker walker = new ParseTreeWalker();
-        SemanticAnalyzer analyzer = new SemanticAnalyzer(symbolTable);
-        walker.walk(analyzer, tree);
+                    // Semantic Analysis on the same tree
+            ParseTreeWalker walker = new ParseTreeWalker();
+            SemanticAnalyzer analyzer = new SemanticAnalyzer(symbolTable);
+            analyzer.reset(); // إعادة تعيين النظام المحلي
+            walker.walk(analyzer, tree);
         if (!analyzer.getSemanticErrors().isEmpty()) {
             logger.error("\n=== Semantic Errors ===");
             for (String error : analyzer.getSemanticErrors()) {
@@ -117,6 +123,10 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     }
 
     public void testFile(String fileName) {
+        // Reset symbol table and semantic errors for new file
+        this.symbolTable = new SymbolTable();
+        this.semanticErrors.clear();
+        
         // Try multiple possible file paths for the given filename
         String[] possiblePaths = {
                 fileName, // Direct path
@@ -153,15 +163,16 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         AngularParser parser = new AngularParser(token);
 
         try {
-            // AST Construction
-            ProgramNode programNode = (ProgramNode) new BaseVisitor().visitProgram(parser.program());
+            // AST Construction and Semantic Analysis using the same parse tree
+            AngularParser.ProgramContext tree = parser.program();
+            ProgramNode programNode = (ProgramNode) this.visitProgram(tree);
             logger.info("=== AST ===");
             logger.info(programNode.toString());
 
-            // Semantic Analysis
-            ParseTree tree = parser.program(); // entry rule
+            // Semantic Analysis on the same tree
             ParseTreeWalker walker = new ParseTreeWalker();
             SemanticAnalyzer analyzer = new SemanticAnalyzer(symbolTable);
+            analyzer.reset(); // إعادة تعيين النظام المحلي
             walker.walk(analyzer, tree);
             if (!analyzer.getSemanticErrors().isEmpty()) {
                 logger.error("\n=== Semantic Errors ===");
@@ -253,10 +264,6 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             statement.setContinueStatementNodes(continueStatementNode);
             // statementRow.setType("Continue Statement");
             // statementRow.setValue(ctx.continueStatement().getText());
-        }
-        if (ctx.html() != null) {
-            HtmlElementNode htmlElementNode = visitHtml_element(ctx.html_element());
-            statement.setHtmlElementNodes(htmlElementNode);
         }
         if (ctx.importStatement() != null) {
             ImportStatementNode importStatementNode = visitImportStatement(ctx.importStatement());
@@ -595,6 +602,11 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             symbolTable.getRows().add(exprRow);
         }
         
+        // Handle template strings specifically
+        if (ctx.templateString() != null) {
+            visitTemplateString(ctx.templateString());
+        }
+        
         return variableDeclarationNode;
     }
 
@@ -729,8 +741,23 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     public LiteralValueNode visitLiteralValue(AngularParser.LiteralValueContext ctx) {
         LiteralValueNode literalValueNode = new LiteralValueNode();
         if (ctx.StringLiteral() != null) {
-            literalValueNode.setStirngValue(ctx.StringLiteral().getText());
-            addRowToSymbolTable("String", ctx.StringLiteral().getText(), ctx.StringLiteral().getText());
+            String stringValue = ctx.StringLiteral().getText();
+            literalValueNode.setStirngValue(stringValue);
+            addRowToSymbolTable("String", stringValue, stringValue);
+            
+            // Check if this string contains HTML-like content for semantic analysis
+            if (stringValue.contains("<") && stringValue.contains(">")) {
+                analyzeStringForSemanticErrors(stringValue);
+            }
+        }
+        if (ctx.templateString() != null) {
+            // Handle template strings specifically
+            String templateContent = ctx.templateString().getText();
+            literalValueNode.setStirngValue(templateContent);
+            addRowToSymbolTable("Template String", templateContent, templateContent);
+            
+            // Analyze template string content for semantic errors
+            analyzeTemplateStringForSemanticErrors(templateContent);
         }
         if (ctx.NumberLiteral() != null) {
             literalValueNode.setNumValue(ctx.NumberLiteral().getText());
@@ -840,6 +867,9 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
 
     @Override
     public ASTNode visitDd(AngularParser.DdContext ctx) {
+        if (ctx.html() != null) {
+            return visitHtml(ctx.html());
+        }
         return null;
     }
 
@@ -984,6 +1014,18 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             htmlNode.setContent(visitHtml_content(ctx.html_content()));
             htmlRow.setType("Content");
             htmlRow.setValue(ctx.html_content().getText());
+            
+            // Run semantic analysis on HTML content
+            try {
+                ParseTreeWalker walker = new ParseTreeWalker();
+                SemanticAnalyzer analyzer = new SemanticAnalyzer(this.symbolTable);
+                walker.walk(analyzer, ctx);
+                
+                // Add any semantic errors found
+                semanticErrors.addAll(analyzer.getSemanticErrors());
+            } catch (Exception e) {
+                logger.error("Error during HTML semantic analysis: " + e.getMessage());
+            }
         }
         symbolTable.getRows().add(htmlRow);
         return htmlNode;
@@ -1349,6 +1391,125 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     @Override
     public ASTNode visitSimpleArrowFunction(AngularParser.SimpleArrowFunctionContext ctx) {
         // TODO: Implement simple arrow function logic
+        return null;
+    }
+
+    // Template String Support Methods
+    @Override
+    public ASTNode visitTemplateString(AngularParser.TemplateStringContext ctx) {
+        // Parse template string content as HTML for semantic analysis
+        if (ctx.templateContent() != null) {
+            visitTemplateContent(ctx.templateContent());
+        }
+        return null;
+    }
+    
+    // Helper method to parse template string content separately
+    private void parseTemplateStringForSemanticAnalysis(String templateContent) {
+        try {
+            // Remove backticks and create input stream for template content
+            String htmlContent = templateContent.substring(1, templateContent.length() - 1);
+            CharStream cs = CharStreams.fromString("html: " + "`" + htmlContent + "`");
+            
+            AngularLexer lexer = new AngularLexer(cs);
+            CommonTokenStream tokens = new CommonTokenStream(lexer);
+            AngularParser parser = new AngularParser(tokens);
+            
+            // Parse as HTML content
+            AngularParser.HtmlContext htmlCtx = parser.html();
+            
+            // Run semantic analysis on the parsed HTML
+            ParseTreeWalker walker = new ParseTreeWalker();
+            SemanticAnalyzer analyzer = new SemanticAnalyzer(this.symbolTable);
+            walker.walk(analyzer, htmlCtx);
+            
+            // Add any semantic errors found
+            semanticErrors.addAll(analyzer.getSemanticErrors());
+            
+        } catch (Exception e) {
+            logger.error("Error parsing template string: " + e.getMessage());
+        }
+    }
+    
+    // Helper method to analyze string content for semantic errors
+    private void analyzeStringForSemanticErrors(String stringContent) {
+        try {
+            // Check if the string contains HTML-like content
+            if (stringContent.contains("<") && stringContent.contains(">")) {
+                // Create a simple HTML context for analysis
+                String htmlContent = "html: " + stringContent;
+                CharStream cs = CharStreams.fromString(htmlContent);
+                
+                AngularLexer lexer = new AngularLexer(cs);
+                CommonTokenStream tokens = new CommonTokenStream(lexer);
+                AngularParser parser = new AngularParser(tokens);
+                
+                // Parse as HTML content
+                AngularParser.HtmlContext htmlCtx = parser.html();
+                
+                // Run semantic analysis on the parsed HTML
+                ParseTreeWalker walker = new ParseTreeWalker();
+                SemanticAnalyzer analyzer = new SemanticAnalyzer(this.symbolTable);
+                walker.walk(analyzer, htmlCtx);
+                
+                // Add any semantic errors found
+                semanticErrors.addAll(analyzer.getSemanticErrors());
+                
+                logger.info("Analyzed string content for semantic errors: " + stringContent.substring(0, Math.min(50, stringContent.length())) + "...");
+            }
+        } catch (Exception e) {
+            logger.error("Error analyzing string for semantic errors: " + e.getMessage());
+        }
+    }
+    
+    // Helper method to analyze template string content for semantic errors
+    private void analyzeTemplateStringForSemanticErrors(String templateContent) {
+        try {
+            // Remove backticks and create input stream for template content
+            String htmlContent = templateContent.substring(1, templateContent.length() - 1);
+            
+            // Create a simple HTML context for analysis
+            String htmlInput = "html: `" + htmlContent + "`";
+            CharStream cs = CharStreams.fromString(htmlInput);
+            
+            AngularLexer lexer = new AngularLexer(cs);
+            CommonTokenStream tokens = new CommonTokenStream(lexer);
+            AngularParser parser = new AngularParser(tokens);
+            
+            // Parse as HTML content
+            AngularParser.HtmlContext htmlCtx = parser.html();
+            
+            // Run semantic analysis on the parsed HTML
+            ParseTreeWalker walker = new ParseTreeWalker();
+            SemanticAnalyzer analyzer = new SemanticAnalyzer(this.symbolTable);
+            walker.walk(analyzer, htmlCtx);
+            
+            // Add any semantic errors found
+            semanticErrors.addAll(analyzer.getSemanticErrors());
+            
+            logger.info("Analyzed template string for semantic errors: " + htmlContent.substring(0, Math.min(50, htmlContent.length())) + "...");
+            
+        } catch (Exception e) {
+            logger.error("Error analyzing template string for semantic errors: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public ASTNode visitTemplateContent(AngularParser.TemplateContentContext ctx) {
+        // Process HTML elements directly
+        if (ctx.html_element() != null) {
+            for (var he : ctx.html_element()) {
+                visitHtml_element(he);
+            }
+        }
+        
+        // Process expressions directly
+        if (ctx.expression() != null) {
+            for (int i = 0; i < ctx.expression().size(); i++) {
+                visitExpression(ctx.expression(i));
+            }
+        }
+        
         return null;
     }
 }

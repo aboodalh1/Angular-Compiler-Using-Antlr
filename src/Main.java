@@ -58,8 +58,9 @@ public class Main {
         System.out.println("4. test_complex_component.txt - Complex component with advanced features");
         System.out.println("5. test_import_error.txt - Contains import error");
         System.out.println("6. test_import_error_fixed.txt - Contains import error (fixed)");
+        System.out.println("7. test_ngif_ngfor_error.txt - Contains ngIf + ngFor semantic error");
         
-        System.out.print("\nSelect test file (1-6): ");
+        System.out.print("\nSelect test file (1-7): ");
         int fileChoice = scanner.nextInt();
         scanner.nextLine(); // consume newline
         
@@ -82,6 +83,9 @@ public class Main {
                 break;
             case 6:
                 fileName = "test_import_error_fixed.txt";
+                break;
+            case 7:
+                fileName = "test_ngif_ngfor_error.txt";
                 break;
             default:
                 System.out.println("Invalid choice. Using default test file.");

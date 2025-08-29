@@ -22,6 +22,9 @@ NgModel: '[(ngModel)]';
 NgSubmit: '(ngSubmit)';
 NgClick: '(click)';
 
+// Service decorator
+Injectable: '@Injectable';
+
 // New HTML Attributes
 Name: 'name';
 Id: 'id';

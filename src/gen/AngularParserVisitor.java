@@ -668,4 +668,16 @@ public interface AngularParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitNgIfAttribute(AngularParser.NgIfAttributeContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link AngularParser#templateString}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitTemplateString(AngularParser.TemplateStringContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link AngularParser#templateContent}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitTemplateContent(AngularParser.TemplateContentContext ctx);
 }

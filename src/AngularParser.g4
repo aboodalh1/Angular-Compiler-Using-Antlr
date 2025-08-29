@@ -84,7 +84,7 @@ methodCallStatement:
 		expression (Comma expression)*
 	)? CloseParen SemiColon;
 
-component: (Service | Component) OpenParen (
+component: (Injectable | Component) OpenParen (
 		argumentList
 		| OpenBrace CloseBrace
 	)? CloseParen exportClass;
@@ -137,15 +137,18 @@ variableDeclaration:
 	accessModifier? Let_Identify? Identifier Colon (type) Assign (
 		expression
 		| literalValue
+		| templateString
 	) SemiColon
 	| accessModifier? Let_Identify? Identifier Assign (
 		expression
 		| literalValue
+		| templateString
 	) SemiColon
 	| accessModifier? Let_Identify? Identifier Colon type SemiColon
 	| accessModifier? Identifier Assign (
 		expression
 		| literalValue
+		| templateString
 	) SemiColon
 	| accessModifier? Identifier SemiColon;
 arrayDeclaration:
@@ -177,7 +180,8 @@ literalValue:
 	| mapLiteral
 	| Null
 	| html
-	| css;
+	| css
+	| templateString;
 mapLiteral:
 	OpenBrace Identifier Colon literalValue (
 		Comma (Identifier Colon literalValue) Comma?
@@ -187,7 +191,9 @@ listLiteral:
 		Comma (Identifier | literalValue)
 	)* Comma? CloseBracket;
 assignmentStatement:
-	Identifier Assign expression (Comma expression)* SemiColon
+	Identifier Assign (expression | templateString) (
+		Comma expression
+	)* SemiColon
 	| This Dot Identifier Assign expression SemiColon
 	| Identifier Assign OpenBracket (
 		literalValue (Comma literalValue)*
@@ -254,15 +260,18 @@ function_call:
 html: Backtick html_content Backtick;
 
 html_content: (
-		html_element+
-		| '{{' expression '}}'
-		| NumberLiteral* Identifier NumberLiteral*
+		html_element
+		| AngularExpressionStart expression AngularExpressionEnd
+		| Identifier
+		| StringLiteral
+		| NumberLiteral
 	)+;
 
 html_element:
-	'<' html_tag_name html_attributes? '>' html_content? '<' '/' html_tag_name '>'
-	| '<' html_tag_name html_attributes? '>'
-	| '<' html_tag_name html_attributes '/' '>';
+	'<' html_tag_name html_attributes? '>' html_content '<' '/' html_tag_name '>'
+	| '<' html_tag_name html_attributes? '>' html_content?
+	| '<' html_tag_name html_attributes '/' '>'
+	| '<' html_tag_name '>';
 
 html_tag_name: Identifier;
 
@@ -271,19 +280,43 @@ html_attributes: html_attribute*;
 html_attribute:
 	(
 		Identifier
+		| Class // Allow 'class' attribute
+		| Name
+		| Id
+		| Src
+		| Alt // Allow other HTML attributes
+		| TypeAttributeName
+		| LabelAttributeName
+		| ValueAttributeName
+		| PlaceHolderAttributeName
+		| CheckedAttributeName
+		| TargetAttributeName
+		| HeadingLevelAttributeName
+		| DirectionAttributeName
+		| DurationAttributeName
+		| RepeatAttributeName
+		| GapAttributeName
 		| ngIfAttribute
 		| ngForAttribute
 		| onChangeAttribute
 		| onClickAttribute
 		| '[' (Identifier | (Identifier (access_suffix)*)) ']'
 		| '(' (Identifier) ')'
-		| '*'
+		| '*' Identifier
+		| NgIfDirective
+		| NgForDirective
+		| StringLiteral
+		| NumberLiteral
 	) ('=' html_attribute_value)?;
 access_suffix:
 	'.' Identifier
 	| '[' expression ']'
 	| '.' function_call;
-html_attribute_value: literalValue | expression;
+html_attribute_value:
+	literalValue
+	| expression
+	| StringLiteral
+	| Identifier;
 css: OpenBracket Backtick css_content* Backtick CloseBracket;
 css_content:
 	Dot? Identifier (Colon Identifier)* OpenBrace css_class_content* CloseBrace;
@@ -315,3 +348,15 @@ repeatAttribute:
 	RepeatAttributeName Assign (NumberLiteral | StringLiteral);
 ngForAttribute: NgForDirective Assign expression;
 ngIfAttribute: NgIfDirective Assign expression;
+
+// Template String Support
+templateString: Backtick templateContent Backtick;
+
+templateContent: (
+		html_element
+		| AngularExpressionStart expression AngularExpressionEnd
+		| Identifier
+		| StringLiteral
+		| NumberLiteral
+		| BooleanLiteral
+	)+;
