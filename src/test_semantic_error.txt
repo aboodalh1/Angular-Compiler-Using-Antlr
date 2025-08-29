@@ -1,0 +1,19 @@
+// Semantic Error Test File
+import Component from '@angular/core';
+
+@Component
+class TestComponent {
+    title: string = "Test Component";
+    showMessage: boolean = true;
+    items: Array<string> = ["Item 1", "Item 2", "Item 3"];
+    
+    // This will cause a semantic error - mixing ngIf and ngFor
+    // In real Angular, this would be invalid
+    template: string = "Mixed ngIf and ngFor";
+    
+    onClick() {
+        console.log("Button clicked!");
+    }
+}
+
+export TestComponent;

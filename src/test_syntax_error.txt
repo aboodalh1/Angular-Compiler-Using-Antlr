@@ -1,0 +1,15 @@
+// Syntax Error Test File
+import Component from '@angular/core';
+
+@Component
+class TestComponent {  // Missing closing brace for @Component
+    title: string = "Test Component";
+    showMessage: boolean = true;
+    items: Array<string> = ["Item 1", "Item 2", "Item 3"];
+    
+    onClick() {
+        console.log("Button clicked!");
+    }
+}
+
+export TestComponent;

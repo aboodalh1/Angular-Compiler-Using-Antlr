@@ -1,5 +1,7 @@
 package generators;
 
+import utils.Logger;
+
 import nodes.ASTNode;
 import nodes.product.ProductNode;
 import nodes.product.ProductManagerNode;
@@ -21,6 +23,7 @@ public class CodeGenerator {
     private CSSGenerator cssGenerator;
     private JavaScriptGenerator jsGenerator;
     private PHPGenerator phpGenerator;
+    private Logger logger = Logger.getInstance();
     private String outputDirectory;
 
     public CodeGenerator() {
@@ -60,8 +63,7 @@ public class CodeGenerator {
             String php = phpGenerator.generatePHP(productManager);
             writeToFile("app.php", php);
 
-            // Generate README
-            generateREADME();
+
 
             System.out.println("✅ تم إنشاء التطبيق بنجاح في مجلد: " + outputDirectory);
 

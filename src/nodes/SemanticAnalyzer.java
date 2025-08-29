@@ -4,10 +4,12 @@ import gen.AngularParser;
 import gen.AngularParserBaseListener;
 import java.util.ArrayList;
 import java.util.List;
+import utils.Logger;
 
 public class SemanticAnalyzer extends AngularParserBaseListener {
     private SymbolTable symbolTable;
     private List<String> semanticErrors = new ArrayList<>();
+    private Logger logger = Logger.getInstance();
 
     public SemanticAnalyzer(SymbolTable symbolTable) {
         this.symbolTable = symbolTable;
@@ -36,7 +38,7 @@ public class SemanticAnalyzer extends AngularParserBaseListener {
         // إذا العنصر فيه *ngIf و *ngFor معًا، منرفع خطأ
         if (ngIfCount > 0 && ngForCount > 0) {
             semanticErrors.add("Semantic Error: Element cannot have both *ngIf and *ngFor at the same time. Consider wrapping with <ng-container>.");
-            System.err.println("Semantic Error: Element cannot have both *ngIf and *ngFor at the same time. Consider wrapping with <ng-container>.");
+            logger.error("Semantic Error: Element cannot have both *ngIf and *ngFor at the same time. Consider wrapping with <ng-container>.");
         }
     }
 
@@ -51,7 +53,7 @@ public class SemanticAnalyzer extends AngularParserBaseListener {
         String className = ctx.Identifier(1).getText();
         if (!symbolTable.isImported(className)) {
             semanticErrors.add("Semantic Error: Class '" + className + "' used but not imported.");
-            System.err.printf("error: %s\n", "Semantic Error: Class '" + className + "' used but not imported.");
+            logger.error("Semantic Error: Class '" + className + "' used but not imported.");
         }
     }
 
@@ -61,7 +63,7 @@ public class SemanticAnalyzer extends AngularParserBaseListener {
         String currentScope = "Global"; // استخدم نظام النطاق لديك إذا كان متقدماً
         if (symbolTable.variableExistsInScope(varName, currentScope)) {
             semanticErrors.add("Semantic Error: Duplicate variable declaration in the same scope: " + varName);
-            System.err.println("Semantic Error: Duplicate variable declaration in the same scope: " + varName);
+            logger.error("Semantic Error: Duplicate variable declaration in the same scope: " + varName);
         }
         if (ctx.type() != null) {
             String type = ctx.type().getText();
