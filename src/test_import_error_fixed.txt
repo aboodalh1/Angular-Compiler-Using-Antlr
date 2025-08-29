@@ -1,0 +1,9 @@
+// Import Error Test File - Fixed Version
+import { Component } from '@angular/core';
+import { NonExistentModule } from './non-existent';  // This module doesn't exist
+
+@Component()
+export class TestComponent {
+    title: string = "Test Component";
+    message: string = "This should cause an import error";
+}

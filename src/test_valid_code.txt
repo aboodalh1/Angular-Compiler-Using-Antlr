@@ -1,15 +1,13 @@
-// Valid Code Test File
-import Component from '@angular/core';
+// Valid Code Test File - FIXED SYNTAX
+import { Component } from '@angular/core';
 
-@Component
-class TestComponent {
+@Component()
+export class TestComponent {
     title: string = "Test Component";
     showMessage: boolean = true;
-    items: Array<string> = ["Item 1", "Item 2", "Item 3"];
+    items: Array = ["Item 1", "Item 2", "Item 3"];
     
     onClick() {
         console.log("Button clicked!");
     }
 }
-
-export TestComponent;
