@@ -3005,6 +3005,7 @@ public class AngularParser extends Parser {
 			case TypeNumber:
 			case TypeString:
 			case TypeBoolean:
+			case Identifier:
 				{
 				setState(597);
 				type();
@@ -3300,6 +3301,7 @@ public class AngularParser extends Parser {
 		public TerminalNode TypeBoolean() { return getToken(AngularParser.TypeBoolean, 0); }
 		public TerminalNode Array() { return getToken(AngularParser.Array, 0); }
 		public TerminalNode Any() { return getToken(AngularParser.Any, 0); }
+		public TerminalNode Identifier() { return getToken(AngularParser.Identifier, 0); }
 		public TypeContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -3315,7 +3317,7 @@ public class AngularParser extends Parser {
 			{
 			setState(663);
 			_la = _input.LA(1);
-			if ( !(((((_la - 90)) & ~0x3f) == 0 && ((1L << (_la - 90)) & ((1L << (Array - 90)) | (1L << (Any - 90)) | (1L << (TypeNumber - 90)) | (1L << (TypeString - 90)) | (1L << (TypeBoolean - 90)))) != 0)) ) {
+			if ( !(((((_la - 90)) & ~0x3f) == 0 && ((1L << (_la - 90)) & ((1L << (Array - 90)) | (1L << (Any - 90)) | (1L << (TypeNumber - 90)) | (1L << (TypeString - 90)) | (1L << (TypeBoolean - 90)) | (1L << (Identifier - 90)))) != 0)) ) {
 			_errHandler.recoverInline(this);
 			}
 			else {
@@ -6823,9 +6825,9 @@ public class AngularParser extends Parser {
 		"Q\3Q\3Q\6Q\u04af\nQ\rQ\16Q\u04b0\3Q\2\3nR\2\4\6\b\n\f\16\20\22\24\26\30"+
 		"\32\34\36 \"$&(*,.\60\62\64\668:<>@BDFHJLNPRTVXZ\\^`bdfhjlnprtvxz|~\u0080"+
 		"\u0082\u0084\u0086\u0088\u008a\u008c\u008e\u0090\u0092\u0094\u0096\u0098"+
-		"\u009a\u009c\u009e\u00a0\2\b\4\2\21\21\36\36\3\2dg\4\2ccmm\4\2\\]_a\4"+
-		"\2CCnn\3\2ij\2\u0543\2\u00a5\3\2\2\2\4\u00c1\3\2\2\2\6\u00c6\3\2\2\2\b"+
-		"\u00d1\3\2\2\2\n\u00dc\3\2\2\2\f\u00e0\3\2\2\2\16\u00e2\3\2\2\2\20\u00ea"+
+		"\u009a\u009c\u009e\u00a0\2\b\4\2\21\21\36\36\3\2dg\4\2ccmm\5\2\\]_amm"+
+		"\4\2CCnn\3\2ij\2\u0543\2\u00a5\3\2\2\2\4\u00c1\3\2\2\2\6\u00c6\3\2\2\2"+
+		"\b\u00d1\3\2\2\2\n\u00dc\3\2\2\2\f\u00e0\3\2\2\2\16\u00e2\3\2\2\2\20\u00ea"+
 		"\3\2\2\2\22\u00f2\3\2\2\2\24\u0103\3\2\2\2\26\u0105\3\2\2\2\30\u0109\3"+
 		"\2\2\2\32\u010b\3\2\2\2\34\u0113\3\2\2\2\36\u0121\3\2\2\2 \u0123\3\2\2"+
 		"\2\"\u0129\3\2\2\2$\u012d\3\2\2\2&\u0131\3\2\2\2(\u0142\3\2\2\2*\u0151"+

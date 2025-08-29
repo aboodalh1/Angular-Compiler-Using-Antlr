@@ -55,8 +55,10 @@ public class Main {
         System.out.println("1. test_ngif_ngfor_error.txt - Contains ngIf + ngFor semantic error");
         System.out.println("2. test_duplicate_variables.txt - Contains duplicate variable declaration error");
         System.out.println("3. test_unimported_types.txt - Contains unimported types semantic error");
+        System.out.println("4. test_unimported_classes.txt - Contains unimported classes semantic error");
+        System.out.println("5. test_unimported_parameter_types.txt - Contains unimported parameter types semantic error");
         
-        System.out.print("\nSelect test file (1-3): ");
+        System.out.print("\nSelect test file (1-5): ");
         int fileChoice = scanner.nextInt();
         scanner.nextLine(); // consume newline
         
@@ -70,6 +72,12 @@ public class Main {
                 break;
             case 3:
                 fileName = "test_unimported_types.txt";
+                break;
+            case 4:
+                fileName = "test_unimported_classes.txt";
+                break;
+            case 5:
+                fileName = "test_unimported_parameter_types.txt";
                 break;
             default:
                 System.out.println("Invalid choice. Using default test file.");

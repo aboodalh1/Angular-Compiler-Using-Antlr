@@ -171,7 +171,13 @@ objectDeclataion:
 	| accessModifier? Identifier Colon Identifier Assign New Identifier OpenParen (
 		literalValue (Comma literalValue)*
 	)* CloseParen SemiColon;
-type: TypeNumber | TypeString | TypeBoolean | Array | Any;
+type:
+	TypeNumber
+	| TypeString
+	| TypeBoolean
+	| Array
+	| Any
+	| Identifier;
 literalValue:
 	NumberLiteral
 	| StringLiteral
