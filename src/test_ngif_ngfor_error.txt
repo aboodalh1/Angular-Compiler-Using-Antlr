@@ -12,9 +12,7 @@ export class TestComponent {
     }
 }
 
-// Component, نفس التعريف عندك
 
-// ❌ قالب فيه خطأ دلالي: *ngIf + *ngFor على نفس العنصر
 templateWithSemanticError: string = `
 <div class="container">
   <div *ngIf="showItems" *ngFor="let item of items" class="item">
@@ -22,7 +20,6 @@ templateWithSemanticError: string = `
   </div>
 </div>`;
   
-// ✅ القالب الصحيح: الفصل بين التوجيهين
 correctTemplate: string = `
 <div class="container">
   <div *ngIf="showItems">

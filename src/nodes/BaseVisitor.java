@@ -561,15 +561,10 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         
         if (ctx.Identifier() != null) {
             String varName = ctx.Identifier().getText();
-            if (!symbolTable.variableExistsInScope(varName, currentScope)) {
-                variableRow.setType("Variable Declaration");
-                variableRow.setName(varName);
-                variableRow.setScope(currentScope);
-                symbolTable.getRows().add(variableRow);
-            } else {
-                semanticErrors.add("Semantic Error: Duplicate variable declaration in the same scope: " + varName);
-                logger.error("Semantic Error: Duplicate variable declaration in the same scope: " + varName);
-            }
+            variableRow.setType("Variable Declaration");
+            variableRow.setName(varName);
+            variableRow.setScope(currentScope);
+            symbolTable.getRows().add(variableRow);
             variableDeclarationNode.setIdentifier(varName);
         } else {
             // Handle case where identifier is missing

@@ -52,44 +52,28 @@ public class Main {
     
     private static void testSpecificFile(BaseVisitor baseVisitor, Scanner scanner) {
         System.out.println("\n=== Available Test Files ===");
-        System.out.println("1. test_syntax_error.txt - Contains syntax error");
-        System.out.println("2. test_semantic_error.txt - Contains semantic error (ngIf + ngFor)");
-        System.out.println("3. test_valid_code.txt - Valid Angular component");
-        System.out.println("4. test_complex_component.txt - Complex component with advanced features");
-        System.out.println("5. test_import_error.txt - Contains import error");
-        System.out.println("6. test_import_error_fixed.txt - Contains import error (fixed)");
-        System.out.println("7. test_ngif_ngfor_error.txt - Contains ngIf + ngFor semantic error");
+        System.out.println("1. test_ngif_ngfor_error.txt - Contains ngIf + ngFor semantic error");
+        System.out.println("2. test_duplicate_variables.txt - Contains duplicate variable declaration error");
+        System.out.println("3. test_unimported_types.txt - Contains unimported types semantic error");
         
-        System.out.print("\nSelect test file (1-7): ");
+        System.out.print("\nSelect test file (1-3): ");
         int fileChoice = scanner.nextInt();
         scanner.nextLine(); // consume newline
         
         String fileName = "";
         switch (fileChoice) {
             case 1:
-                fileName = "test_syntax_error.txt";
+                fileName = "test_ngif_ngfor_error.txt";
                 break;
             case 2:
-                fileName = "test_semantic_error.txt";
+                fileName = "test_duplicate_variables.txt";
                 break;
             case 3:
-                fileName = "test_valid_code.txt";
-                break;
-            case 4:
-                fileName = "test_complex_component.txt";
-                break;
-            case 5:
-                fileName = "test_import_error.txt";
-                break;
-            case 6:
-                fileName = "test_import_error_fixed.txt";
-                break;
-            case 7:
-                fileName = "test_ngif_ngfor_error.txt";
+                fileName = "test_unimported_types.txt";
                 break;
             default:
                 System.out.println("Invalid choice. Using default test file.");
-                fileName = "test_valid_code.txt";
+                fileName = "test_ngif_ngfor_error.txt";
         }
         
         System.out.println("Testing file: " + fileName);

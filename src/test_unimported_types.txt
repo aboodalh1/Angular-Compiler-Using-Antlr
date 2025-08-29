@@ -1,0 +1,12 @@
+import { Component } from '@angular/core';
+
+@Component()
+export class TestComponent {
+    service: MyServiceType;
+
+    data: CustomModel;
+
+    onClick(item: CustomModel) {   
+        console.log("Clicked!");
+    }
+}

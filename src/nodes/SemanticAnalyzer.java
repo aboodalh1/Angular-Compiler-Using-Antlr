@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import utils.Logger;
 
 public class SemanticAnalyzer extends AngularParserBaseListener {
@@ -17,6 +18,8 @@ public class SemanticAnalyzer extends AngularParserBaseListener {
     
     // نظام تتبع منفصل للمتغيرات - لا يعتمد على SymbolTable
     private final Map<String, Set<String>> declaredVars = new HashMap<>();
+    private String currentScope = "Global";
+    private Stack<String> scopeStack = new Stack<>();
 
     public SemanticAnalyzer(SymbolTable symbolTable) {
         this.symbolTable = symbolTable;
@@ -30,6 +33,20 @@ public class SemanticAnalyzer extends AngularParserBaseListener {
     public void reset() {
         declaredVars.clear();
         semanticErrors.clear();
+        currentScope = "Global";
+        scopeStack.clear();
+    }
+    
+    private void enterScope(String newScope) {
+        scopeStack.push(newScope);
+        this.currentScope = newScope;
+    }
+    
+    private void exitScope() {
+        if (!scopeStack.isEmpty()) {
+            scopeStack.pop();
+            currentScope = scopeStack.isEmpty() ? "Global" : scopeStack.peek();
+        }
     }
 
     @Override
@@ -69,11 +86,34 @@ public class SemanticAnalyzer extends AngularParserBaseListener {
             logger.error("Semantic Error: Class '" + className + "' used but not imported.");
         }
     }
+    
+    @Override
+    public void enterFunctionDeclaration(AngularParser.FunctionDeclarationContext ctx) {
+        if (ctx.Identifier() != null) {
+            String functionName = ctx.Identifier().getText();
+            enterScope(functionName);
+        }
+    }
+    
+    @Override
+    public void exitFunctionDeclaration(AngularParser.FunctionDeclarationContext ctx) {
+        exitScope();
+    }
+    
+    @Override
+    public void enterParameter(AngularParser.ParameterContext ctx) {
+        if (ctx.type() != null) {
+            String type = ctx.type().getText();
+            if (!isPrimitiveType(type) && !symbolTable.isImported(type)) {
+                semanticErrors.add("Semantic Error: Type '" + type + "' used in parameter but not imported.");
+                logger.error("Semantic Error: Type '" + type + "' used in parameter but not imported.");
+            }
+        }
+    }
 
     @Override
     public void enterVariableDeclaration(AngularParser.VariableDeclarationContext ctx) {
         String varName = ctx.Identifier().getText();
-        String currentScope = "Global"; // استخدم نظام النطاق لديك إذا كان متقدماً
         
         // استخدم النظام المحلي بدلاً من SymbolTable لتجنب التضارب
         Set<String> inScope = declaredVars.computeIfAbsent(currentScope, k -> new HashSet<>());
