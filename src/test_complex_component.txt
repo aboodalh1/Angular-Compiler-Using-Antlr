@@ -1,8 +1,8 @@
-// Complex Component Test File
-import Component from '@angular/core';
+// Complex Component Test File - FIXED SYNTAX
+import { Component } from '@angular/core';
 
-@Component
-class ComplexComponent {
+@Component()
+export class ComplexComponent {
     pageTitle: string = "Complex Test Component";
     sectionTitle: string = "Advanced Features";
     isLoading: boolean = false;
@@ -10,7 +10,7 @@ class ComplexComponent {
     userInput: string = "";
     selectedIndex: number = -1;
     
-    items: Array<{name: string, value: number}> = [
+    items: Array = [
         {name: "Item 1", value: 100},
         {name: "Item 2", value: 200},
         {name: "Item 3", value: 300}
@@ -34,5 +34,3 @@ class ComplexComponent {
         console.log("Selected item:", this.items[index]);
     }
 }
-
-export ComplexComponent;

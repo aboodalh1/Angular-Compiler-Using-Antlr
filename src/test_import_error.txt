@@ -1,11 +1,9 @@
-// Import Error Test File
-import Component from '@angular/core';
-import NonExistentModule from './non-existent';  // This module doesn't exist
+// Import Error Test File - FIXED SYNTAX
+import { Component } from '@angular/core';
+import { NonExistentModule } from './non-existent';  // This module doesn't exist
 
-@Component
-class TestComponent {
+@Component()
+export class TestComponent {
     title: string = "Test Component";
     message: string = "This should cause an import error";
 }
-
-export TestComponent;

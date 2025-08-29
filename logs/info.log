@@ -1,1 +1,43 @@
 
+[INFO] [2025-08-29 18:13:54] Testing file: test_syntax_error.txt
+[INFO] [2025-08-29 18:13:54] Using file: src/test_syntax_error.txt
+[INFO] [2025-08-29 18:13:58] === Symbol Table ===
+[INFO] [2025-08-29 18:14:03] === AST ===
+[INFO] [2025-08-29 18:14:04] ProgramNode{
+statements=[
+ StatementNode{
+importStatementNodes=
+Import
+identifier='Component', source=''@angular/core''
+}
+}, 
+StatementNode{
+componentNodes=
+ComponentNode{
+decorator=null, exportClass=null
+}
+}, 
+StatementNode{
+classNodes=
+ClassNode{class Name='TestComponent', classBody=
+ClassBody{
+variableDeclarationNodes=[VariableDeclaration(AccessModifier = null, identifier=title, type=TypeNode{number='null', anboolean='null', array='null', string='string'}, expression=
+Expression(
+operator="Test Component", left=null, right=null
+)), VariableDeclaration(AccessModifier = null, identifier=showMessage, type=TypeNode{number='null', anboolean='boolean', array='null', string='null'}, expression=
+Expression(
+operator=true, left=null, right=null
+))], functionDeclarationNodes=[], objectDeclarationNodes=[], arrayDeclarationNodeList=[]
+}}
+
+}, StatementNode{}, StatementNode{}, StatementNode{}, StatementNode{}, StatementNode{}, 
+StatementNode{
+functionDeclarationNodes=
+FunctionDeclaration(
+identifier=onClick, parameters=[], returnType=null, body=null, returnExpression=null
+)
+}, StatementNode{}]
+}
+[INFO] [2025-08-29 18:14:04] 
+No semantic errors detected.
+[INFO] [2025-08-29 18:14:04] === Symbol Table ===

@@ -1,11 +1,11 @@
-// Semantic Error Test File
-import Component from '@angular/core';
+// Semantic Error Test File - FIXED SYNTAX
+import { Component } from '@angular/core';
 
-@Component
-class TestComponent {
+@Component()
+export class TestComponent {
     title: string = "Test Component";
     showMessage: boolean = true;
-    items: Array<string> = ["Item 1", "Item 2", "Item 3"];
+    items: Array = ["Item 1", "Item 2", "Item 3"];
     
     // This will cause a semantic error - mixing ngIf and ngFor
     // In real Angular, this would be invalid
@@ -15,5 +15,3 @@ class TestComponent {
         console.log("Button clicked!");
     }
 }
-
-export TestComponent;

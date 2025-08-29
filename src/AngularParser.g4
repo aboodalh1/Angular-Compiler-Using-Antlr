@@ -86,10 +86,14 @@ methodCallStatement:
 		expression (Comma expression)*
 	)? CloseParen SemiColon;
 
-component: (Service | Component) OpenParen OpenBrace argumentList CloseBrace CloseParen exportClass;
+component: (Service | Component) OpenParen (
+		argumentList
+		| OpenBrace CloseBrace
+	)? CloseParen exportClass;
 // Fix component decorator format  // Remove extra braces
 exportClass:
-	Export classDeclaration; // Simplify export class rule
+	Export classDeclaration
+	| Export Identifier SemiColon;
 classDeclaration:
 	Class Identifier OpenBrace classBody CloseBrace;
 classBody: (
@@ -106,7 +110,8 @@ decorator:
 argumentList: argument (Comma argument)* Comma?;
 argument: Identifier ':' literalValue;
 importStatement:
-	Import OpenBrace Identifier CloseBrace From StringLiteral SemiColon;
+	Import OpenBrace Identifier CloseBrace From StringLiteral SemiColon
+	| Import Identifier From StringLiteral SemiColon;
 thisVarible:
 	This Dot Identifier Assign (
 		newInstanceAssignment

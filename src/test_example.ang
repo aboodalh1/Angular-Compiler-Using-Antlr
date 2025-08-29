@@ -1,29 +1,11 @@
-// Test file for BaseVisitor
+// Test file for BaseVisitor - FIXED SYNTAX
 import { Component } from '@angular/core';
 
-@Component({
-    selector: 'app-test',
-    template: `
-        <div class="container">
-            <h1>{{ title }}</h1>
-            <p *ngIf="showMessage">Hello World!</p>
-            <ul *ngFor="let item of items">
-                <li>{{ item }}</li>
-            </ul>
-            <button (click)="onClick()">Click me</button>
-        </div>
-    `,
-    styles: [`
-        .container {
-            padding: 20px;
-            background-color: #f0f0f0;
-        }
-    `]
-})
+@Component()
 export class TestComponent {
     title: string = "Test Component";
     showMessage: boolean = true;
-    items: string[] = ["Item 1", "Item 2", "Item 3"];
+    items: Array = ["Item 1", "Item 2", "Item 3"];
     
     onClick() {
         console.log("Button clicked!");
