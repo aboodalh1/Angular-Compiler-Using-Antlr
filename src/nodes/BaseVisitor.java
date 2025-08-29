@@ -20,6 +20,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import utils.Logger;
 
 import static org.antlr.v4.runtime.CharStreams.fromFileName;
 
@@ -29,6 +30,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     private String currentScope = "Global";
     Stack<String> scopeStack = new Stack<>();
     private List<String> semanticErrors = new ArrayList<>();
+    private Logger logger = Logger.getInstance();
 
     private void enterScope(String newScope) {
         scopeStack.push(newScope);
@@ -52,9 +54,9 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     public void printAst() {
         // Try multiple possible file paths
         String[] possiblePaths = {
-                "angular_compiler.txt", // IntelliJ IDEA root
-                "Angular-Compiler-Using-Antlr/src/angular_compiler.txt", // Command line from root
-                "src/angular_compiler.txt" // Command line from project
+            "angular_compiler.txt",
+            "C:\\Users\\KEMO\\OneDrive\\Desktop\\compiler 2\\Angular-Compiler-Using-Antlr\\angular_compiler.txt",
+            "src\\angular_compiler.txt"
         };
 
         CharStream cs = null;
@@ -71,14 +73,14 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         }
 
         if (cs == null) {
-            System.err.println("Error: Could not find angular_compiler.txt in any of the expected locations:");
+            logger.error("Could not find angular_compiler.txt in any of the expected locations:");
             for (String path : possiblePaths) {
-                System.err.println("  - " + path);
+                logger.error("  - " + path);
             }
             return;
         }
 
-        System.out.println("Using file: " + usedPath);
+        logger.info("Using file: " + usedPath);
 
         AngularLexer lexer = new AngularLexer(cs);
         CommonTokenStream token = new CommonTokenStream(lexer);
@@ -86,8 +88,8 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
 
         // AST Construction
         ProgramNode programNode = (ProgramNode) new BaseVisitor().visitProgram(parser.program());
-        System.out.println("=== AST ===");
-        System.out.println(programNode);
+        logger.info("=== AST ===");
+        logger.info(programNode.toString());
 
         // Semantic Analysis
         ParseTree tree = parser.program(); // entry rule
@@ -95,29 +97,32 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         SemanticAnalyzer analyzer = new SemanticAnalyzer(symbolTable);
         walker.walk(analyzer, tree);
         if (!analyzer.getSemanticErrors().isEmpty()) {
-            System.out.println("\n=== Semantic Errors ===");
+            logger.error("\n=== Semantic Errors ===");
             for (String error : analyzer.getSemanticErrors()) {
-                System.err.println(error);
+                logger.error(error);
             }
         } else {
-            System.out.println("\nNo semantic errors detected.");
+            logger.info("\nNo semantic errors detected.");
         }
         // Print semantic errors from BaseVisitor
         if (!semanticErrors.isEmpty()) {
-            System.out.println("\n=== Semantic Errors (from BaseVisitor) ===");
+            logger.error("\n=== Semantic Errors (from BaseVisitor) ===");
             for (String error : semanticErrors) {
-                System.err.println(error);
+                logger.error(error);
             }
         }
         // Optional: Print symbol table
+        logger.info("=== Symbol Table ===");
+        this.symbolTable.print();
     }
 
     public void testFile(String fileName) {
         // Try multiple possible file paths for the given filename
         String[] possiblePaths = {
                 fileName, // Direct path
-                "Angular-Compiler-Using-Antlr/src/" + fileName, // From root with project path
-                "src/" + fileName // From project directory
+                "src/" + fileName, // From project directory
+                "C:\\Users\\KEMO\\OneDrive\\Desktop\\compiler 2\\Angular-Compiler-Using-Antlr\\" + fileName, // Absolute path
+                "C:\\Users\\KEMO\\OneDrive\\Desktop\\compiler 2\\Angular-Compiler-Using-Antlr\\src\\" + fileName // Absolute path with src
         };
 
         CharStream cs = null;
@@ -134,14 +139,14 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         }
 
         if (cs == null) {
-            System.err.println("Error: Could not find " + fileName + " in any of the expected locations:");
+            logger.error("Could not find " + fileName + " in any of the expected locations:");
             for (String path : possiblePaths) {
-                System.err.println("  - " + path);
+                logger.error("  - " + path);
             }
             return;
         }
 
-        System.out.println("Using file: " + usedPath);
+        logger.info("Using file: " + usedPath);
 
         AngularLexer lexer = new AngularLexer(cs);
         CommonTokenStream token = new CommonTokenStream(lexer);
@@ -150,8 +155,8 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         try {
             // AST Construction
             ProgramNode programNode = (ProgramNode) new BaseVisitor().visitProgram(parser.program());
-            System.out.println("=== AST ===");
-            System.out.println(programNode);
+            logger.info("=== AST ===");
+            logger.info(programNode.toString());
 
             // Semantic Analysis
             ParseTree tree = parser.program(); // entry rule
@@ -159,28 +164,27 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             SemanticAnalyzer analyzer = new SemanticAnalyzer(symbolTable);
             walker.walk(analyzer, tree);
             if (!analyzer.getSemanticErrors().isEmpty()) {
-                System.out.println("\n=== Semantic Errors ===");
+                logger.error("\n=== Semantic Errors ===");
                 for (String error : analyzer.getSemanticErrors()) {
-                    System.err.println(error);
+                    logger.error(error);
                 }
             } else {
-                System.out.println("\nNo semantic errors detected.");
+                logger.info("\nNo semantic errors detected.");
             }
 
             // Print semantic errors from BaseVisitor
             if (!semanticErrors.isEmpty()) {
-                System.out.println("\n=== Semantic Errors (from BaseVisitor) ===");
+                logger.error("\n=== Semantic Errors (from BaseVisitor) ===");
                 for (String error : semanticErrors) {
-                    System.err.println(error);
+                    logger.error(error);
                 }
             }
 
-            System.out.println("=== Symbol Table ===");
+            logger.info("=== Symbol Table ===");
             this.symbolTable.print();
 
         } catch (Exception e) {
-            System.err.println("Error during parsing: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Error during parsing: " + e.getMessage(), e);
         }
     }
 
@@ -194,7 +198,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             }
         }
 
-        System.out.println("=== Symbol Table ===");
+        logger.info("=== Symbol Table ===");
         this.symbolTable.print();
         return programNode;
     }
@@ -327,12 +331,19 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     public ClassNode visitClassDeclaration(AngularParser.ClassDeclarationContext ctx) {
         ClassNode classNode = new ClassNode();
 
-        String className = ctx.Identifier().getText();
-        classNode.setIdentifier(className);
-
-        addRowToSymbolTable("Class", className, ctx.getText());
-
-        enterScope(className);
+        // Check if Identifier exists before accessing it
+        if (ctx.Identifier() != null) {
+            String className = ctx.Identifier().getText();
+            classNode.setIdentifier(className);
+            addRowToSymbolTable("Class", className, ctx.getText());
+            enterScope(className);
+        } else {
+            // Handle case where class name is missing
+            String className = "AnonymousClass";
+            classNode.setIdentifier(className);
+            addRowToSymbolTable("Class", className, ctx.getText());
+            enterScope(className);
+        }
 
         if (ctx.classBody() != null) {
             classNode.setClassBody(visitClassBody(ctx.classBody()));
@@ -401,15 +412,24 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     public ArgumentListNode visitArgumentList(AngularParser.ArgumentListContext ctx) {
         ArgumentListNode argumentListNode = new ArgumentListNode();
         Row argumentListRow = new Row();
+        
         for (int i = 0; i < ctx.argument().size(); i++) {
             if (ctx.argument().get(i) != null) {
                 argumentListNode.getArgumentNodeList().add(visitArgument(ctx.argument(i)));
                 argumentListRow.setType("Argument List");
-                argumentListRow.setName(ctx.argument().get(i).Identifier().getText());
+                
+                // Check if Identifier exists before accessing it
+                if (ctx.argument().get(i).Identifier() != null) {
+                    argumentListRow.setName(ctx.argument().get(i).Identifier().getText());
+                } else {
+                    argumentListRow.setName("anonymousArg");
+                }
+                
                 argumentListRow.setValue(ctx.argument().get(i).getText());
                 argumentListRow.setScope(currentScope);
             }
         }
+        
         symbolTable.getRows().add(argumentListRow);
         return argumentListNode;
     }
@@ -417,13 +437,26 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     @Override
     public ArgumentNode visitArgument(AngularParser.ArgumentContext ctx) {
         ArgumentNode node = new ArgumentNode();
-        String name = ctx.Identifier().getText();
-        node.setValue(visitLiteralValue(ctx.literalValue()));
-        node.setName(name);
-        node.setName(name);
-        addRowToSymbolTable("Argument", name, "value");
+        
+        // Check if Identifier exists before accessing it
+        if (ctx.Identifier() != null) {
+            String name = ctx.Identifier().getText();
+            node.setName(name);
+            if (ctx.literalValue() != null) {
+                node.setValue(visitLiteralValue(ctx.literalValue()));
+            }
+            addRowToSymbolTable("Argument", name, "value");
+        } else {
+            // Handle case where argument name is missing
+            String name = "anonymousArg";
+            node.setName(name);
+            if (ctx.literalValue() != null) {
+                node.setValue(visitLiteralValue(ctx.literalValue()));
+            }
+            addRowToSymbolTable("Argument", name, "value");
+        }
+        
         return node;
-
     }
 
     @Override
@@ -486,7 +519,14 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     @Override
     public ASTNode visitConsoleLog(AngularParser.ConsoleLogContext ctx) {
         ConsoleLogNode consoleLogNode = new ConsoleLogNode();
-        consoleLogNode.setValue(ctx.Identifier().getText());
+        
+        // Check if Identifier exists before accessing it
+        if (ctx.Identifier() != null) {
+            consoleLogNode.setValue(ctx.Identifier().getText());
+        } else {
+            consoleLogNode.setValue("anonymousLog");
+        }
+        
         return consoleLogNode;
     }
 
@@ -511,6 +551,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     public VariableDeclarationNode visitVariableDeclaration(AngularParser.VariableDeclarationContext ctx) {
         VariableDeclarationNode variableDeclarationNode = new VariableDeclarationNode();
         Row variableRow = new Row();
+        
         if (ctx.Identifier() != null) {
             String varName = ctx.Identifier().getText();
             if (!symbolTable.variableExistsInScope(varName, currentScope)) {
@@ -520,45 +561,56 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
                 symbolTable.getRows().add(variableRow);
             } else {
                 semanticErrors.add("Semantic Error: Duplicate variable declaration in the same scope: " + varName);
-                System.err.println("Semantic Error: Duplicate variable declaration in the same scope: " + varName);
+                logger.error("Semantic Error: Duplicate variable declaration in the same scope: " + varName);
             }
             variableDeclarationNode.setIdentifier(varName);
+        } else {
+            // Handle case where identifier is missing
+            String varName = "anonymousVariable";
+            variableRow.setType("Variable Declaration");
+            variableRow.setName(varName);
+            variableRow.setScope(currentScope);
+            symbolTable.getRows().add(variableRow);
+            variableDeclarationNode.setIdentifier(varName);
         }
+        
         if (ctx.type() != null) {
             variableDeclarationNode.setType(visitType(ctx.type()));
         }
+        
         if (ctx.expression() != null) {
             variableDeclarationNode.setExpression(visitExpression(ctx.expression()));
             Row exprRow = new Row();
             exprRow.setType("Variable Expression");
-            exprRow.setName(ctx.Identifier().getText());
+            
+            // Check if Identifier exists before accessing it
+            if (ctx.Identifier() != null) {
+                exprRow.setName(ctx.Identifier().getText());
+            } else {
+                exprRow.setName("anonymousVariable");
+            }
+            
             exprRow.setScope(currentScope);
             exprRow.setValue(ctx.expression().getText());
             symbolTable.getRows().add(exprRow);
         }
+        
         return variableDeclarationNode;
     }
 
-    private ExpressionNode visitExpression(AngularParser.ExpressionContext ctx) {
+    public ExpressionNode visitExpression(AngularParser.ExpressionContext ctx) {
         ExpressionNode expressionNode = new ExpressionNode();
         Row expressionRow = new Row();
-        if (expressionNode.operator != null) {
+        
+        // Handle expression text
+        if (ctx.getText() != null && !ctx.getText().isEmpty()) {
             expressionNode.setOperator(ctx.getText());
-            expressionRow.setType("Operator");
+            expressionRow.setType("Expression");
             expressionRow.setName(ctx.getText());
             expressionRow.setValue(ctx.getText());
             expressionRow.setScope(currentScope);
         }
-        if (expressionNode.left != null) {
-            expressionNode.setLeft(expressionNode.left);
-            expressionRow.setValue(expressionNode.left.toString());
-            expressionRow.setScope(currentScope);
-        }
-        if (expressionNode.right != null) {
-            expressionNode.setRight(expressionNode.right);
-            expressionRow.setValue(expressionNode.right.toString());
-            expressionRow.setScope(currentScope);
-        }
+        
         symbolTable.getRows().add(expressionRow);
         return expressionNode;
     }
@@ -566,17 +618,28 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     @Override
     public ArrayDeclarationNode visitArrayDeclaration(AngularParser.ArrayDeclarationContext ctx) {
         ArrayDeclarationNode arrayDeclarationNode = new ArrayDeclarationNode();
-        arrayDeclarationNode.setIdentifier(ctx.Identifier().getText());
-        String arrayName = ctx.Identifier().getText();
+        
+        // Check if Identifier exists before accessing it
+        if (ctx.Identifier() != null) {
+            arrayDeclarationNode.setIdentifier(ctx.Identifier().getText());
+        } else {
+            arrayDeclarationNode.setIdentifier("anonymousArray");
+        }
+        
+        String arrayName = ctx.Identifier() != null ? ctx.Identifier().getText() : "anonymousArray";
         List<String> arrayValues = new ArrayList<>();
-        arrayDeclarationNode.setType(visitType(ctx.type()));
-        String arrayType = ctx.type().getText();
+        
+        if (ctx.type() != null) {
+            arrayDeclarationNode.setType(visitType(ctx.type()));
+        }
+        
         if (!ctx.literalValue().isEmpty()) {
             for (int i = 0; i < ctx.literalValue().size(); i++) {
                 arrayDeclarationNode.getValues().add(visitLiteralValue(ctx.literalValue().get(i)));
                 arrayValues.add(visitLiteralValue(ctx.literalValue().get(i)).getArrayValue());
             }
         }
+        
         addRowToSymbolTable("Array Declaration", arrayName, arrayValues.toString());
         return arrayDeclarationNode;
     }
@@ -642,15 +705,23 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     @Override
     public ObjectDeclarationNode visitObjectDeclataion(AngularParser.ObjectDeclataionContext ctx) {
         ObjectDeclarationNode objectDeclarationNode = new ObjectDeclarationNode();
-        if (ctx.Identifier() != null) {
-            objectDeclarationNode.setIdentifier(ctx.Identifier().toString());
+        
+        if (ctx.Identifier() != null && ctx.Identifier().size() >= 2) {
+            objectDeclarationNode.setIdentifier(ctx.Identifier().get(0).getText());
             addRowToSymbolTable("Object", ctx.Identifier().get(0).getText(), ctx.Identifier().get(1).getText());
+            
+            // Check if the second identifier exists before checking import
+            if (ctx.Identifier().get(1) != null) {
+                if (!symbolTable.isImported(ctx.Identifier().get(1).getText())) {
+                    logger.error("Semantic Error: Class '" + ctx.Identifier().get(1).getText() + "' used but not imported.");
+                }
+            }
+        } else {
+            // Handle case where identifiers are missing
+            objectDeclarationNode.setIdentifier("anonymousObject");
+            addRowToSymbolTable("Object", "anonymousObject", "unknown");
         }
-        if (!symbolTable.isImported(ctx.Identifier().get(1).getText())) {
-            System.err.println(
-                    "error: Semantic Error: Class '" + ctx.Identifier().get(1).getText() + "' used but not imported.");
-
-        }
+        
         return objectDeclarationNode;
     }
 
@@ -705,7 +776,14 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     @Override
     public AssignmentStatementNode visitAssignmentStatement(AngularParser.AssignmentStatementContext ctx) {
         AssignmentStatementNode assignmentStatementNode = new AssignmentStatementNode();
-        assignmentStatementNode.setIdentifier(ctx.Identifier().getText());
+        
+        // Check if Identifier exists before accessing it
+        if (ctx.Identifier() != null) {
+            assignmentStatementNode.setIdentifier(ctx.Identifier().getText());
+        } else {
+            assignmentStatementNode.setIdentifier("anonymousAssignment");
+        }
+        
         List<String> values = new ArrayList<>();
         if (!ctx.literalValue().isEmpty()) {
             for (int i = 0; i < ctx.literalValue().size(); i++) {
@@ -719,7 +797,9 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
                 values.add(visitExpression(ctx.expression().get(i)).toString());
             }
         }
-        addRowToSymbolTable("Assignment", ctx.Identifier().getText(), values.toString());
+        
+        String identifier = ctx.Identifier() != null ? ctx.Identifier().getText() : "anonymousAssignment";
+        addRowToSymbolTable("Assignment", identifier, values.toString());
         return assignmentStatementNode;
     }
 
@@ -897,7 +977,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
 
     @Override
     public HtmlNode visitHtml(AngularParser.HtmlContext ctx) {
-        System.out.println("ddddd");
+        logger.debug("ddddd");
         HtmlNode htmlNode = new HtmlNode();
         Row htmlRow = new Row();
         if (ctx.html_content() != null) {

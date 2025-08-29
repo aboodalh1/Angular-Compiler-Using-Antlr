@@ -8,8 +8,12 @@ import nodes.SymbolTables.mainSymbolTable;
 
 import java.util.ArrayList;
 import java.util.List;
+import utils.Logger;
 
-import static helper.keyWords.*;
+public class SemanticAnalyzer extends AngularParserBaseListener {
+    private SymbolTable symbolTable;
+    private List<String> semanticErrors = new ArrayList<>();
+    private Logger logger = Logger.getInstance();
 
 public class SemanticAnalyzer extends AngularParserBaseListener {
     private mainSymbolTable symbolTable;
@@ -51,6 +55,7 @@ public class SemanticAnalyzer extends AngularParserBaseListener {
         // If element has both *ngIf and *ngFor, raise an error
         if (ngIfCount > 0 && ngForCount > 0) {
             semanticErrors.add("Semantic Error: Element cannot have both *ngIf and *ngFor at the same time. Consider wrapping with <ng-container>.");
+            logger.error("Semantic Error: Element cannot have both *ngIf and *ngFor at the same time. Consider wrapping with <ng-container>.");
         }
     }
 
@@ -62,10 +67,10 @@ public class SemanticAnalyzer extends AngularParserBaseListener {
 
     @Override
     public void enterObjectDeclataion(AngularParser.ObjectDeclataionContext ctx) {
-
-        if (ctx.Identifier() == null || ctx.Identifier().size() != 2) {
-            semanticErrors.add("Syntax Error: Invalid object declaration structure found: " + ctx.getText());
-            return;
+        String className = ctx.Identifier(1).getText();
+        if (!symbolTable.isImported(className)) {
+            semanticErrors.add("Semantic Error: Class '" + className + "' used but not imported.");
+            logger.error("Semantic Error: Class '" + className + "' used but not imported.");
         }
 
         String className = ctx.Identifier(1).getText();
@@ -77,10 +82,11 @@ public class SemanticAnalyzer extends AngularParserBaseListener {
     @Override
     public void enterVariableDeclaration(AngularParser.VariableDeclarationContext ctx) {
         String varName = ctx.Identifier().getText();
-        String currentScope = GLOBAL; // Use your scope system if more advanced
-//        if (symbolTable.variableExistsInScope(varName, currentScope)) {
-//            semanticErrors.add("Semantic Error: Duplicate variable declaration in the same scope: " + varName);
-//        }
+        String currentScope = "Global"; // استخدم نظام النطاق لديك إذا كان متقدماً
+        if (symbolTable.variableExistsInScope(varName, currentScope)) {
+            semanticErrors.add("Semantic Error: Duplicate variable declaration in the same scope: " + varName);
+            logger.error("Semantic Error: Duplicate variable declaration in the same scope: " + varName);
+        }
         if (ctx.type() != null) {
             String type = ctx.type().getText();
 //            if (!isPrimitiveType(type) && !symbolTable.isImported(type)) {

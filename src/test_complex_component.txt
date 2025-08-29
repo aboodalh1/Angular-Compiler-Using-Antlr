@@ -1,0 +1,38 @@
+// Complex Component Test File
+import Component from '@angular/core';
+
+@Component
+class ComplexComponent {
+    pageTitle: string = "Complex Test Component";
+    sectionTitle: string = "Advanced Features";
+    isLoading: boolean = false;
+    showAdvanced: boolean = true;
+    userInput: string = "";
+    selectedIndex: number = -1;
+    
+    items: Array<{name: string, value: number}> = [
+        {name: "Item 1", value: 100},
+        {name: "Item 2", value: 200},
+        {name: "Item 3", value: 300}
+    ];
+    
+    loadData() {
+        this.isLoading = true;
+        // Simulate loading
+        this.isLoading = false;
+    }
+    
+    processInput() {
+        if (this.userInput.trim()) {
+            console.log("Processing input:", this.userInput);
+            this.userInput = "";
+        }
+    }
+    
+    selectItem(index: number) {
+        this.selectedIndex = index;
+        console.log("Selected item:", this.items[index]);
+    }
+}
+
+export ComplexComponent;
