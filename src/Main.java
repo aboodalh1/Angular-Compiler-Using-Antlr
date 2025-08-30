@@ -105,7 +105,8 @@ public class Main {
 
     private static void openIndexHtml() {
         try {
-            String indexHtmlPath = "C:\\Users\\KEMO\\OneDrive\\Desktop\\compiler 2\\Angular-Compiler-Using-Antlr\\generated_app\\index.html";
+            // Use relative path from current working directory
+            String indexHtmlPath = "generated_app/index.html";
             File indexHtmlFile = new File(indexHtmlPath);
 
             if (indexHtmlFile.exists()) {

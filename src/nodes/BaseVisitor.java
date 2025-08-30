@@ -131,9 +131,9 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         String[] possiblePaths = {
                 fileName, // Direct path
                 "src/" + fileName, // From project directory
-                "C:\\Users\\KEMO\\OneDrive\\Desktop\\compiler 2\\Angular-Compiler-Using-Antlr\\" + fileName, // Absolute path
-                "C:\\Users\\KEMO\\OneDrive\\Desktop\\compiler 2\\Angular-Compiler-Using-Antlr\\src\\" + fileName // Absolute path with src
+                "test/" + fileName // From test directory if it exists
         };
+
 
         CharStream cs = null;
         String usedPath = null;
