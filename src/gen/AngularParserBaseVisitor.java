@@ -235,7 +235,7 @@ public class AngularParserBaseVisitor<T> extends AbstractParseTreeVisitor<T> imp
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitEnumDeclaration(AngularParser.EnumDeclarationContext ctx) { return visitChildren(ctx); }
+	@Override public T visitEnumDecl(AngularParser.EnumDeclContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *

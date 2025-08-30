@@ -197,11 +197,11 @@ public interface AngularParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitIdentifierOrPropertyAssignment(AngularParser.IdentifierOrPropertyAssignmentContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link AngularParser#enumDeclaration}.
+	 * Visit a parse tree produced by {@link AngularParser#enumDecl}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitEnumDeclaration(AngularParser.EnumDeclarationContext ctx);
+	T visitEnumDecl(AngularParser.EnumDeclContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link AngularParser#enumValues}.
 	 * @param ctx the parse tree

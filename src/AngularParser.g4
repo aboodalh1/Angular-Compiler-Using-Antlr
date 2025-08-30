@@ -8,7 +8,7 @@ program: statement* EOF;
 
 statement:
 	arrayDeclaration
-	| enumDeclaration
+	| enumDecl
 	| variableDeclaration
 	| functionDeclaration
 	| ifStatement
@@ -122,7 +122,7 @@ newInstanceAssignment:
 	New Identifier OpenParen (expression (Comma expression)*)? CloseParen;
 nestedThisAssignment: This (Dot (Identifier | function_call))+;
 identifierOrPropertyAssignment: Identifier (Dot Identifier)?;
-enumDeclaration:
+enumDecl:
 	Enum Identifier OpenBrace enumValues* CloseBrace SemiColon;
 enumValues: (enumValue (Comma enumValue)*);
 enumValue: Identifier Assign literalValue;

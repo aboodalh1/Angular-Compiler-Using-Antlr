@@ -318,15 +318,15 @@ public interface AngularParserListener extends ParseTreeListener {
 	 */
 	void exitIdentifierOrPropertyAssignment(AngularParser.IdentifierOrPropertyAssignmentContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link AngularParser#enumDeclaration}.
+	 * Enter a parse tree produced by {@link AngularParser#enumDecl}.
 	 * @param ctx the parse tree
 	 */
-	void enterEnumDeclaration(AngularParser.EnumDeclarationContext ctx);
+	void enterEnumDecl(AngularParser.EnumDeclContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link AngularParser#enumDeclaration}.
+	 * Exit a parse tree produced by {@link AngularParser#enumDecl}.
 	 * @param ctx the parse tree
 	 */
-	void exitEnumDeclaration(AngularParser.EnumDeclarationContext ctx);
+	void exitEnumDecl(AngularParser.EnumDeclContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link AngularParser#enumValues}.
 	 * @param ctx the parse tree

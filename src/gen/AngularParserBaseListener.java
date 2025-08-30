@@ -389,13 +389,13 @@ public class AngularParserBaseListener implements AngularParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterEnumDeclaration(AngularParser.EnumDeclarationContext ctx) { }
+	@Override public void enterEnumDecl(AngularParser.EnumDeclContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitEnumDeclaration(AngularParser.EnumDeclarationContext ctx) { }
+	@Override public void exitEnumDecl(AngularParser.EnumDeclContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

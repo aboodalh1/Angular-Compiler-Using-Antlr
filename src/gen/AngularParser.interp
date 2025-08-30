@@ -312,7 +312,7 @@ thisVarible
 newInstanceAssignment
 nestedThisAssignment
 identifierOrPropertyAssignment
-enumDeclaration
+enumDecl
 enumValues
 enumValue
 consoleLog

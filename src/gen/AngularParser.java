@@ -55,7 +55,7 @@ public class AngularParser extends Parser {
 		RULE_classDeclaration = 21, RULE_classBody = 22, RULE_decorator = 23, 
 		RULE_argumentList = 24, RULE_argument = 25, RULE_importStatement = 26, 
 		RULE_thisVarible = 27, RULE_newInstanceAssignment = 28, RULE_nestedThisAssignment = 29, 
-		RULE_identifierOrPropertyAssignment = 30, RULE_enumDeclaration = 31, RULE_enumValues = 32, 
+		RULE_identifierOrPropertyAssignment = 30, RULE_enumDecl = 31, RULE_enumValues = 32, 
 		RULE_enumValue = 33, RULE_consoleLog = 34, RULE_abstractClass = 35, RULE_interfaceDeclaration = 36, 
 		RULE_accessModifier = 37, RULE_variableDeclaration = 38, RULE_arrayDeclaration = 39, 
 		RULE_abstractFunctionDeclaration = 40, RULE_functionDeclaration = 41, 
@@ -81,7 +81,7 @@ public class AngularParser extends Parser {
 			"ngModel", "ngSubmit", "ngClick", "methodCallStatement", "component", 
 			"exportClass", "classDeclaration", "classBody", "decorator", "argumentList", 
 			"argument", "importStatement", "thisVarible", "newInstanceAssignment", 
-			"nestedThisAssignment", "identifierOrPropertyAssignment", "enumDeclaration", 
+			"nestedThisAssignment", "identifierOrPropertyAssignment", "enumDecl", 
 			"enumValues", "enumValue", "consoleLog", "abstractClass", "interfaceDeclaration", 
 			"accessModifier", "variableDeclaration", "arrayDeclaration", "abstractFunctionDeclaration", 
 			"functionDeclaration", "objectDeclataion", "type", "literalValue", "mapLiteral", 
@@ -270,8 +270,8 @@ public class AngularParser extends Parser {
 		public ArrayDeclarationContext arrayDeclaration() {
 			return getRuleContext(ArrayDeclarationContext.class,0);
 		}
-		public EnumDeclarationContext enumDeclaration() {
-			return getRuleContext(EnumDeclarationContext.class,0);
+		public EnumDeclContext enumDecl() {
+			return getRuleContext(EnumDeclContext.class,0);
 		}
 		public VariableDeclarationContext variableDeclaration() {
 			return getRuleContext(VariableDeclarationContext.class,0);
@@ -379,7 +379,7 @@ public class AngularParser extends Parser {
 				enterOuterAlt(_localctx, 2);
 				{
 				setState(183);
-				enumDeclaration();
+				enumDecl();
 				}
 				break;
 			case 3:
@@ -2630,7 +2630,7 @@ public class AngularParser extends Parser {
 	}
 
 	@SuppressWarnings("CheckReturnValue")
-	public static class EnumDeclarationContext extends ParserRuleContext {
+	public static class EnumDeclContext extends ParserRuleContext {
 		public TerminalNode Enum() { return getToken(AngularParser.Enum, 0); }
 		public TerminalNode Identifier() { return getToken(AngularParser.Identifier, 0); }
 		public TerminalNode OpenBrace() { return getToken(AngularParser.OpenBrace, 0); }
@@ -2642,28 +2642,28 @@ public class AngularParser extends Parser {
 		public EnumValuesContext enumValues(int i) {
 			return getRuleContext(EnumValuesContext.class,i);
 		}
-		public EnumDeclarationContext(ParserRuleContext parent, int invokingState) {
+		public EnumDeclContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
-		@Override public int getRuleIndex() { return RULE_enumDeclaration; }
+		@Override public int getRuleIndex() { return RULE_enumDecl; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof AngularParserListener ) ((AngularParserListener)listener).enterEnumDeclaration(this);
+			if ( listener instanceof AngularParserListener ) ((AngularParserListener)listener).enterEnumDecl(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof AngularParserListener ) ((AngularParserListener)listener).exitEnumDeclaration(this);
+			if ( listener instanceof AngularParserListener ) ((AngularParserListener)listener).exitEnumDecl(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof AngularParserVisitor ) return ((AngularParserVisitor<? extends T>)visitor).visitEnumDeclaration(this);
+			if ( visitor instanceof AngularParserVisitor ) return ((AngularParserVisitor<? extends T>)visitor).visitEnumDecl(this);
 			else return visitor.visitChildren(this);
 		}
 	}
 
-	public final EnumDeclarationContext enumDeclaration() throws RecognitionException {
-		EnumDeclarationContext _localctx = new EnumDeclarationContext(_ctx, getState());
-		enterRule(_localctx, 62, RULE_enumDeclaration);
+	public final EnumDeclContext enumDecl() throws RecognitionException {
+		EnumDeclContext _localctx = new EnumDeclContext(_ctx, getState());
+		enterRule(_localctx, 62, RULE_enumDecl);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
