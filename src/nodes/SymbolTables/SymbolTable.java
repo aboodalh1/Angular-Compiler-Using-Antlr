@@ -29,10 +29,8 @@ public abstract class SymbolTable {
     }
 
     public boolean isImported(String className) {
-        System.out.println("ddd");
         for (Row row : rows) {
-            System.out.println(row.getType());
-            if (row.getType() == "Import Statement" && row.getName() == className) {
+            if ("Import Statement".equals(row.getType()) && className.equals(row.getName())) {
                 return true;
             }
         }
@@ -40,7 +38,12 @@ public abstract class SymbolTable {
     }
 
     public void addImport(String className) {
-        rows.add(new Row("import", className, "global", ""));
+        Row row = new Row();
+        row.setType("Import Statement");
+        row.setName(className);
+        row.setScope("Global");
+        row.setValue("");
+        rows.add(row);
     }
 
     public boolean variableExistsInScope(String name, String scope) {

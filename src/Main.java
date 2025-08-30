@@ -1,4 +1,7 @@
 import nodes.BaseVisitor;
+import nodes.SymbolTables.ComponentSymbolTable;
+import nodes.SymbolTables.ServiceSemanticValidator;
+import nodes.SymbolTables.mainSymbolTable;
 import generators.CodeGenerator;
 import utils.Logger;
 import java.awt.Desktop;
@@ -93,6 +96,8 @@ public class Main {
         }
     }
     
+
+    
     private static void printAST(BaseVisitor baseVisitor) {
         System.out.println("Printing AST from default file...");
         logger.info("Printing AST from default file...");
@@ -120,7 +125,7 @@ public class Main {
                 logger.error("Generated app not found at: " + indexHtmlPath);
             }
         } catch (Exception e) {
-            logger.error("Error opening generated app: " + e.getMessage(), e);
+            logger.error("Error opening generated app: " + e.getMessage());
         }
     }
 }

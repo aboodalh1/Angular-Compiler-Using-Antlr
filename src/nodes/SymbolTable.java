@@ -33,7 +33,12 @@ public class SymbolTable {
     }
 
     public void addImport(String className) {
-        rows.add(new Row("Import Statement", className, "Global", ""));
+        Row row = new Row();
+        row.setType("Import Statement");
+        row.setName(className);
+        row.setScope("Global");
+        row.setValue("");
+        rows.add(row);
     }
 
     public boolean variableExistsInScope(String name, String scope) {
