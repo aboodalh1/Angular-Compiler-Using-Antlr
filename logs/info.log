@@ -218,3 +218,52 @@ operator=`<divclass="container"><div*ngIf="showItems"><div*ngFor="let item of it
 [INFO] [2025-08-30 15:13:46] Logger closing...
 [INFO] [2025-08-30 15:14:42] Logger initialized successfully
 [INFO] [2025-08-30 15:14:44] Opening generated app...
+[INFO] [2025-08-30 15:18:45] Printing AST from default file...
+[INFO] [2025-08-30 15:18:45] Using file: angular_compiler.txt
+[INFO] [2025-08-30 15:18:46] === Symbol Table ===
+[INFO] [2025-08-30 15:18:46] === AST ===
+[INFO] [2025-08-30 15:18:46] ProgramNode{
+statements=[
+ StatementNode{
+importStatementNodes=
+Import
+identifier='Component', source=''@angular/core''
+}
+}, 
+StatementNode{
+componentNodes=
+ComponentNode{
+decorator=null, exportClass=ExportClassNode{classNode=
+ClassNode{class Name='AppComponent', classBody=
+ClassBody{
+variableDeclarationNodes=[VariableDeclaration(AccessModifier = null, identifier=title, type=TypeNode{number='null', anboolean='null', array='null', string='string'}, expression=
+Expression(
+operator="Angular Compiler Test App", left=null, right=null
+)), VariableDeclaration(AccessModifier = null, identifier=subtitle, type=TypeNode{number='null', anboolean='null', array='null', string='string'}, expression=
+Expression(
+operator="Welcome to the Test Application", left=null, right=null
+)), VariableDeclaration(AccessModifier = null, identifier=description, type=TypeNode{number='null', anboolean='null', array='null', string='string'}, expression=
+Expression(
+operator="This is a test application to demonstrate the Angular compiler capabilities.", left=null, right=null
+)), VariableDeclaration(AccessModifier = null, identifier=isLoading, type=TypeNode{number='null', anboolean='boolean', array='null', string='null'}, expression=
+Expression(
+operator=false, left=null, right=null
+)), VariableDeclaration(AccessModifier = null, identifier=buttonText, type=TypeNode{number='null', anboolean='null', array='null', string='string'}, expression=
+Expression(
+operator="Click Me!", left=null, right=null
+)), VariableDeclaration(AccessModifier = null, identifier=features, type=TypeNode{number='null', anboolean='null', array='Array', string='null'}, expression=
+Expression(
+operator=["Component-based architecture","Template-driven forms","Reactive programming","Dependency injection","Routing and navigation"], left=null, right=null
+))], functionDeclarationNodes=[
+FunctionDeclaration(
+identifier=onButtonClick, parameters=[], returnType=null, body=null, returnExpression=null
+)], objectDeclarationNodes=[], arrayDeclarationNodeList=[]
+}}
+}
+}
+}]
+}
+[INFO] [2025-08-30 15:18:46] 
+No semantic errors detected.
+[INFO] [2025-08-30 15:18:46] === Symbol Table ===
+[INFO] [2025-08-30 15:18:49] Logger closing...
