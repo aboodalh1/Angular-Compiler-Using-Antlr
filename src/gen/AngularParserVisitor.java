@@ -680,4 +680,46 @@ public interface AngularParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitTemplateContent(AngularParser.TemplateContentContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link AngularParser#product}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitProduct(AngularParser.ProductContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link AngularParser#productProperties}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitProductProperties(AngularParser.ProductPropertiesContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link AngularParser#productId}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitProductId(AngularParser.ProductIdContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link AngularParser#productProperty}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitProductProperty(AngularParser.ProductPropertyContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link AngularParser#productBody}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitProductBody(AngularParser.ProductBodyContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link AngularParser#productManager}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitProductManager(AngularParser.ProductManagerContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link AngularParser#productManagerBody}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitProductManagerBody(AngularParser.ProductManagerBodyContext ctx);
 }

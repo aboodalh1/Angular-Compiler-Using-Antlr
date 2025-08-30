@@ -1,6 +1,7 @@
 package nodes;
 
 import java.io.IOException;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -13,9 +14,17 @@ import nodes.css_node.CssNode;
 import nodes.html_node.*;
 import nodes.html_node.html_content.NgForNode;
 import nodes.html_node.html_content.NgIfNode;
+import nodes.html_node.html_content.NgModelNode;
+import nodes.html_node.html_content.NgSubmitNode;
+import nodes.html_node.html_content.NgClickNode;
 import nodes.statement.*;
 import nodes.statement.HtmlElementNode;
+import nodes.state.StateNode;
+import nodes.state.ActionNode;
+import nodes.product.ProductNode;
+import nodes.product.ProductManagerNode;
 import nodes.SymbolTables.ComponentSymbolTable;
+import generators.CodeGenerator;
 import nodes.SymbolTables.ServiceSemanticValidator;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -39,9 +48,83 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     private List<String> semanticErrors = new ArrayList<>();
     private Logger logger = Logger.getInstance();
     
-    // تتبع نطاق المكوّنات مثل merge-branch
+    
     private final Set<String> componentScopeNames = new HashSet<>();
     private boolean isInsideComponent = false;
+    
+    /**
+     * Get the current working directory and try to find project root
+     * @return String array of possible project paths
+     */
+    private String[] getProjectPaths() {
+        String currentDir = System.getProperty("user.dir");
+        String fileSeparator = System.getProperty("file.separator");
+        
+        // Check if we're in the Angular-Compiler-Using-Antlr project directory
+        if (currentDir.endsWith("Angular-Compiler-Using-Antlr")) {
+            return new String[]{
+                currentDir,
+                currentDir + fileSeparator + "src",
+                currentDir + fileSeparator + "test"
+            };
+        }
+        
+        // Check if we're in a parent directory that contains Angular-Compiler-Using-Antlr
+        if (currentDir.contains("Angular-Compiler-Using-Antlr")) {
+            String projectRoot = currentDir.substring(0, currentDir.indexOf("Angular-Compiler-Using-Antlr") + "Angular-Compiler-Using-Antlr".length());
+            return new String[]{
+                projectRoot,
+                projectRoot + fileSeparator + "src",
+                projectRoot + fileSeparator + "test",
+                currentDir,
+                currentDir + fileSeparator + "src",
+                currentDir + fileSeparator + "test"
+            };
+        }
+        
+        // Check if we're in a directory that might contain Angular-Compiler-Using-Antlr as a subdirectory
+        // This handles the case where we're in "compiler 2" directory
+        File currentDirFile = new File(currentDir);
+        File[] subdirs = currentDirFile.listFiles();
+        if (subdirs != null) {
+            for (File subdir : subdirs) {
+                if (subdir.isDirectory() && subdir.getName().equals("Angular-Compiler-Using-Antlr")) {
+                    String projectRoot = subdir.getAbsolutePath();
+                    return new String[]{
+                        projectRoot,
+                        projectRoot + fileSeparator + "src",
+                        projectRoot + fileSeparator + "test",
+                        currentDir,
+                        currentDir + fileSeparator + "src",
+                        currentDir + fileSeparator + "test"
+                    };
+                }
+            }
+        }
+        
+        // Default paths for other project structures
+        String[] paths = {
+            currentDir,
+            currentDir + fileSeparator + "src",
+            currentDir + fileSeparator + "test",
+            currentDir + fileSeparator + ".." + fileSeparator + "src",
+            currentDir + fileSeparator + ".." + fileSeparator + ".." + fileSeparator + "src"
+        };
+        
+        // Add common project structure paths
+        if (currentDir.contains("src")) {
+            String projectRoot = currentDir.substring(0, currentDir.indexOf("src"));
+            paths = new String[]{
+                projectRoot + "src",
+                projectRoot + "test",
+                currentDir,
+                currentDir + fileSeparator + "..",
+                currentDir + fileSeparator + ".." + fileSeparator + ".."
+            };
+        }
+        
+        return paths;
+    }
 
     private void enterScope(String newScope) {
         scopeStack.push(newScope);
@@ -62,7 +145,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         symbolTable.getRows().add(row);
     }
     
-    // Getters للجداول المتخصصة مثل merge-branch
+    
     public ComponentSymbolTable getComponentSymbolTable() {
         return componentSymbolTable;
     }
@@ -88,12 +171,21 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         this.isInsideComponent = false;
         this.semanticErrors.clear();
         
-        // Try multiple possible file paths
-        String[] possiblePaths = {
-            "angular_compiler.txt",
-            "C:\\Users\\KEMO\\OneDrive\\Desktop\\compiler 2\\Angular-Compiler-Using-Antlr\\angular_compiler.txt",
-            "src\\angular_compiler.txt"
-        };
+        // Get file separator for cross-platform compatibility
+        String fileSeparator = System.getProperty("file.separator");
+        
+        // Try multiple possible file paths using dynamic project detection
+        String[] projectPaths = getProjectPaths();
+        String[] possiblePaths = new String[projectPaths.length + 2];
+        
+        // Add direct file paths
+        possiblePaths[0] = "angular_compiler.txt";
+        possiblePaths[1] = "src" + fileSeparator + "angular_compiler.txt";
+        
+        // Add project-based paths
+        for (int i = 0; i < projectPaths.length; i++) {
+            possiblePaths[i + 2] = projectPaths[i] + fileSeparator + "angular_compiler.txt";
+        }
 
         CharStream cs = null;
         String usedPath = null;
@@ -110,6 +202,8 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
 
         if (cs == null) {
             logger.error("Could not find angular_compiler.txt in any of the expected locations:");
+            logger.error("Current working directory: " + System.getProperty("user.dir"));
+            logger.error("Searched in the following paths:");
             for (String path : possiblePaths) {
                 logger.error("  - " + path);
             }
@@ -124,15 +218,23 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
 
         // AST Construction and Semantic Analysis using the same parse tree
         AngularParser.ProgramContext tree = parser.program();
+        
+        // Check for syntax errors before proceeding
+        if (parser.getNumberOfSyntaxErrors() > 0) {
+            logger.error("Syntax errors detected! Fix them before semantic analysis.");
+            logger.error("Number of syntax errors: " + parser.getNumberOfSyntaxErrors());
+            return;
+        }
+        
         ProgramNode programNode = (ProgramNode) this.visitProgram(tree);
         logger.info("=== AST ===");
         logger.info(programNode.toString());
 
-                    // Semantic Analysis on the same tree
-            ParseTreeWalker walker = new ParseTreeWalker();
-            SemanticAnalyzer analyzer = new SemanticAnalyzer(symbolTable, componentSymbolTable, serviceSymbolTable);
-            analyzer.reset(); // إعادة تعيين النظام المحلي
-            walker.walk(analyzer, tree);
+        // Semantic Analysis on the same tree
+        ParseTreeWalker walker = new ParseTreeWalker();
+        SemanticAnalyzer analyzer = new SemanticAnalyzer(symbolTable, componentSymbolTable, serviceSymbolTable);
+        analyzer.reset(); // Reset local system
+        walker.walk(analyzer, tree);
         if (!analyzer.getSemanticErrors().isEmpty()) {
             logger.error("\n=== Semantic Errors ===");
             for (String error : analyzer.getSemanticErrors()) {
@@ -168,12 +270,22 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         this.isInsideComponent = false;
         this.semanticErrors.clear();
         
-        // Try multiple possible file paths for the given filename
-        String[] possiblePaths = {
-                fileName, // Direct path
-                "src/" + fileName, // From project directory
-                "test/" + fileName // From test directory if it exists
-        };
+        // Get file separator for cross-platform compatibility
+        String fileSeparator = System.getProperty("file.separator");
+        
+        // Try multiple possible file paths using dynamic project detection
+        String[] projectPaths = getProjectPaths();
+        String[] possiblePaths = new String[projectPaths.length + 3];
+        
+        // Add primary paths
+        possiblePaths[0] = "src" + fileSeparator + fileName; // From src directory (primary)
+        possiblePaths[1] = fileName; // Direct path (fallback)
+        possiblePaths[2] = "test" + fileSeparator + fileName; // From test directory if it exists
+        
+        // Add project-based paths
+        for (int i = 0; i < projectPaths.length; i++) {
+            possiblePaths[i + 3] = projectPaths[i] + fileSeparator + fileName;
+        }
 
 
         CharStream cs = null;
@@ -191,6 +303,8 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
 
         if (cs == null) {
             logger.error("Could not find " + fileName + " in any of the expected locations:");
+            logger.error("Current working directory: " + System.getProperty("user.dir"));
+            logger.error("Searched in the following paths:");
             for (String path : possiblePaths) {
                 logger.error("  - " + path);
             }
@@ -206,6 +320,14 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         try {
             // AST Construction and Semantic Analysis using the same parse tree
             AngularParser.ProgramContext tree = parser.program();
+            
+            // Check for syntax errors before proceeding
+            if (parser.getNumberOfSyntaxErrors() > 0) {
+                logger.error("Syntax errors detected! Fix them before semantic analysis.");
+                logger.error("Number of syntax errors: " + parser.getNumberOfSyntaxErrors());
+                return;
+            }
+            
             ProgramNode programNode = (ProgramNode) this.visitProgram(tree);
             logger.info("=== AST ===");
             logger.info(programNode.toString());
@@ -213,7 +335,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             // Semantic Analysis on the same tree
             ParseTreeWalker walker = new ParseTreeWalker();
             SemanticAnalyzer analyzer = new SemanticAnalyzer(symbolTable, componentSymbolTable, serviceSymbolTable);
-            analyzer.reset(); // إعادة تعيين النظام المحلي
+            analyzer.reset(); // Reset local system
             walker.walk(analyzer, tree);
             if (!analyzer.getSemanticErrors().isEmpty()) {
                 logger.error("\n=== Semantic Errors ===");
@@ -249,96 +371,108 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     @Override
     public ASTNode visitProgram(AngularParser.ProgramContext ctx) {
         ProgramNode programNode = new ProgramNode();
+        ProductManagerNode productManager = null;
+        
         for (int i = 0; i < ctx.statement().size(); i++) {
             if (ctx.statement() != null) {
                 StatementNode statementNode = visitStatement(ctx.statement(i));
                 programNode.getStatements().add(statementNode);
+                
+                // Check if this statement contains a ProductManager
+                if (statementNode.getProductManagerNode() != null) {
+                    productManager = statementNode.getProductManagerNode();
+                }
             }
         }
 
-        // تم إزالة الطباعة المكررة - ستتم الطباعة بعد التحليل الدلالي
+        // Removed duplicate printing - will be printed after semantic analysis
+        
+        // Phase 3: Link Product Management with CodeGenerator
+        if (productManager != null) {
+            try {
+                logger.info("Found ProductManager: " + productManager.getManagerName());
+                logger.info("Number of products: " + productManager.getProducts().size());
+                logger.info("Number of operations: " + productManager.getCrudOperations().size());
+                
+                // Create CodeGenerator and generate application
+                generators.CodeGenerator codeGenerator = new generators.CodeGenerator();
+                codeGenerator.generateApplication(productManager);
+                
+                logger.info("Application generated successfully!");
+                
+            } catch (Exception e) {
+                logger.error("Error generating application: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+
         return programNode;
     }
 
     @Override
     public StatementNode visitStatement(AngularParser.StatementContext ctx) {
         StatementNode statement = new StatementNode();
-
+        
         if (ctx.classDeclaration() != null) {
-            ClassNode anclass = visitClassDeclaration(ctx.classDeclaration());
-            statement.setClassNodes(anclass);
+            statement.setClassNodes(visitClassDeclaration(ctx.classDeclaration()));
         }
         if (ctx.arrayDeclaration() != null) {
-            ArrayDeclarationNode arrayDeclarationNode = visitArrayDeclaration(ctx.arrayDeclaration());
-            statement.setArrayDeclarationNodeList(arrayDeclarationNode);
-
+            statement.setArrayDeclarationNodeList(visitArrayDeclaration(ctx.arrayDeclaration()));
         }
         if (ctx.variableDeclaration() != null) {
-            VariableDeclarationNode variableDeclarationNode = visitVariableDeclaration(ctx.variableDeclaration());
-            statement.setVariableDeclarationNodes(variableDeclarationNode);
+            statement.setVariableDeclarationNodes(visitVariableDeclaration(ctx.variableDeclaration()));
         }
         if (ctx.functionDeclaration() != null) {
-            FunctionDeclarationNode functionDeclarationNode = visitFunctionDeclaration(ctx.functionDeclaration());
-            statement.setFunctionDeclarationNodes(functionDeclarationNode);
-
+            statement.setFunctionDeclarationNodes(visitFunctionDeclaration(ctx.functionDeclaration()));
         }
         if (ctx.ifStatement() != null) {
-            IfStatementNode ifStatementNode = visitIfStatement(ctx.ifStatement());
-            statement.setIfStatementNodes(ifStatementNode);
-
+            statement.setIfStatementNodes(visitIfStatement(ctx.ifStatement()));
         }
         if (ctx.whileStatement() != null) {
-            WhileStatementNode whileStatementNode = visitWhileStatement(ctx.whileStatement());
-            statement.setWhileStatementNodes(whileStatementNode);
-
+            statement.setWhileStatementNodes(visitWhileStatement(ctx.whileStatement()));
         }
         if (ctx.assignmentStatement() != null) {
-            AssignmentStatementNode assignmentStatementNode = visitAssignmentStatement(ctx.assignmentStatement());
-            statement.setAssignmentStatementNodes(assignmentStatementNode);
-            // statementRow.setType("Assignment Statement");
-            // statementRow.setValue(ctx.assignmentStatement().getText());
-            // statementRow.setScope("Global");
+            statement.setAssignmentStatementNodes(visitAssignmentStatement(ctx.assignmentStatement()));
         }
         if (ctx.breakStatement() != null) {
-            BreakStatementNode breakStatementNode = visitBreakStatement(ctx.breakStatement());
-            statement.setBreakStatementNodes(breakStatementNode);
-            // statementRow.setType("Break Statement");
-            // statementRow.setValue(ctx.breakStatement().getText());
+            statement.setBreakStatementNodes(visitBreakStatement(ctx.breakStatement()));
         }
         if (ctx.continueStatement() != null) {
-            ContinueStatementNode continueStatementNode = visitContinueStatement(ctx.continueStatement());
-            statement.setContinueStatementNodes(continueStatementNode);
-            // statementRow.setType("Continue Statement");
-            // statementRow.setValue(ctx.continueStatement().getText());
+            statement.setContinueStatementNodes(visitContinueStatement(ctx.continueStatement()));
         }
         if (ctx.importStatement() != null) {
-            ImportStatementNode importStatementNode = visitImportStatement(ctx.importStatement());
-            statement.setImportStatementNodes(importStatementNode);
+            statement.setImportStatementNodes(visitImportStatement(ctx.importStatement()));
         }
         if (ctx.component() != null) {
-            ComponentNode componentNode = visitComponent(ctx.component());
-            statement.setComponentNodes(componentNode);
+            statement.setComponentNodes(visitComponent(ctx.component()));
         }
         if (ctx.exportClass() != null) {
-            ExportClassNode exportClassNode = visitExportClass(ctx.exportClass());
-            statement.setExportClassNode(exportClassNode);
+            statement.setExportClassNode(visitExportClass(ctx.exportClass()));
         }
         if (ctx.html() != null) {
-            HtmlNode htmlNode = visitHtml(ctx.html());
-            statement.setHtmlNodes(htmlNode);
+            statement.setHtmlNodes(visitHtml(ctx.html()));
         }
-        // New State Management Support
         if (ctx.stateManagement() != null) {
-            // TODO: Handle state management
+            ASTNode n = visitStateManagement(ctx.stateManagement());
+            statement.setStateManagementNode(n);
         }
-        // New Navigation Support
         if (ctx.navigation() != null) {
-            // TODO: Handle navigation
+            ASTNode n = visitNavigation(ctx.navigation());
+            statement.setNavigationNode(n);
         }
-        // New Angular Template Support
         if (ctx.angularTemplate() != null) {
-            // TODO: Handle angular template
+            ASTNode n = visitAngularTemplate(ctx.angularTemplate());
+            statement.setAngularTemplateNode(n);
         }
+        if (ctx.product() != null) {
+            ASTNode n = visitProduct(ctx.product());
+            statement.setProductNode((ProductNode) n);
+        }
+        if (ctx.productManager() != null) {
+            ASTNode n = visitProductManager(ctx.productManager());
+            statement.setProductManagerNode((ProductManagerNode) n);
+        }
+        
         return statement;
     }
 
@@ -349,7 +483,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             ComponentNode componentNode = new ComponentNode();
             String componentName = "UnknownComponent";
 
-            // Handle argumentList (grammar الحالية)
+            // Handle argumentList (current grammar)
             if (ctx.argumentList() != null) {
                 ArgumentListNode argumentListNode = visitArgumentList(ctx.argumentList());
                 componentNode.setDecorator(new DecoratorNode()); // Create empty decorator for now
@@ -364,18 +498,18 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
                         ClassNode actualClassNode = (ClassNode) classNode;
                         if (actualClassNode.getIdentifier() != null) {
                             componentName = actualClassNode.getIdentifier();
-                            // أضف اسم المكوّن هنا فقط (لا حاجة لإضافته في visitClassDeclaration)
+                            // Add component name here only (no need to add it in visitClassDeclaration)
                             componentScopeNames.add(componentName);
                         }
                     }
                 }
             }
 
-            // سجّل في ComponentSymbolTable بدل الـsymbolTable العام
+            // Register in ComponentSymbolTable instead of the general symbolTable
             Row r = new Row();
             r.setType("Component");
-            r.setName(componentName);         // ← اسم المكوّن
-            r.setScope(componentName);        // ← نفس الاسم كنطاق
+            r.setName(componentName);         // ← component name
+            r.setScope(componentName);        // ← same name as scope
             r.setValue(ctx.argumentList() != null ? ctx.argumentList().getText() : "");
             componentSymbolTable.getRows().add(r);
 
@@ -389,10 +523,10 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     public ExportClassNode visitExportClass(AngularParser.ExportClassContext ctx) {
         ExportClassNode exportClassNode = new ExportClassNode();
         
-        if (ctx.classDeclaration() != null) {                 // grammar الحالية
+        if (ctx.classDeclaration() != null) {                 // current grammar
             exportClassNode.setClassNode(visitClassDeclaration(ctx.classDeclaration()));
         } 
-        // لو حدث تغيير مستقبلاً:
+        // If future changes occur:
         // else if (ctx.class_() != null) {
         //     exportClassNode.setClassNode(visitClass(ctx.class_()));
         // }
@@ -408,7 +542,6 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             }
         }
         
-        // Don't add to symbol table like merge-branch (only build AST)
         return exportClassNode;
     }
 
@@ -443,7 +576,6 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
 
         ClassBodyNode classBodyNode = new ClassBodyNode();
         
-        // Apply merge-branch approach: build AST only, don't add to symbol table
         for (int i = 0; i < ctx.variableDeclaration().size(); i++) {
             if (ctx.variableDeclaration().get(i) != null) {
                 classBodyNode.getVariableDeclarationNodes().add(visitVariableDeclaration(ctx.variableDeclaration(i)));
@@ -465,7 +597,6 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             }
         }
         
-        // Don't add to symbol table like merge-branch (only build AST)
         return classBodyNode;
     }
 
@@ -473,12 +604,10 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     public DecoratorNode visitDecorator(AngularParser.DecoratorContext ctx) {
         DecoratorNode decoratorNode = new DecoratorNode();
         
-        // Apply merge-branch approach: build AST only, don't add to symbol table
         if (ctx.argumentList() != null) {
             decoratorNode.getArguments().add(visitArgumentList(ctx.argumentList()));
         }
         
-        // Don't add to symbol table like merge-branch (only build AST)
         return decoratorNode;
     }
 
@@ -486,14 +615,13 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     public ArgumentListNode visitArgumentList(AngularParser.ArgumentListContext ctx) {
         ArgumentListNode argumentListNode = new ArgumentListNode();
         
-        // Apply merge-branch approach: build AST only, don't add to symbol table
+        
         for (int i = 0; i < ctx.argument().size(); i++) {
             if (ctx.argument().get(i) != null) {
                 argumentListNode.getArgumentNodeList().add(visitArgument(ctx.argument(i)));
             }
         }
         
-        // Don't add to symbol table like merge-branch (only build AST)
         return argumentListNode;
     }
 
@@ -524,12 +652,12 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     public ImportStatementNode visitImportStatement(AngularParser.ImportStatementContext ctx) {
         ImportStatementNode importStatementNode = new ImportStatementNode();
         
-        // Apply merge-branch approach: build AST only, don't add to symbol table
+        
         if (ctx.Identifier() != null) {
             String importedClass = ctx.Identifier().getText();
             importStatementNode.setIdentifier(importedClass);
             
-            // تسجيل الاستيراد في الجدول العام بالشكل الصحيح
+            // Register import in the general table correctly
             Row r = new Row();
             r.setType("Import Statement");
             r.setName(importedClass);         // Component
@@ -541,7 +669,6 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             importStatementNode.setSource(ctx.StringLiteral().getText());
         }
         
-        // Don't add to symbol table like merge-branch (only build AST)
         return importStatementNode;
     }
 
@@ -618,7 +745,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     public VariableDeclarationNode visitVariableDeclaration(AngularParser.VariableDeclarationContext ctx) {
         VariableDeclarationNode variableDeclarationNode = new VariableDeclarationNode();
         
-        // Apply merge-branch approach: build AST only, don't add to symbol table
+        
         if (ctx.Identifier() != null) {
             String varName = ctx.Identifier().getText();
             variableDeclarationNode.setIdentifier(varName);
@@ -641,7 +768,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             visitTemplateString(ctx.templateString());
         }
         
-        // تم إزالة الإضافة المباشرة - ستتم الإضافة من SemanticAnalyzer
+        // Direct addition removed - will be added from SemanticAnalyzer
         
         return variableDeclarationNode;
     }
@@ -649,7 +776,6 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     public ExpressionNode visitExpression(AngularParser.ExpressionContext ctx) {
         ExpressionNode expressionNode = new ExpressionNode();
         
-        // Apply the same structural approach as merge-branch
         // Check if this is a binary operation context that has expression() method
         if (ctx instanceof AngularParser.AdditionContext ||
             ctx instanceof AngularParser.SubtractionContext ||
@@ -769,15 +895,12 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
                 }
             } catch (Exception e) {
                 logger.error("Error processing expression context: " + e.getMessage());
-                // Fallback to text representation like merge-branch
                 expressionNode.setOperator(ctx.getText());
             }
         } else {
-            // For non-binary operations, use text representation like merge-branch
             expressionNode.setOperator(ctx.getText());
         }
         
-        // Don't add to symbol table like merge-branch (only build AST)
         return expressionNode;
     }
 
@@ -802,7 +925,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             }
         }
         
-        // تم إزالة الإضافة المباشرة - ستتم الإضافة من SemanticAnalyzer
+        // Direct addition removed - will be added from SemanticAnalyzer
         
         return arrayDeclarationNode;
     }
@@ -830,7 +953,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             }
         }
         
-        // تم إزالة الإضافة المباشرة - ستتم الإضافة من SemanticAnalyzer
+        // Direct addition removed - will be added from SemanticAnalyzer
         
         return functionDeclarationNode;
     }
@@ -839,7 +962,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     public TypeNode visitType(AngularParser.TypeContext ctx) {
         TypeNode typeNode = new TypeNode();
         
-        // Apply merge-branch approach: build AST only, don't add to symbol table
+        
         if (ctx.TypeNumber() != null) {
             typeNode.setNumber(ctx.TypeNumber().getText());
         }
@@ -853,7 +976,6 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             typeNode.setArray(ctx.Array().getText());
         }
         
-        // Don't add to symbol table like merge-branch (only build AST)
         return typeNode;
     }
 
@@ -875,50 +997,35 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             objectDeclarationNode.setIdentifier("anonymousObject");
         }
         
-        // تم إزالة الإضافة المباشرة - ستتم الإضافة من SemanticAnalyzer
+        // Direct addition removed - will be added from SemanticAnalyzer
         
         return objectDeclarationNode;
     }
 
     @Override
     public LiteralValueNode visitLiteralValue(AngularParser.LiteralValueContext ctx) {
-        LiteralValueNode literalValueNode = new LiteralValueNode();
-        
-        // Apply merge-branch approach: build AST only, don't add to symbol table
+        LiteralValueNode node = new LiteralValueNode();
+        boolean any = false;
+
         if (ctx.StringLiteral() != null) {
-            String stringValue = ctx.StringLiteral().getText();
-            literalValueNode.setStirngValue(stringValue);
-            
-            // Check if this string contains HTML-like content for semantic analysis
-            if (stringValue.contains("<") && stringValue.contains(">")) {
-                analyzeStringForSemanticErrors(stringValue);
-            }
+            String s = ctx.StringLiteral().getText();
+            node.setStirngValue(s);
+            if (s.contains("<") && s.contains(">")) analyzeStringForSemanticErrors(s);
+            any = true;
         }
         if (ctx.templateString() != null) {
-            // Handle template strings specifically
-            String templateContent = ctx.templateString().getText();
-            literalValueNode.setStirngValue(templateContent);
-            
-            // Analyze template string content for semantic errors
-            analyzeTemplateStringForSemanticErrors(templateContent);
+            String t = ctx.templateString().getText();
+            node.setStirngValue(t);
+            analyzeTemplateStringForSemanticErrors(t);
+            any = true;
         }
-        if (ctx.NumberLiteral() != null) {
-            literalValueNode.setNumValue(ctx.NumberLiteral().getText());
-        }
-        if (ctx.BooleanLiteral() != null) {
-            literalValueNode.setBooleanValue(ctx.BooleanLiteral().getText());
-        } else {
-            literalValueNode.setNull(true);
-        }
-        if (ctx.listLiteral() != null) {
-            literalValueNode.setListLiteralNode(visitListLiteral(ctx.listLiteral()));
-        }
-        if (ctx.html() != null) {
-            literalValueNode.setHtmlNode(visitHtml(ctx.html()));
-        }
-        
-        // Don't add to symbol table like merge-branch (only build AST)
-        return literalValueNode;
+        if (ctx.NumberLiteral() != null) { node.setNumValue(ctx.NumberLiteral().getText()); any = true; }
+        if (ctx.BooleanLiteral() != null) { node.setBooleanValue(ctx.BooleanLiteral().getText()); any = true; }
+        if (ctx.listLiteral() != null) { node.setListLiteralNode(visitListLiteral(ctx.listLiteral())); any = true; }
+        if (ctx.html() != null) { node.setHtmlNode(visitHtml(ctx.html())); any = true; }
+
+        node.setNull(!any);
+        return node;
     }
 
     @Override
@@ -930,14 +1037,13 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     public ListLiteralNode visitListLiteral(AngularParser.ListLiteralContext ctx) {
         ListLiteralNode listLiteralNode = new ListLiteralNode();
         
-        // Apply merge-branch approach: build AST only, don't add to symbol table
+        
         for (int i = 0; i < ctx.Identifier().size(); i++) {
             if (ctx.Identifier().get(i) != null) {
                 listLiteralNode.getIdentifiers().add(ctx.Identifier().get(i).getText());
             }
         }
         
-        // Don't add to symbol table like merge-branch (only build AST)
         return listLiteralNode;
     }
 
@@ -952,7 +1058,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             assignmentStatementNode.setIdentifier("anonymousAssignment");
         }
         
-        // Apply merge-branch approach: build AST only, don't add to symbol table
+        
         if (!ctx.literalValue().isEmpty()) {
             for (int i = 0; i < ctx.literalValue().size(); i++) {
                 assignmentStatementNode.getValues().add(visitLiteralValue(ctx.literalValue().get(i)));
@@ -964,7 +1070,6 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             }
         }
         
-        // Don't add to symbol table like merge-branch (only build AST)
         return assignmentStatementNode;
     }
 
@@ -1065,12 +1170,11 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     public IdentifierNode visitIdentifierExpression(AngularParser.IdentifierExpressionContext ctx) {
         IdentifierNode identifierNode = new IdentifierNode();
         
-        // Apply merge-branch approach: build AST only, don't add to symbol table
+        
         if (ctx.Identifier() != null) {
             identifierNode.setName(ctx.Identifier().getText());
         }
         
-        // Don't add to symbol table like merge-branch (only build AST)
         return identifierNode;
     }
 
@@ -1118,7 +1222,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     public ParameterNode visitParameter(AngularParser.ParameterContext ctx) {
         ParameterNode parameterNode = new ParameterNode();
         
-        // Apply merge-branch approach: build AST only, don't add to symbol table
+        
         if (ctx.Identifier() != null) {
             parameterNode.setIdentifier(ctx.Identifier().getText());
         }
@@ -1129,7 +1233,6 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             parameterNode.setDefaultValue(visitLiteralValue(ctx.literalValue()));
         }
         
-        // Don't add to symbol table like merge-branch (only build AST)
         return parameterNode;
     }
 
@@ -1137,7 +1240,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     public FunctionCallNode visitFunction_call(AngularParser.Function_callContext ctx) {
         FunctionCallNode functionCallNode = new FunctionCallNode();
         
-        // Apply merge-branch approach: build AST only, don't add to symbol table
+        
         if (ctx.Identifier() != null) {
             functionCallNode.setIdentifier(ctx.Identifier().getText());
         }
@@ -1148,7 +1251,6 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             functionCallNode.setExpression(visitExpression(ctx.expression(0)));
         }
         
-        // Don't add to symbol table like merge-branch (only build AST)
         return functionCallNode;
     }
 
@@ -1157,7 +1259,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         logger.debug("ddddd");
         HtmlNode htmlNode = new HtmlNode();
         
-        // Apply merge-branch approach: build AST only, don't add to symbol table
+        
         if (ctx.html_content() != null) {
             htmlNode.setContent(visitHtml_content(ctx.html_content()));
             
@@ -1174,26 +1276,18 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             }
         }
         
-        // Don't add to symbol table like merge-branch (only build AST)
         return htmlNode;
     }
 
     @Override
     public HtmlContentNode visitHtml_content(AngularParser.Html_contentContext ctx) {
-        HtmlContentNode htmlContentNode = new HtmlContentNode();
-        
-        // Apply merge-branch approach: build AST only, don't add to symbol table
+        HtmlContentNode node = new HtmlContentNode();
         if (ctx.html_element() != null) {
             for (int i = 0; i < ctx.html_element().size(); i++) {
-                htmlContentNode.getHtmlElementNode().add(visitHtml_element(ctx.html_element().get(i)));
+                node.getHtmlElementNode().add(visitHtml_element(ctx.html_element(i)));
             }
         }
-        if (ctx.expression() != null) {
-            htmlContentNode.setIdentifierNode("ff");
-        }
-        
-        // Don't add to symbol table like merge-branch (only build AST)
-        return htmlContentNode;
+        return node;
     }
 
     @Override
@@ -1210,29 +1304,27 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
 
     @Override
     public HtmlTagNode visitHtml_tag_name(AngularParser.Html_tag_nameContext ctx) {
-        HtmlTagNode htmlTagNode = new HtmlTagNode();
-        
-        // Apply merge-branch approach: build AST only, don't add to symbol table
+        HtmlTagNode n = new HtmlTagNode();
         if (ctx.Identifier() != null) {
-            htmlTagNode.setIdentifierNode(ctx.Identifier().getText());
+            n.setIdentifierNode(ctx.Identifier().getText());
+        } else {
+            // Supports special tokens like RouterOutlet
+            n.setIdentifierNode(ctx.getText());
         }
-        
-        // Don't add to symbol table like merge-branch (only build AST)
-        return htmlTagNode;
+        return n;
     }
 
     @Override
     public HtmlAttributesNode visitHtml_attributes(AngularParser.Html_attributesContext ctx) {
         HtmlAttributesNode htmlAttributesNode = new HtmlAttributesNode();
         
-        // Apply merge-branch approach: build AST only, don't add to symbol table
+        
         if (ctx.html_attribute() != null) {
             for (int i = 0; i < ctx.html_attribute().size(); i++) {
                 htmlAttributesNode.getHtmlAttributeNodes().add(visitHtml_attribute(ctx.html_attribute(i)));
             }
         }
         
-        // Don't add to symbol table like merge-branch (only build AST)
         return htmlAttributesNode;
     }
 
@@ -1240,7 +1332,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     public HtmlAttributeNode visitHtml_attribute(AngularParser.Html_attributeContext ctx) {
         HtmlAttributeNode htmlAttributeNode = new HtmlAttributeNode();
         
-        // Apply merge-branch approach: build AST only, don't add to symbol table
+        
         if (ctx.Identifier() != null) {
             htmlAttributeNode.setIdentifierNode(ctx.Identifier().getText());
         }
@@ -1253,7 +1345,6 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             }
         }
         
-        // Don't add to symbol table like merge-branch (only build AST)
         return htmlAttributeNode;
     }
 
@@ -1261,7 +1352,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     public AccessSufNode visitAccess_suffix(AngularParser.Access_suffixContext ctx) {
         AccessSufNode accessSufNode = new AccessSufNode();
         
-        // Apply merge-branch approach: build AST only, don't add to symbol table
+        
         if (ctx.Identifier() != null) {
             accessSufNode.setIdentifierNode(ctx.Identifier().getText());
         } else if (ctx.expression() != null) {
@@ -1270,7 +1361,6 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             accessSufNode.setFunctionCallNode(visitFunction_call(ctx.function_call()));
         }
         
-        // Don't add to symbol table like merge-branch (only build AST)
         return accessSufNode;
     }
 
@@ -1278,14 +1368,13 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     public HtmlAttributeValueNode visitHtml_attribute_value(AngularParser.Html_attribute_valueContext ctx) {
         HtmlAttributeValueNode htmlAttributeValueNode = new HtmlAttributeValueNode();
         
-        // Apply merge-branch approach: build AST only, don't add to symbol table
+        
         if (ctx.literalValue() != null) {
             htmlAttributeValueNode.setValue(visitLiteralValue(ctx.literalValue()));
         } else if (ctx.expression() != null) {
             htmlAttributeValueNode.setExpression(visitExpression(ctx.expression()));
         }
         
-        // Don't add to symbol table like merge-branch (only build AST)
         return htmlAttributeValueNode;
     }
 
@@ -1293,14 +1382,13 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     public ASTNode visitCss(AngularParser.CssContext ctx) {
         CssNode cssNode = new CssNode();
         
-        // Apply merge-branch approach: build AST only, don't add to symbol table
+        
         if (ctx.css_content() != null) {
             for (int i = 0; i < ctx.css_content().size(); i++) {
                 cssNode.getCssContentNode().add(visitCss_content(ctx.css_content(i)));
             }
         }
         
-        // Don't add to symbol table like merge-branch (only build AST)
         return cssNode;
     }
 
@@ -1308,7 +1396,7 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     public CssContentNode visitCss_content(AngularParser.Css_contentContext ctx) {
         CssContentNode cssContentNode = new CssContentNode();
         
-        // Apply merge-branch approach: build AST only, don't add to symbol table
+        
         if (ctx.css_class_content() != null) {
             for (int i = 0; i < ctx.css_class_content().size(); i++) {
                 cssContentNode.getCssClassContentList().add(visitCss_class_content(ctx.css_class_content(i)));
@@ -1318,7 +1406,6 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
             // cssContentNode.setIdentifierNode(ctx.Identifier().get());
         }
         
-        // Don't add to symbol table like merge-branch (only build AST)
         return cssContentNode;
     }
 
@@ -1326,12 +1413,11 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     public CssClassContentNode visitCss_class_content(AngularParser.Css_class_contentContext ctx) {
         CssClassContentNode cssClassContentNode = new CssClassContentNode();
         
-        // Apply merge-branch approach: build AST only, don't add to symbol table
+        
         if (ctx.Identifier() != null) {
             cssClassContentNode.setName(ctx.Identifier().get(0).getText());
         }
         
-        // Don't add to symbol table like merge-branch (only build AST)
         return cssClassContentNode;
     }
 
@@ -1379,10 +1465,9 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     public ASTNode visitNgForAttribute(AngularParser.NgForAttributeContext ctx) {
         NgForNode ngForNode = new NgForNode();
         
-        // Apply merge-branch approach: build AST only, don't add to symbol table
+        
         ngForNode.setExpressionNode(visitExpression(ctx.expression()));
         
-        // Don't add to symbol table like merge-branch (only build AST)
         return ngForNode;
     }
 
@@ -1390,123 +1475,182 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
     public ASTNode visitNgIfAttribute(AngularParser.NgIfAttributeContext ctx) {
         NgIfNode ngIfNode = new NgIfNode();
         
-        // Apply merge-branch approach: build AST only, don't add to symbol table
+        
         ngIfNode.setExpressionNode(visitExpression(ctx.expression()));
         
-        // Don't add to symbol table like merge-branch (only build AST)
         return ngIfNode;
     }
 
     // New State Management Methods
     @Override
     public ASTNode visitStateDeclaration(AngularParser.StateDeclarationContext ctx) {
-        // TODO: Implement state declaration logic
-        return null;
+        StateNode st = new StateNode();
+        if (ctx.StringLiteral() != null) {
+            String s = ctx.StringLiteral().getText();
+            st.setStateName(s.substring(1, s.length()-1));
+        } else {
+            st.setStateName("state");
+        }
+        if (ctx.variableDeclaration() != null) {
+            st.setVariableDeclaration(visitVariableDeclaration(ctx.variableDeclaration()));
+        }
+        addRowToSymbolTable("State", st.getStateName(), "");
+        return st;
     }
 
     @Override
     public ASTNode visitActionDeclaration(AngularParser.ActionDeclarationContext ctx) {
-        // TODO: Implement action declaration logic
-        return null;
-    }
-
-    @Override
-    public ASTNode visitStoreDispatch(AngularParser.StoreDispatchContext ctx) {
-        // TODO: Implement store dispatch logic
-        return null;
-    }
-
-    @Override
-    public ASTNode visitStoreSelect(AngularParser.StoreSelectContext ctx) {
-        // TODO: Implement store select logic
-        return null;
+        ActionNode ac = new ActionNode();
+        if (ctx.StringLiteral() != null) {
+            String s = ctx.StringLiteral().getText();
+            ac.setActionName(s.substring(1, s.length()-1));
+        } else if (ctx.functionDeclaration()!=null && ctx.functionDeclaration().Identifier()!=null){
+            ac.setActionName(ctx.functionDeclaration().Identifier().getText());
+        } else { ac.setActionName("action"); }
+        if (ctx.functionDeclaration()!=null) {
+            ac.setFunctionDeclaration(visitFunctionDeclaration(ctx.functionDeclaration()));
+        }
+        addRowToSymbolTable("Action", ac.getActionName(), "");
+        return ac;
     }
 
     @Override
     public ASTNode visitActionCall(AngularParser.ActionCallContext ctx) {
-        // TODO: Implement action call logic
-        return null;
+        FunctionCallNode call = new FunctionCallNode();
+        if (ctx.Identifier()!=null) call.setIdentifier(ctx.Identifier().getText());
+        if (ctx.expression()!=null && !ctx.expression().isEmpty()) {
+            call.setExpression(visitExpression(ctx.expression(0))); // Can be expanded later
+        }
+        return call;
+    }
+
+    @Override
+    public ASTNode visitStoreDispatch(AngularParser.StoreDispatchContext ctx) {
+        FunctionCallNode call = (FunctionCallNode) visitActionCall(ctx.actionCall());
+        addRowToSymbolTable("StoreDispatch", "dispatch", ctx.actionCall().getText());
+        return call;
+    }
+
+    @Override
+    public ASTNode visitStoreSelect(AngularParser.StoreSelectContext ctx) {
+        IdentifierNode sel = new IdentifierNode();
+        if (ctx.StringLiteral()!=null){
+            String s = ctx.StringLiteral().getText();
+            sel.setName(s.substring(1, s.length()-1));
+        } else { sel.setName("selector"); }
+        addRowToSymbolTable("StoreSelect", sel.getName(), "");
+        return sel;
     }
 
     // New Navigation Methods
     @Override
-    public ASTNode visitRouterLink(AngularParser.RouterLinkContext ctx) {
-        // TODO: Implement router link logic
-        return null;
-    }
-
-    @Override
-    public ASTNode visitRouterOutlet(AngularParser.RouterOutletContext ctx) {
-        // TODO: Implement router outlet logic
-        return null;
-    }
-
-    @Override
-    public ASTNode visitRouterNavigate(AngularParser.RouterNavigateContext ctx) {
-        // TODO: Implement router navigate logic
+    public ASTNode visitNavigation(AngularParser.NavigationContext ctx) {
+        if (ctx.routerLink()!=null) return visitRouterLink(ctx.routerLink());
+        if (ctx.routerOutlet()!=null) return visitRouterOutlet(ctx.routerOutlet());
+        if (ctx.routerNavigate()!=null) return visitRouterNavigate(ctx.routerNavigate());
         return null;
     }
 
     @Override
     public ASTNode visitNavigationArray(AngularParser.NavigationArrayContext ctx) {
-        // TODO: Implement navigation array logic
-        return null;
+        // Return the node you prefer (e.g., List<String>)
+        ListLiteralNode list = new ListLiteralNode();
+        if (ctx.StringLiteral()!=null) {
+            for (var t: ctx.StringLiteral()) list.getIdentifiers().add(t.getText().substring(1, t.getText().length()-1));
+        }
+        return list;
+    }
+
+    @Override
+    public ASTNode visitRouterNavigate(AngularParser.RouterNavigateContext ctx) {
+        ASTNode arr = visitNavigationArray(ctx.navigationArray());
+        addRowToSymbolTable("Navigate", arr.toString(), "");
+        return arr;
+    }
+
+    @Override
+    public ASTNode visitRouterLink(AngularParser.RouterLinkContext ctx) {
+        // If you have RouterLinkNode use it, otherwise return IdentifierNode with the value
+        IdentifierNode n = new IdentifierNode();
+        String s = ctx.StringLiteral().getText();
+        n.setName(s.substring(1, s.length()-1));
+        return n;
+    }
+
+    @Override
+    public ASTNode visitRouterOutlet(AngularParser.RouterOutletContext ctx) {
+        IdentifierNode n = new IdentifierNode();
+        n.setName("router-outlet");
+        return n;
     }
 
     // New Angular Template Methods
     @Override
     public ASTNode visitNgModel(AngularParser.NgModelContext ctx) {
-        // TODO: Implement ngModel logic
-        return null;
+        // grammar: ngModel: OpenBracket NgModel CloseBracket Assign Identifier;
+        NgModelNode n = new NgModelNode();
+        n.setBoundIdentifier(ctx.Identifier().getText());
+        addRowToSymbolTable("NgModel", n.getBoundIdentifier(), "");
+        return n;
     }
 
     @Override
     public ASTNode visitNgSubmit(AngularParser.NgSubmitContext ctx) {
-        // TODO: Implement ngSubmit logic
-        return null;
+        // grammar: NgSubmit Assign StringLiteral;
+        NgSubmitNode n = new NgSubmitNode();
+        String s = ctx.StringLiteral().getText();
+        n.setHandlerName(s.substring(1, s.length()-1));
+        addRowToSymbolTable("NgSubmit", n.getHandlerName(), "");
+        return n;
     }
 
+    @Override
     public ASTNode visitNgClick(AngularParser.NgClickContext ctx) {
-        // TODO: Implement ngClick logic
-        return null;
+        // grammar: NgClick Assign StringLiteral;
+        NgClickNode n = new NgClickNode();
+        String s = ctx.StringLiteral().getText();
+        n.setHandlerName(s.substring(1, s.length()-1));
+        addRowToSymbolTable("NgClick", n.getHandlerName(), "");
+        return n;
     }
 
     // Additional Required Methods
     @Override
     public ASTNode visitStoreOperation(AngularParser.StoreOperationContext ctx) {
-        // TODO: Implement store operation logic
+        if (ctx.storeDispatch() != null) return visitStoreDispatch(ctx.storeDispatch());
+        if (ctx.storeSelect() != null) return visitStoreSelect(ctx.storeSelect());
         return null;
     }
 
     @Override
     public ASTNode visitEnumDeclaration(AngularParser.EnumDeclarationContext ctx) {
-        // TODO: Implement enum declaration logic
-        return null;
+        EnumNode en = new EnumNode();
+        // Fill name and values as needed later
+        return en;
     }
 
     @Override
     public ASTNode visitAngularTemplate(AngularParser.AngularTemplateContext ctx) {
-        // TODO: Implement angular template logic
+        // Return the first one found (ngModel | ngSubmit | ngClick)
+        if (ctx.ngModel() != null) return visitNgModel(ctx.ngModel());
+        if (ctx.ngSubmit() != null) return visitNgSubmit(ctx.ngSubmit());
+        if (ctx.ngClick() != null) return visitNgClick(ctx.ngClick());
         return null;
     }
 
     @Override
     public ASTNode visitStateManagement(AngularParser.StateManagementContext ctx) {
-        // TODO: Implement state management logic
-        return null;
-    }
-
-    @Override
-    public ASTNode visitNavigation(AngularParser.NavigationContext ctx) {
-        // TODO: Implement navigation logic
+        if (ctx.stateDeclaration() != null) return visitStateDeclaration(ctx.stateDeclaration());
+        if (ctx.actionDeclaration() != null) return visitActionDeclaration(ctx.actionDeclaration());
+        if (ctx.storeOperation() != null) return visitStoreOperation(ctx.storeOperation());
         return null;
     }
 
     // New Method Call Methods
     @Override
     public ASTNode visitMethodCallStatement(AngularParser.MethodCallStatementContext ctx) {
-        // TODO: Implement method call statement logic
-        return null;
+        // Convert to simple FunctionCallNode
+        return null; // If not used now, leave it like this, or build a simple node
     }
 
     @Override
@@ -1670,6 +1814,174 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
         }
         
         return null;
+    }
+
+    // New Product Management Methods
+    @Override
+    public ASTNode visitProduct(AngularParser.ProductContext ctx) {
+        ProductNode product = new ProductNode();
+        
+        // Handle product properties
+        if (ctx.productProperties() != null) {
+            visitProductProperties(ctx.productProperties(), product);
+        }
+        
+        // Handle product body if exists
+        if (ctx.productBody() != null) {
+            visitProductBody(ctx.productBody(), product);
+        }
+        
+        addRowToSymbolTable("Product", product.getProductId(), "");
+        return product;
+    }
+
+    @Override
+    public ASTNode visitProductManager(AngularParser.ProductManagerContext ctx) {
+        ProductManagerNode manager = new ProductManagerNode();
+        
+        // Set manager name if provided
+        if (ctx.StringLiteral() != null) {
+            String name = ctx.StringLiteral().getText();
+            manager.setManagerName(name.substring(1, name.length()-1));
+        }
+        
+        // Handle product manager body
+        if (ctx.productManagerBody() != null) {
+            visitProductManagerBody(ctx.productManagerBody(), manager);
+        }
+        
+        addRowToSymbolTable("ProductManager", manager.getManagerName(), "");
+        return manager;
+    }
+
+    @Override
+    public ASTNode visitProductId(AngularParser.ProductIdContext ctx) {
+        // This method is called by the parser, but we handle the logic in visitProduct
+        // Return null as this is not a statement-level node
+        return null;
+    }
+
+    @Override
+    public ASTNode visitProductProperties(AngularParser.ProductPropertiesContext ctx) {
+        // This method is called by the parser, but we handle the logic in visitProduct
+        // Return null as this is not a statement-level node
+        return null;
+    }
+
+    private void visitProductProperties(AngularParser.ProductPropertiesContext ctx, ProductNode product) {
+        // Handle product ID
+        if (ctx.productId() != null) {
+            String id = ctx.productId().StringLiteral().getText();
+            product.setProductId(id.substring(1, id.length()-1));
+        }
+        
+        // Handle other properties
+        if (ctx.productProperty() != null) {
+            for (var prop : ctx.productProperty()) {
+                visitProductProperty(prop, product);
+            }
+        }
+    }
+
+    @Override
+    public ASTNode visitProductProperty(AngularParser.ProductPropertyContext ctx) {
+        // This method is called by the parser, but we handle the logic in visitProduct
+        // Return null as this is not a statement-level node
+        return null;
+    }
+
+    private void visitProductProperty(AngularParser.ProductPropertyContext ctx, ProductNode product) {
+        if (ctx.ProductName() != null && ctx.literalValue() != null) {
+            String value = ctx.literalValue().getText();
+            if (value.startsWith("\"") || value.startsWith("'")) {
+                value = value.substring(1, value.length()-1);
+            }
+            product.setProductName(value);
+        } else if (ctx.Price() != null && ctx.literalValue() != null) {
+            String value = ctx.literalValue().getText();
+            if (value.startsWith("\"") || value.startsWith("'")) {
+                value = value.substring(1, value.length()-1);
+            }
+            product.setPrice(value);
+        } else if (ctx.Image() != null && ctx.literalValue() != null) {
+            String value = ctx.literalValue().getText();
+            if (value.startsWith("\"") || value.startsWith("'")) {
+                value = value.substring(1, value.length()-1);
+            }
+            product.setImageUrl(value);
+        } else if (ctx.Description() != null && ctx.literalValue() != null) {
+            String value = ctx.literalValue().getText();
+            if (value.startsWith("\"") || value.startsWith("'")) {
+                value = value.substring(1, value.length()-1);
+            }
+            product.setDescription(value);
+        }
+    }
+
+    @Override
+    public ASTNode visitProductBody(AngularParser.ProductBodyContext ctx) {
+        // This method is called by the parser, but we handle the logic in visitProduct
+        // Return null as this is not a statement-level node
+        return null;
+    }
+
+    private void visitProductBody(AngularParser.ProductBodyContext ctx, ProductNode product) {
+        // Handle variable declarations
+        if (ctx.variableDeclaration() != null) {
+            for (var varDecl : ctx.variableDeclaration()) {
+                VariableDeclarationNode varNode = visitVariableDeclaration(varDecl);
+                product.addProperty(varNode);
+            }
+        }
+        
+        // Handle function declarations
+        if (ctx.functionDeclaration() != null) {
+            for (var funcDecl : ctx.functionDeclaration()) {
+                // For now, just visit the function (could be extended later)
+                visitFunctionDeclaration(funcDecl);
+            }
+        }
+        
+        // Handle nested products
+        if (ctx.product() != null) {
+            for (var nestedProduct : ctx.product()) {
+                // For now, just visit the nested product (could be extended later)
+                visitProduct(nestedProduct);
+            }
+        }
+    }
+
+    @Override
+    public ASTNode visitProductManagerBody(AngularParser.ProductManagerBodyContext ctx) {
+        // This method is called by the parser, but we handle the logic in visitProductManager
+        // Return null as this is not a statement-level node
+        return null;
+    }
+
+    private void visitProductManagerBody(AngularParser.ProductManagerBodyContext ctx, ProductManagerNode manager) {
+        // Handle products
+        if (ctx.product() != null) {
+            for (var product : ctx.product()) {
+                ProductNode productNode = (ProductNode) visitProduct(product);
+                manager.addProduct(productNode);
+            }
+        }
+        
+        // Handle function declarations
+        if (ctx.functionDeclaration() != null) {
+            for (var funcDecl : ctx.functionDeclaration()) {
+                FunctionDeclarationNode funcNode = visitFunctionDeclaration(funcDecl);
+                manager.addCrudOperation(funcNode);
+            }
+        }
+        
+        // Handle variable declarations
+        if (ctx.variableDeclaration() != null) {
+            for (var varDecl : ctx.variableDeclaration()) {
+                // For now, just visit the variable (could be extended later)
+                visitVariableDeclaration(varDecl);
+            }
+        }
     }
 }
 

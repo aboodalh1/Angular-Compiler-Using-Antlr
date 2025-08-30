@@ -47,7 +47,7 @@ public class CodeGenerator {
             // Create output directory
             createOutputDirectory();
 
-            // Generate HTML
+            // Generate HTML 
             String html = htmlGenerator.generateHTML(productManager);
             writeToFile("index.html", html);
 
@@ -65,10 +65,10 @@ public class CodeGenerator {
 
 
 
-            System.out.println("✅ تم إنشاء التطبيق بنجاح في مجلد: " + outputDirectory);
+            System.out.println("application generated successfully in: " + outputDirectory);
 
         } catch (Exception e) {
-            System.err.println("❌ خطأ في إنشاء التطبيق: " + e.getMessage());
+            System.err.println("error generating application: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -81,9 +81,9 @@ public class CodeGenerator {
             createOutputDirectory();
             String html = htmlGenerator.generateHTML(productManager);
             writeToFile("index.html", html);
-            System.out.println("✅ تم إنشاء HTML بنجاح");
+            System.out.println("html generated successfully");
         } catch (Exception e) {
-            System.err.println("❌ خطأ في إنشاء HTML: " + e.getMessage());
+            System.err.println("error generating html: " + e.getMessage());
         }
     }
 
@@ -95,9 +95,9 @@ public class CodeGenerator {
             createOutputDirectory();
             String css = cssGenerator.generateCSS();
             writeToFile("styles.css", css);
-            System.out.println("✅ تم إنشاء CSS بنجاح");
+            System.out.println("css generated successfully");
         } catch (Exception e) {
-            System.err.println("❌ خطأ في إنشاء CSS: " + e.getMessage());
+            System.err.println("error generating css: " + e.getMessage());
         }
     }
 
@@ -109,9 +109,9 @@ public class CodeGenerator {
             createOutputDirectory();
             String javascript = jsGenerator.generateJavaScript(productManager);
             writeToFile("script.js", javascript);
-            System.out.println("✅ تم إنشاء JavaScript بنجاح");
+            System.out.println("javascript generated successfully");
         } catch (Exception e) {
-            System.err.println("❌ خطأ في إنشاء JavaScript: " + e.getMessage());
+            System.err.println("error generating javascript: " + e.getMessage());
         }
     }
 
@@ -123,9 +123,9 @@ public class CodeGenerator {
             createOutputDirectory();
             String php = phpGenerator.generatePHP(productManager);
             writeToFile("app.php", php);
-            System.out.println("✅ تم إنشاء PHP بنجاح");
+            System.out.println("php generated successfully");
         } catch (Exception e) {
-            System.err.println("❌ خطأ في إنشاء PHP: " + e.getMessage());
+            System.err.println("error generating php: " + e.getMessage());
         }
     }
 

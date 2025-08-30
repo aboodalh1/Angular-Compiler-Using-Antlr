@@ -29,7 +29,9 @@ statement:
 	| navigation
 	| angularTemplate
 	| methodCallStatement
-	| function_call; // Add support for function calls as statements
+	| function_call
+	| product
+	| productManager; // Add support for product management
 
 // New State Management Rules
 stateManagement:
@@ -366,3 +368,24 @@ templateContent: (
 		| NumberLiteral
 		| BooleanLiteral
 	)+;
+
+// New Product Management Rules
+product:
+	Product OpenParen productProperties CloseParen SemiColon
+	| Product OpenParen productProperties CloseParen OpenBrace productBody CloseBrace;
+
+productProperties: productId (Comma productProperty)*;
+
+productId: Id Colon StringLiteral;
+
+productProperty:
+	(ProductName | Price | Image | Description) Colon literalValue;
+
+productBody:
+	(variableDeclaration | functionDeclaration | product)*;
+
+productManager:
+	ProductManager OpenParen StringLiteral? CloseParen OpenBrace productManagerBody CloseBrace;
+
+productManagerBody:
+	(product | functionDeclaration | variableDeclaration)*;

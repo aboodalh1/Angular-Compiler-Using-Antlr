@@ -2,6 +2,8 @@ package nodes.statement;
 
 import nodes.ASTNode;
 import nodes.html_node.HtmlNode;
+import nodes.product.ProductNode;
+import nodes.product.ProductManagerNode;
 // Statement node
 public class StatementNode implements ASTNode {
     ArrayDeclarationNode arrayDeclarationNodeList ;
@@ -19,6 +21,11 @@ public class StatementNode implements ASTNode {
     ExportClassNode exportClassNode ;
     HtmlElementNode htmlElementNodes ;
     HtmlNode htmlNodes ;
+    ASTNode stateManagementNode;
+    ASTNode navigationNode;
+    ASTNode angularTemplateNode;
+    ProductNode productNode;
+    ProductManagerNode productManagerNode;
 
     public HtmlNode getHtmlNodes() {
         return htmlNodes;
@@ -137,6 +144,47 @@ public class StatementNode implements ASTNode {
 
     public void setHtmlElementNodes(HtmlElementNode htmlElementNodes) {
         this.htmlElementNodes = htmlElementNodes;
+    }
+    
+    // Getters and Setters for new fields
+    public ASTNode getStateManagementNode() {
+        return stateManagementNode;
+    }
+
+    public void setStateManagementNode(ASTNode stateManagementNode) {
+        this.stateManagementNode = stateManagementNode;
+    }
+
+    public ASTNode getNavigationNode() {
+        return navigationNode;
+    }
+
+    public void setNavigationNode(ASTNode navigationNode) {
+        this.navigationNode = navigationNode;
+    }
+
+    public ASTNode getAngularTemplateNode() {
+        return angularTemplateNode;
+    }
+
+    public void setAngularTemplateNode(ASTNode angularTemplateNode) {
+        this.angularTemplateNode = angularTemplateNode;
+    }
+
+    public ProductNode getProductNode() {
+        return productNode;
+    }
+
+    public void setProductNode(ProductNode productNode) {
+        this.productNode = productNode;
+    }
+
+    public ProductManagerNode getProductManagerNode() {
+        return productManagerNode;
+    }
+
+    public void setProductManagerNode(ProductManagerNode productManagerNode) {
+        this.productManagerNode = productManagerNode;
     }
 
     @Override

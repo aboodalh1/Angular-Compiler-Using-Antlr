@@ -22,6 +22,14 @@ NgModel: '[(ngModel)]';
 NgSubmit: '(ngSubmit)';
 NgClick: '(click)';
 
+// New Product Management Keywords
+Product: '@Product';
+ProductManager: '@ProductManager';
+ProductName: 'name';
+Price: 'price';
+Image: 'image';
+Description: 'description';
+
 // Service decorator
 Injectable: '@Injectable';
 
