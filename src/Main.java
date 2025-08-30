@@ -110,22 +110,86 @@ public class Main {
 
     private static void openIndexHtml() {
         try {
-            // Use relative path from current working directory
-            String indexHtmlPath = "generated_app/index.html";
-            File indexHtmlFile = new File(indexHtmlPath);
-
-            if (indexHtmlFile.exists()) {
-                System.out.println("Opening generated app...");
-                logger.info("Opening generated app...");
+            // Dynamically search for the generated app files
+            File currentDir = new File(System.getProperty("user.dir"));
+            File indexHtmlFile = findIndexHtmlFile(currentDir);
+            
+            if (indexHtmlFile != null && indexHtmlFile.exists()) {
+                System.out.println("Opening generated app from: " + indexHtmlFile.getAbsolutePath());
+                logger.info("Opening generated app from: " + indexHtmlFile.getAbsolutePath());
                 if (Desktop.isDesktopSupported()) {
                     Desktop desktop = Desktop.getDesktop();
                     desktop.browse(indexHtmlFile.toURI());
                 }
             } else {
-                logger.error("Generated app not found at: " + indexHtmlPath);
+                logger.error("Generated app not found. Searched in: " + currentDir.getAbsolutePath());
+                System.out.println("Generated app not found. Please ensure the app has been generated first.");
             }
         } catch (Exception e) {
             logger.error("Error opening generated app: " + e.getMessage());
         }
+    }
+    
+    private static File findIndexHtmlFile(File directory) {
+        if (!directory.exists() || !directory.isDirectory()) {
+            return null;
+        }
+        
+        // First, look for index.html in the current directory
+        File indexFile = new File(directory, "index.html");
+        if (indexFile.exists()) {
+            return indexFile;
+        }
+        
+        // Look for generated_app directory
+        File generatedAppDir = new File(directory, "generated_app");
+        if (generatedAppDir.exists() && generatedAppDir.isDirectory()) {
+            File indexInGeneratedApp = new File(generatedAppDir, "index.html");
+            if (indexInGeneratedApp.exists()) {
+                return indexInGeneratedApp;
+            }
+        }
+        
+        // Look for other common directories that might contain the generated app
+        String[] commonDirs = {"dist", "build", "out", "target", "public"};
+        for (String dirName : commonDirs) {
+            File commonDir = new File(directory, dirName);
+            if (commonDir.exists() && commonDir.isDirectory()) {
+                File indexInCommonDir = new File(commonDir, "index.html");
+                if (indexInCommonDir.exists()) {
+                    return indexInCommonDir;
+                }
+            }
+        }
+        
+        // Recursively search subdirectories (limit depth to avoid infinite recursion)
+        return searchSubdirectories(directory, 0, 3);
+    }
+    
+    private static File searchSubdirectories(File directory, int currentDepth, int maxDepth) {
+        if (currentDepth >= maxDepth) {
+            return null;
+        }
+        
+        File[] files = directory.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    // Check if this directory contains index.html
+                    File indexFile = new File(file, "index.html");
+                    if (indexFile.exists()) {
+                        return indexFile;
+                    }
+                    
+                    // Recursively search deeper
+                    File found = searchSubdirectories(file, currentDepth + 1, maxDepth);
+                    if (found != null) {
+                        return found;
+                    }
+                }
+            }
+        }
+        
+        return null;
     }
 }
