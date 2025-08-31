@@ -1,10 +1,13 @@
 package nodes.statement;
 
 import nodes.ASTNode;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FunctionCallNode implements ASTNode {
     private String identifier;
     private ExpressionNode expression;
+    private List<ASTNode> arguments = new ArrayList<>();
 
     public String getIdentifier() {
         return identifier;
@@ -20,6 +23,10 @@ public class FunctionCallNode implements ASTNode {
 
     public void setExpression(ExpressionNode expression) {
         this.expression = expression;
+    }
+
+    public List<ASTNode> getArguments() {
+        return arguments;
     }
 
     @Override

@@ -1,4 +1,4 @@
-// Generated from C:/Users/KEMO/OneDrive/Desktop/compiler 2/Angular-Compiler-Using-Antlr/src/AngularParser.g4 by ANTLR 4.13.2
+// Generated from src/AngularParser.g4 by ANTLR 4.13.2
 package gen;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
@@ -1133,74 +1133,4 @@ public interface AngularParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitTemplateContent(AngularParser.TemplateContentContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link AngularParser#product}.
-	 * @param ctx the parse tree
-	 */
-	void enterProduct(AngularParser.ProductContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link AngularParser#product}.
-	 * @param ctx the parse tree
-	 */
-	void exitProduct(AngularParser.ProductContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link AngularParser#productProperties}.
-	 * @param ctx the parse tree
-	 */
-	void enterProductProperties(AngularParser.ProductPropertiesContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link AngularParser#productProperties}.
-	 * @param ctx the parse tree
-	 */
-	void exitProductProperties(AngularParser.ProductPropertiesContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link AngularParser#productId}.
-	 * @param ctx the parse tree
-	 */
-	void enterProductId(AngularParser.ProductIdContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link AngularParser#productId}.
-	 * @param ctx the parse tree
-	 */
-	void exitProductId(AngularParser.ProductIdContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link AngularParser#productProperty}.
-	 * @param ctx the parse tree
-	 */
-	void enterProductProperty(AngularParser.ProductPropertyContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link AngularParser#productProperty}.
-	 * @param ctx the parse tree
-	 */
-	void exitProductProperty(AngularParser.ProductPropertyContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link AngularParser#productBody}.
-	 * @param ctx the parse tree
-	 */
-	void enterProductBody(AngularParser.ProductBodyContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link AngularParser#productBody}.
-	 * @param ctx the parse tree
-	 */
-	void exitProductBody(AngularParser.ProductBodyContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link AngularParser#productManager}.
-	 * @param ctx the parse tree
-	 */
-	void enterProductManager(AngularParser.ProductManagerContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link AngularParser#productManager}.
-	 * @param ctx the parse tree
-	 */
-	void exitProductManager(AngularParser.ProductManagerContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link AngularParser#productManagerBody}.
-	 * @param ctx the parse tree
-	 */
-	void enterProductManagerBody(AngularParser.ProductManagerBodyContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link AngularParser#productManagerBody}.
-	 * @param ctx the parse tree
-	 */
-	void exitProductManagerBody(AngularParser.ProductManagerBodyContext ctx);
 }

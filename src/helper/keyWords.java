@@ -39,11 +39,5 @@ public class keyWords {
     public static final String FUNCTION_DECLARATION = "Function Declaration";
     public static final String VARIABLE_DECLARATION = "Variable Declaration";
     public static final String NOT_PROVIDED_SERVICE_X = "NotProvidedServiceX";
-    public static final String DEFAULT_SOURCE_FILE = Paths.get(System.getProperty("user.dir"), "src", "angular_compiler.txt").toString();
-//    public static final String DEFAULT_SOURCE_FILE = Paths.get(System.getProperty("user.dir"), "src", "test_duplicate_variables.txt").toString();
-//    public static final String DEFAULT_SOURCE_FILE = Paths.get(System.getProperty("user.dir"), "src", "test_ngif_ngfor_error.txt").toString();
-//    public static final String DEFAULT_SOURCE_FILE = Paths.get(System.getProperty("user.dir"), "src", "test_unimported_classes.txt").toString();
-//    public static final String DEFAULT_SOURCE_FILE = Paths.get(System.getProperty("user.dir"), "src", "test_unimported_parameter_types.txt").toString();
-//    public static final String DEFAULT_SOURCE_FILE = Paths.get(System.getProperty("user.dir"), "src", "test_unimported_types.txt").toString();
-
+    public static final String DEFAULT_SOURCE_FILE = Paths.get(System.getProperty("user.dir"), "angular_compiler.txt").toString();
 }

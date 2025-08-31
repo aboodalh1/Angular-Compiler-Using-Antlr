@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>????? ???????? - Angular Compiler</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <header class="header">
+      <nav class="navbar">
+        <div class="nav-brand">
+          <i class="fas fa-shopping-cart"></i>
+          <span>????? ????????</span>
+        </div>
+        <ul class="nav-menu">
+          <li><a href="#add-product" class="nav-link"><i class="fas fa-plus"></i> ????? ????</a></li>
+          <li><a href="#products" class="nav-link"><i class="fas fa-list"></i> ??? ????????</a></li>
+          <li><a href="#product-details" class="nav-link"><i class="fas fa-info-circle"></i> ?????? ??????</a></li>
+        </ul>
+      </nav>
+    </header>
+    <main class="main-content">
+      <section id="add-product" class="section">
+        <div class="container">
+          <h2 class="section-title"><i class="fas fa-plus-circle"></i> ????? ???? ????</h2>
+          <div class="form-container">
+            <form id="addProductForm" class="product-form">
+              <div class="form-section">
+                <h3 class="form-section-title"><i class="fas fa-info-circle"></i> ????????? ????????</h3>
+                <div class="form-row">
+                  <div class="form-col">
+                    <div class="form-group">
+                      <label for="productName" class="form-label">??? ?????? *</label>
+                      <input type="text" id="productName" name="productName" class="form-control" placeholder="???? ??? ??????" required>
+                    </div>
+                  </div>
+                  <div class="form-col">
+                    <div class="form-group">
+                      <label for="productCategory" class="form-label">????? *</label>
+                      <select id="productCategory" name="productCategory" class="form-control" required>
+                        <option value="">???? ??? ??????</option>
+                        <option value="electronics">????????????</option>
+                        <option value="clothing">???????</option>
+                        <option value="books">?????</option>
+                        <option value="home">?????? ????????</option>
+                        <option value="sports">???????</option>
+                        <option value="automotive">????????</option>
+                        <option value="health">????? ???????</option>
+                        <option value="other">????</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-col">
+                    <div class="form-group">
+                      <label for="productPrice" class="form-label">????? *</label>
+                      <input type="number" id="productPrice" name="productPrice" class="form-control" placeholder="0.00" required>
+                    </div>
+                  </div>
+                  <div class="form-col">
+                    <div class="form-group">
+                      <label for="productStock" class="form-label">?????? ????????</label>
+                      <input type="number" id="productStock" name="productStock" class="form-control" placeholder="0">
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-section">
+                <h3 class="form-section-title"><i class="fas fa-align-left"></i> ????? ?????????</h3>
+                <div class="form-group">
+                  <label for="productDescription" class="form-label">??? ?????? *</label>
+                  <textarea id="productDescription" name="productDescription" class="form-control" placeholder="???? ??? ???? ??????" required rows="4"></textarea>
+                </div>
+                <div class="form-group">
+                  <label for="productFeatures" class="form-label">????????</label>
+                  <textarea id="productFeatures" name="productFeatures" class="form-control" placeholder="???? ?????? ?????? (???????)" rows="4"></textarea>
+                </div>
+              </div>
+              <div class="form-section">
+                <h3 class="form-section-title"><i class="fas fa-images"></i> ??? ??????</h3>
+                <div class="image-upload-container">
+                  <div class="image-upload-area" id="imageUploadArea">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>???? ????? ??? ?? ???? ????????</p>
+                    <input type="file" id="productImages" name="productImages" multiple accept="image/*" class="image-input">
+                  </div>
+                  <div class="image-preview" id="imagePreview"></div>
+                </div>
+              </div>
+              <div class="form-section">
+                <h3 class="form-section-title"><i class="fas fa-cogs"></i> ??????? ??????</h3>
+                <div class="form-row">
+                  <div class="form-col">
+                    <div class="form-group">
+                      <label for="productBrand" class="form-label">??????? ????????</label>
+                      <input type="text" id="productBrand" name="productBrand" class="form-control" placeholder="???? ??????? ????????">
+                    </div>
+                  </div>
+                  <div class="form-col">
+                    <div class="form-group">
+                      <label for="productModel" class="form-label">???????</label>
+                      <input type="text" id="productModel" name="productModel" class="form-control" placeholder="???? ????? ??????">
+                    </div>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-col">
+                    <div class="form-group">
+                      <label for="productWeight" class="form-label">????? (???)</label>
+                      <input type="number" id="productWeight" name="productWeight" class="form-control" placeholder="0.0">
+                    </div>
+                  </div>
+                  <div class="form-col">
+                    <div class="form-group">
+                      <label for="productDimensions" class="form-label">???????</label>
+                      <input type="text" id="productDimensions" name="productDimensions" class="form-control" placeholder="????? × ????? × ????????">
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                  <i class="fas fa-undo"></i> ????? ?????
+                </button>
+                <button type="submit" class="btn btn-primary">
+                  <i class="fas fa-save"></i> ??? ??????
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+      <section id="products" class="section">
+        <div class="container">
+          <h2 class="section-title"><i class="fas fa-list"></i> ????? ????????</h2>
+          <div class="products-controls">
+            <div class="search-filter-container">
+              <div class="search-box">
+                <input type="text" id="searchProducts" class="search-input" placeholder="????? ?? ????????...">
+                <i class="fas fa-search search-icon"></i>
+              </div>
+              <div class="filter-controls">
+                <select id="categoryFilter" class="filter-select">
+                  <option value="">???? ??????</option>
+                  <option value="electronics">????????????</option>
+                  <option value="clothing">???????</option>
+                  <option value="books">?????</option>
+                  <option value="home">?????? ????????</option>
+                  <option value="sports">???????</option>
+                  <option value="automotive">????????</option>
+                  <option value="health">????? ???????</option>
+                </select>
+                <select id="sortProducts" class="filter-select">
+                  <option value="newest">??????</option>
+                  <option value="oldest">??????</option>
+                  <option value="price-low">?????: ?? ????? ??????</option>
+                  <option value="price-high">?????: ?? ?????? ?????</option>
+                  <option value="name-az">?????: ?-?</option>
+                  <option value="name-za">?????: ?-?</option>
+                </select>
+              </div>
+            </div>
+            <div class="view-controls">
+              <button class="view-btn active" data-view="grid" onclick="changeView('grid')">
+                <i class="fas fa-th"></i>
+              </button>
+              <button class="view-btn" data-view="list" onclick="changeView('list')">
+                <i class="fas fa-list"></i>
+              </button>
+            </div>
+          </div>
+          <div class="products-grid" id="productsGrid">
+            <div class="product-card sample-card" style="display: none;">
+              <div class="product-image">
+                <img src="placeholder.jpg" alt="???? ??????" class="product-img">
+              </div>
+              <div class="product-info">
+                <h3 class="product-name">??? ??????</h3>
+                <p class="product-description">??? ??????</p>
+                <div class="product-meta">
+                  <span class="product-price">0.00 ????</span>
+                  <span class="product-category">?????</span>
+                </div>
+                <div class="product-actions">
+                  <button class="btn btn-info btn-sm" onclick="viewProductDetails('1')">
+                    <i class="fas fa-eye"></i> show
+                  </button>
+                  <button class="btn btn-warning btn-sm" onclick="editProduct('1')">
+                    <i class="fas fa-edit"></i>edit
+                  </button>
+                  <button class="btn btn-danger btn-sm" onclick="deleteProduct('1')">
+                    <i class="fas fa-trash"></i> delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="products-list" id="productsList" style="display: none;">
+            <!-- Products will be populated by JavaScript -->
+          </div>
+          <div id="noProductsMessage" class="no-products-message" style="display: none;">
+            <i class="fas fa-box-open"></i>
+            <p>?? ???? ?????? ?????</p>
+            <button class="btn btn-primary" onclick="showAddProductForm()">
+              <i class="fas fa-plus"></i> ????? ???? ???
+            </button>
+          </div>
+          <div class="pagination" id="pagination">
+            <button class="pagination-btn" onclick="previousPage()">
+              <i class="fas fa-chevron-right"></i> ??????
+            </button>
+            <div class="page-numbers" id="pageNumbers">
+              <span class="page-number active">1</span>
+            </div>
+            <button class="pagination-btn" onclick="nextPage()">
+              ?????? <i class="fas fa-chevron-left"></i>
+            </button>
+          </div>
+        </div>
+      </section>
+      <section id="product-details" class="section">
+        <div class="container">
+          <h2 class="section-title"><i class="fas fa-info-circle"></i> ?????? ??????</h2>
+          <div id="productDetailsContent" class="product-details-content">
+            <div class="product-details-placeholder">
+              <i class="fas fa-search"></i>
+              <p>???? ?????? ???? ???????</p>
+            </div>
+            <div class="product-details-template" id="productDetailsTemplate" style="display: none;">
+              <div class="product-details-header">
+                <div class="product-breadcrumb">
+                  <a href="#products">????????</a>
+                  <i class="fas fa-chevron-left"></i>
+                  <span id="productBreadcrumbName">??? ??????</span>
+                </div>
+                <div class="product-title-section">
+                  <h1 id="productDetailTitle">??? ??????</h1>
+                  <div class="product-meta-info">
+                    <span class="product-category-badge" id="productDetailCategory">?????</span>
+                    <span class="product-brand" id="productDetailBrand">??????? ????????</span>
+                    <span class="product-model" id="productDetailModel">???????</span>
+                  </div>
+                </div>
+              </div>
+              <div class="product-details-body">
+                <div class="product-images-section">
+                  <div class="main-image-container">
+                    <img id="productMainImage" src="placeholder.jpg" alt="???? ?????? ????????" class="main-product-image">
+                    <div class="image-overlay">
+                      <button class="zoom-btn" onclick="zoomImage()">
+                        <i class="fas fa-search-plus"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="thumbnail-images" id="thumbnailImages">
+                    <!-- Thumbnail images will be populated by JavaScript -->
+                  </div>
+                </div>
+                <div class="product-info-section">
+                  <div class="product-price-section">
+                    <div class="current-price">
+                      <span class="price-label">?????:</span>
+                      <span class="price-value" id="productDetailPrice">0.00 ????</span>
+                    </div>
+                    <div class="product-availability">
+                      <span class="availability-label">??????:</span>
+                      <span class="availability-status" id="productDetailStock">?????</span>
+                    </div>
+                  </div>
+                  <div class="product-actions">
+                    <button class="btn btn-primary btn-lg" onclick="addToCart()">
+                      <i class="fas fa-shopping-cart"></i> ????? ?????
+                    </button>
+                    <button class="btn btn-outline btn-lg" onclick="addToWishlist()">
+                      <i class="fas fa-heart"></i> ???????
+                    </button>
+                    <button class="btn btn-outline btn-lg" onclick="shareProduct()">
+                      <i class="fas fa-share"></i> ??????
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="product-tabs">
+                <div class="tabs-header">
+                  <button class="tab-btn active" data-tab="description" onclick="switchTab('description')">
+                    <i class="fas fa-align-left"></i> ?????
+                  </button>
+                  <button class="tab-btn" data-tab="specifications" onclick="switchTab('specifications')">
+                    <i class="fas fa-cogs"></i> ?????????
+                  </button>
+                  <button class="tab-btn" data-tab="reviews" onclick="switchTab('reviews')">
+                    <i class="fas fa-star"></i> ?????????
+                  </button>
+                  <button class="tab-btn" data-tab="related" onclick="switchTab('related')">
+                    <i class="fas fa-link"></i> ?????? ??? ???
+                  </button>
+                </div>
+                <div class="tabs-content">
+                  <div class="tab-content active" id="description-tab">
+                    <div class="description-content">
+                      <h3>??? ??????</h3>
+                      <p id="productDetailDescription">??? ?????? ????? ???...</p>
+                      <div class="product-features" id="productDetailFeatures">
+                        <h4>???????? ????????</h4>
+                        <ul id="featuresList">
+                          <!-- Features will be populated by JavaScript -->
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="tab-content" id="specifications-tab">
+                    <div class="specifications-content">
+                      <h3>????????? ???????</h3>
+                      <div class="specs-grid" id="specsGrid">
+                        <!-- Specifications will be populated by JavaScript -->
+                      </div>
+                    </div>
+                  </div>
+                  <div class="tab-content" id="reviews-tab">
+                    <div class="reviews-content">
+                      <h3>??????? ???????</h3>
+                      <div class="reviews-summary">
+                        <div class="rating-overview">
+                          <div class="average-rating">
+                            <span class="rating-number" id="averageRating">0.0</span>
+                            <div class="rating-stars" id="ratingStars">
+                              <!-- Stars will be populated by JavaScript -->
+                            </div>
+                          </div>
+                          <span class="total-reviews" id="totalReviews">0 ?????</span>
+                        </div>
+                      </div>
+                      <div class="reviews-list" id="reviewsList">
+                        <!-- Reviews will be populated by JavaScript -->
+                      </div>
+                    </div>
+                  </div>
+                  <div class="tab-content" id="related-tab">
+                    <div class="related-content">
+                      <h3>?????? ??? ???</h3>
+                      <div class="related-products-grid" id="relatedProductsGrid">
+                        <!-- Related products will be populated by JavaScript -->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="footer">
+      <div class="container">
+        <p>&copy; 2024 ????? ???????? - ?? ??????? ?????? Angular Compiler</p>
+      </div>
+    </footer>
+  </body>
+  <script src="script.js"></script>
+</html>

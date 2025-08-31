@@ -7,6 +7,7 @@ public class ExpressionNode implements ASTNode {
     public  String operator;
     public  ASTNode left;
     public  ASTNode right;
+    private int line;
 
 
 
@@ -37,5 +38,13 @@ public class ExpressionNode implements ASTNode {
 
     public void setRight(ASTNode right) {
         this.right = right;
+    }
+
+    public int getLine() {
+        return line;
+    }
+
+    public void setLine(int line) {
+        this.line = line;
     }
 }

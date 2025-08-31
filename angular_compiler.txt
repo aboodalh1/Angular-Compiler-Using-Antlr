@@ -1,21 +1,13 @@
-// Default Angular Compiler Test File - FIXED SYNTAX
 import { Component } from '@angular/core';
 
-@Component()
+@Component({
+    selector: 'app-root'
+})
 export class AppComponent {
-    title: string = "Angular Compiler Test App";
-    subtitle: string = "Welcome to the Test Application";
-    description: string = "This is a test application to demonstrate the Angular compiler capabilities.";
-    isLoading: boolean = false;
-    buttonText: string = "Click Me!";
-    
+    title = "Angular Compiler Test App";
     features: Array = ["Component-based architecture", "Template-driven forms", "Reactive programming", "Dependency injection", "Routing and navigation"];
-    
+
     onButtonClick() {
         console.log("Button clicked!");
-        this.buttonText = "Clicked!";
-        // Note: setTimeout with arrow functions not supported in this grammar
-        // Using simple assignment instead
-        this.buttonText = "Click Me!";
     }
 }

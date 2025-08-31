@@ -1,0 +1,14 @@
+import { Component } from '@angular/core';
+import { Component } from '@angular/core';
+
+@Component({
+    selector: 'app-root'
+})
+export class AppComponent {
+    title = "Angular Compiler Test App";
+    features: Array = ["Component-based architecture", "Template-driven forms", "Reactive programming", "Dependency injection", "Routing and navigation"];
+
+    onButtonClick() {
+        console.log("Button clicked!");
+    }
+}

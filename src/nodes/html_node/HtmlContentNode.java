@@ -9,6 +9,7 @@ import java.util.List;
 public class HtmlContentNode implements ASTNode {
     private List<HtmlElementNode> htmlElementNode= new ArrayList<>();
     private String identifierNode ;
+    private ExpressionNode expression;
 
     public List<HtmlElementNode> getHtmlElementNode() {
         return htmlElementNode;
@@ -29,6 +30,14 @@ public class HtmlContentNode implements ASTNode {
 
     public void setIdentifierNode(String identifierNode) {
         this.identifierNode = identifierNode;
+    }
+
+    public ExpressionNode getExpression() {
+        return expression;
+    }
+
+    public void setExpression(ExpressionNode expression) {
+        this.expression = expression;
     }
 
     @Override
