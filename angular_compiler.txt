@@ -1,13 +1,34 @@
 import { Component } from '@angular/core';
 
 @Component({
-    selector: 'app-root'
+  selector: 'app-root',
+  template: `
+    <div>
+      <h1>{{ title }}</h1>
+      <p *ngIf="showMessage">Hello World!</p>
+      <ul>
+        <li *ngFor="let item of items">{{ item }}</li>
+      </ul>
+    </div>
+  `
 })
 export class AppComponent {
-    title = "Angular Compiler Test App";
-    features: Array = ["Component-based architecture", "Template-driven forms", "Reactive programming", "Dependency injection", "Routing and navigation"];
+  title = 'My Angular App';
+  showMessage = true;
+  items = ['Item 1', 'Item 2', 'Item 3'];
 
-    onButtonClick() {
-        console.log("Button clicked!");
-    }
+  constructor() {
+    console.log('Component initialized');
+  }
+
+  ngOnInit() {
+    this.loadData();
+  }
+
+  loadData() {
+    // Simulate loading data
+    setTimeout(() => {
+      this.items.push('Item 4');
+    }, 1000);
+  }
 }
