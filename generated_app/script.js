@@ -1236,8 +1236,8 @@
             const addProductSection = document.getElementById('add-product');
             const productsSection = document.getElementById('products');
             const productDetailsSection = document.getElementById('product-details');
-            
-            if (addProductSection) addProductSection.style.display = 'block';
+
+          if (addProductSection) addProductSection.style.display = 'block';
             if (productsSection) productsSection.style.display = 'none';
             if (productDetailsSection) productDetailsSection.style.display = 'none';
             

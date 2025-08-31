@@ -41,7 +41,6 @@ Implements: 'implements';
 Console: 'console';
 Log: 'log';
 Component: '@Component';
-Service: '@Injectable';
 Class: 'class';
 InlineAttributeName: 'inline';
 BackgroundColorAttributeName: 'backgroundColor';
@@ -50,7 +49,7 @@ TypeAttributeName: 'type';
 LabelAttributeName: 'label';
 ValueAttributeName: 'value';
 PlaceHolderAttributeName: 'placeholder';
-CheckedAttributeName: 'chacked';
+CheckedAttributeName: 'checked';
 TargetAttributeName: 'target';
 OnSubmitAttributeName: 'submit';
 OnChangeAttributeName: 'change';
@@ -106,6 +105,7 @@ Continue: 'continue';
 Function: 'function';
 Return: 'return';
 From: 'from';
+As: 'as';
 Null: 'null';
 Enum: 'enum';
 Array: 'Array';
@@ -130,7 +130,9 @@ New: 'new';
 
 // Literals
 NumberLiteral: [0-9]+ ('.' [0-9]+)?;
-StringLiteral: '"' .*? '"' | ('\'' .*? '\'');
+StringLiteral:
+	'"' (~["\\\r\n] | '\\' .)* '"'
+	| '\'' ( ~['\\\r\n] | '\\' .)* '\'';
 BooleanLiteral: 'true' | 'false';
 Backtick: '`';
 

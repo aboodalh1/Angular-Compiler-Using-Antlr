@@ -7,7 +7,10 @@ options {
 program: statement* EOF;
 
 statement:
-	arrayDeclaration
+	importStatement
+	| component
+	| exportClass
+	| arrayDeclaration
 	| enumDecl
 	| variableDeclaration
 	| functionDeclaration
@@ -17,9 +20,6 @@ statement:
 	| breakStatement
 	| continueStatement
 	| html_element
-	| importStatement
-	| component
-	| exportClass
 	| thisVarible
 	| classDeclaration
 	| abstractClass
@@ -108,8 +108,13 @@ decorator:
 argumentList: argument (Comma argument)* Comma?;
 argument: Identifier ':' literalValue;
 importStatement:
-	Import OpenBrace Identifier (Comma Identifier)* CloseBrace From StringLiteral SemiColon
-	| Import Identifier From StringLiteral SemiColon;
+	Import OpenBrace Identifier (Comma Identifier)* CloseBrace From StringLiteral SemiColon?
+	| Import Identifier From StringLiteral SemiColon?
+	| Import Multiply As Identifier From StringLiteral SemiColon?
+	| Import StringLiteral SemiColon?
+	| Import Identifier Comma OpenBrace Identifier (
+		Comma Identifier
+	)* CloseBrace From StringLiteral SemiColon?;
 thisVarible:
 	This Dot Identifier Assign (
 		newInstanceAssignment
