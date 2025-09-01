@@ -5,7 +5,7 @@ import java.util.List;
 
 // Decorator node
 public class DecoratorNode extends ComponentNode {
-    private  List<ArgumentListNode> arguments = new ArrayList<>();
+    private  List<ArgumentNode> arguments = new ArrayList<>();
 
 
 
@@ -14,11 +14,11 @@ public class DecoratorNode extends ComponentNode {
         return "\nDecoratorNode{\n" + "arguments=" + arguments + "\n}";
     }
 
-    public List<ArgumentListNode> getArguments() {
+    public List<ArgumentNode> getArguments() {
         return arguments;
     }
 
-    public void setArguments(List<ArgumentListNode> arguments) {
+    public void setArguments(List<ArgumentNode> arguments) {
         this.arguments = arguments;
     }
 }

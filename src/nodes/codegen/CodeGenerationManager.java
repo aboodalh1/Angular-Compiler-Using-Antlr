@@ -9,9 +9,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Manages code generation for different target languages/formats
- */
+
 public class CodeGenerationManager {
     
     private Map<String, CodeGenerator> generators;
@@ -35,11 +33,7 @@ public class CodeGenerationManager {
         generators.put("js", new JSGenerator());
     }
     
-    /**
-     * Generate code for all supported formats
-     * @param rootNode The root AST node to generate code from
-     * @return Map of generated code by format
-     */
+
     public Map<String, String> generateAll(ASTNode rootNode) {
         Map<String, String> generatedCode = new HashMap<>();
         
@@ -60,12 +54,7 @@ public class CodeGenerationManager {
         return generatedCode;
     }
     
-    /**
-     * Generate code for a specific format
-     * @param rootNode The root AST node to generate code from
-     * @param format The target format (html, css, js)
-     * @return Generated code as string
-     */
+
     public String generate(ASTNode rootNode, String format) {
         CodeGenerator generator = generators.get(format.toLowerCase());
         if (generator == null) {
@@ -75,11 +64,7 @@ public class CodeGenerationManager {
         return generator.generateCode(rootNode);
     }
     
-    /**
-     * Generate and save code files
-     * @param rootNode The root AST node to generate code from
-     * @param baseFileName Base name for generated files (without extension)
-     */
+
     public void generateAndSave(ASTNode rootNode, String baseFileName) {
         try {
             // Create output directory if it doesn't exist
@@ -110,52 +95,31 @@ public class CodeGenerationManager {
         }
     }
     
-    /**
-     * Add a custom code generator
-     * @param format The format identifier
-     * @param generator The code generator implementation
-     */
+
     public void addGenerator(String format, CodeGenerator generator) {
         generators.put(format.toLowerCase(), generator);
     }
     
-    /**
-     * Remove a code generator
-     * @param format The format identifier
-     */
+
     public void removeGenerator(String format) {
         generators.remove(format.toLowerCase());
     }
     
-    /**
-     * Get available formats
-     * @return Array of supported format names
-     */
+
     public String[] getSupportedFormats() {
         return generators.keySet().toArray(new String[0]);
     }
     
-    /**
-     * Set the output directory for generated files
-     * @param outputDirectory Path to output directory
-     */
+
     public void setOutputDirectory(String outputDirectory) {
         this.outputDirectory = outputDirectory;
     }
     
-    /**
-     * Get the current output directory
-     * @return Current output directory path
-     */
+
     public String getOutputDirectory() {
         return outputDirectory;
     }
-    
-    /**
-     * Generate a complete web application structure
-     * @param rootNode The root AST node
-     * @param appName Name of the application
-     */
+
     public void generateWebApp(ASTNode rootNode, String appName) {
         try {
             // Create app directory structure

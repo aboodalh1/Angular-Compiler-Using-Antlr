@@ -4,22 +4,25 @@ import nodes.ASTNode;
 
 public class HtmlElementNode implements ASTNode {
 
-    private String tagName;
+    private HtmlTagNode tagName;
     private HtmlAttributesNode attributes;
     private HtmlContentNode content;
 
-    public HtmlElementNode(String tagName, HtmlAttributesNode attributes, HtmlContentNode content) {
+    public HtmlElementNode(HtmlTagNode tagName, HtmlAttributesNode attributes, HtmlContentNode content) {
         this.tagName = tagName;
         this.attributes = attributes;
         this.content = content;
     }
 
+    public HtmlElementNode() {
+    }
 
-    public String getTagName() {
+
+    public HtmlTagNode getTagName() {
         return tagName;
     }
 
-    public void setTagName(String tagName) {
+    public void setTagName(HtmlTagNode tagName) {
         this.tagName = tagName;
     }
 

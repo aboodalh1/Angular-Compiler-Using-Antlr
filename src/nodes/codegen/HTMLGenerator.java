@@ -67,9 +67,16 @@ public class HTMLGenerator implements CodeGenerator {
         indentLevel++;
         
         for (StatementNode statement : program.getStatements()) {
-            if (statement.getComponentNodes() != null) {
-                generateNode(statement.getComponentNodes());
+//            if (statement.getComponentNodes() != null) {
+//                generateNode(statement.getComponentNodes());
+//            }
+            if(statement.getComponentNodes()!=null){
+                HtmlNode node = statement.getComponentNodes().getHtmlNodes();
+                System.out.println(node.getContent());
+                generateNode(node);
             }
+            System.out.println(statement.getComponentNodes());
+            System.out.println("ffffffffffffff");
         }
         
         appendLine("<script src=\"app.js\"></script>");

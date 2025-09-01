@@ -4,7 +4,7 @@ import java.io.IOException;
 public class SimpleCodeGenTest {
     
     public static void main(String[] args) {
-        System.out.println("=== Simple Angular Code Generation Demo ===");
+        System.out.println("=== Angular Compiler with Code Generation ===");
         
         // Simulate parsing an Angular component and generating code
         generateHTMLCode();

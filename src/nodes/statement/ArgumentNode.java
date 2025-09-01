@@ -1,11 +1,19 @@
 package nodes.statement;
 
 import nodes.ASTNode;
+import nodes.css_node.CssNode;
+import nodes.html_node.HtmlNode;
 
 public class ArgumentNode implements ASTNode {
     String name;
-    LiteralValueNode value;
 
+    public LiteralValueNode setLiteralNode() {
+        return value;
+    }
+
+    LiteralValueNode value;
+    HtmlNode htmlNode;
+    CssNode cssNode;
 
     public String getName() {
         return name;
@@ -13,6 +21,30 @@ public class ArgumentNode implements ASTNode {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+
+    public void setLiteralNode(LiteralValueNode value) {
+        this.value = value;
+    }
+
+
+
+
+    public HtmlNode getHtmlNode() {
+        return htmlNode;
+    }
+
+    public void setHtmlNode(HtmlNode htmlNode) {
+        this.htmlNode = htmlNode;
+    }
+
+    public CssNode getCssNode() {
+        return cssNode;
+    }
+
+    public void setCssNode(CssNode cssNode) {
+        this.cssNode = cssNode;
     }
 
     public LiteralValueNode getValue() {
@@ -25,10 +57,11 @@ public class ArgumentNode implements ASTNode {
 
     @Override
     public String toString() {
-
-        return "\nArgumentNode{ \n" +
+        return "ArgumentNode{" +
                 "name='" + name + '\'' +
-                ", value='" + value + '\'' + "\n"+
+                ", value=" + value +
+                ", htmlNode=" + htmlNode +
+                ", cssNode=" + cssNode +
                 '}';
     }
 }

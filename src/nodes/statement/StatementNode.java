@@ -20,6 +20,16 @@ public class StatementNode implements ASTNode {
     HtmlElementNode htmlElementNodes ;
     HtmlNode htmlNodes ;
 
+    public InterfaceNode getInterfaceNode() {
+        return interfaceNode;
+    }
+
+    public void setInterfaceNode(InterfaceNode interfaceNode) {
+        this.interfaceNode = interfaceNode;
+    }
+
+    InterfaceNode interfaceNode;
+
     public HtmlNode getHtmlNodes() {
         return htmlNodes;
     }

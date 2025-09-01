@@ -3,17 +3,18 @@ package nodes.statement;
 import nodes.ASTNode;
 import nodes.html_node.HtmlAttributesNode;
 import nodes.html_node.HtmlContentNode;
+import nodes.html_node.HtmlTagNode;
 
 public class HtmlElementNode implements ASTNode {
-    private String htmlTagNode;
+    private HtmlTagNode htmlTagNode;
     private HtmlAttributesNode htmlAttributesNodes;
     private HtmlContentNode htmlContentNode;
 
-    public String getHtmlTagNode() {
+    public HtmlTagNode getHtmlTagNode() {
         return htmlTagNode;
     }
 
-    public void setHtmlTagNode(String htmlTagNode) {
+    public void setHtmlTagNode(HtmlTagNode htmlTagNode) {
         this.htmlTagNode = htmlTagNode;
     }
 

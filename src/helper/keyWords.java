@@ -39,5 +39,5 @@ public class keyWords {
     public static final String FUNCTION_DECLARATION = "Function Declaration";
     public static final String VARIABLE_DECLARATION = "Variable Declaration";
     public static final String NOT_PROVIDED_SERVICE_X = "NotProvidedServiceX";
-    public static final String DEFAULT_SOURCE_FILE = Paths.get(System.getProperty("user.dir"), "simple-products.component.ts").toString();
+    public static final String DEFAULT_SOURCE_FILE = Paths.get(System.getProperty("user.dir"), "first_test.ts").toString();
 }

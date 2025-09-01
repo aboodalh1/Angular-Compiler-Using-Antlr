@@ -6,22 +6,20 @@ import java.util.List;
 import java.util.Stack;
 import java.util.Optional;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import gen.AngularLexer;
 import gen.AngularParser;
 import gen.AngularParserVisitor;
 import nodes.SymbolTables.ComponentSymbolTable;
 import nodes.SymbolTables.ServiceSemanticValidator;
-import nodes.SymbolTables.SymbolTable;
-import nodes.SymbolTables.mainSymbolTable;
 import nodes.codegen.CodeGenerationManager;
 import nodes.css_node.CssClassContentNode;
 import nodes.css_node.CssContentNode;
 import nodes.css_node.CssNode;
 import nodes.html_node.*;
-import nodes.html_node.html_content.NgForNode;
-import nodes.html_node.html_content.NgIfNode;
+import nodes.html_node.HtmlElementNode;
 import nodes.statement.*;
-import nodes.statement.HtmlElementNode;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
@@ -30,7 +28,6 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import static helper.keyWords.*;
 import static helper.methods.printAST;
-import static helper.methods.printSemanticError;
 import static org.antlr.v4.runtime.CharStreams.fromFileName;
 
 public class BaseVisitorWithCodeGen extends AbstractParseTreeVisitor<ASTNode> implements AngularParserVisitor<ASTNode> {
@@ -118,23 +115,23 @@ public class BaseVisitorWithCodeGen extends AbstractParseTreeVisitor<ASTNode> im
     public void generateCode() {
         if (programAST != null) {
             System.out.println("\n--- Code Generation ---");
-            
+
             // Generate all code formats
             Map<String, String> generatedCode = codeGenManager.generateAll(programAST);
-            
+
             // Print generated code
             for (Map.Entry<String, String> entry : generatedCode.entrySet()) {
                 String format = entry.getKey().toUpperCase();
                 String code = entry.getValue();
-                
+
                 System.out.println("\n--- Generated " + format + " ---");
                 System.out.println(code);
                 System.out.println("--- End " + format + " ---\n");
             }
-            
+
             // Save files
             codeGenManager.generateAndSave(programAST, "app");
-            
+
             // Generate complete web application
             codeGenManager.generateWebApp(programAST, "angular-app");
         } else {
@@ -180,7 +177,6 @@ public class BaseVisitorWithCodeGen extends AbstractParseTreeVisitor<ASTNode> im
         return codeGenManager;
     }
 
-    // All the existing visitor methods from BaseVisitor remain the same
     @Override
     public ASTNode visitProgram(AngularParser.ProgramContext ctx) {
         ProgramNode programNode = new ProgramNode();
@@ -190,83 +186,123 @@ public class BaseVisitorWithCodeGen extends AbstractParseTreeVisitor<ASTNode> im
                 programNode.getStatements().add(statementNode);
             }
         }
+        Row row = new Row();
+        row.setType("Program");
+        row.setValue(ctx.getText());
         return programNode;
     }
 
     @Override
     public StatementNode visitStatement(AngularParser.StatementContext ctx) {
         StatementNode statement = new StatementNode();
-
-        Optional.ofNullable(ctx.class_()).ifPresent(c -> statement.setClassNodes(visitClass(c)));
-        Optional.ofNullable(ctx.variableDeclaration()).ifPresent(c -> statement.setVariableDeclarationNodes(visitVariableDeclaration(c)));
-        Optional.ofNullable(ctx.functionDeclaration()).ifPresent(c -> statement.setFunctionDeclarationNodes(visitFunctionDeclaration(c)));
-        Optional.ofNullable(ctx.ifStatement()).ifPresent(c -> statement.setIfStatementNodes(visitIfStatement(c)));
-        Optional.ofNullable(ctx.whileStatement()).ifPresent(c -> statement.setWhileStatementNodes(visitWhileStatement(c)));
-        Optional.ofNullable(ctx.assignmentStatement()).ifPresent(c -> statement.setAssignmentStatementNodes(visitAssignmentStatement(c)));
-        Optional.ofNullable(ctx.breakStatement()).ifPresent(c -> statement.setBreakStatementNodes(visitBreakStatement(c)));
-        Optional.ofNullable(ctx.continueStatement()).ifPresent(c -> statement.setContinueStatementNodes(visitContinueStatement(c)));
-        Optional.ofNullable(ctx.importStatement()).ifPresent(c -> statement.setImportStatementNodes(visitImportStatement(c)));
-        Optional.ofNullable(ctx.component()).ifPresent(c -> statement.setComponentNodes(visitComponent(c)));
-        Optional.ofNullable(ctx.exportClass()).ifPresent(c -> statement.setExportClassNode(visitExportClass(c)));
-
+        Row statementRow = new Row();
+        if (ctx.class_() != null) {
+            ClassNode anclass = visitClass(ctx.class_());
+            statement.setClassNodes(anclass);
+            statementRow.setType("Class");
+            statementRow.setValue(ctx.class_().getText());
+        }
+        if (ctx.variableDeclaration() != null) {
+            VariableDeclarationNode variableDeclarationNode = visitVariableDeclaration(ctx.variableDeclaration());
+            statement.setVariableDeclarationNodes(variableDeclarationNode);
+            statementRow.setType("Variable Declaration");
+            statementRow.setValue(ctx.variableDeclaration().getText());
+        }
+        if (ctx.functionDeclaration() != null) {
+            FunctionDeclarationNode functionDeclarationNode = visitFunctionDeclaration(ctx.functionDeclaration());
+            statement.setFunctionDeclarationNodes(functionDeclarationNode);
+            statementRow.setType("Function Declaration");
+            statementRow.setValue(ctx.functionDeclaration().getText());
+        }
+        if (ctx.ifStatement() != null) {
+            IfStatementNode ifStatementNode = visitIfStatement(ctx.ifStatement());
+            statement.setIfStatementNodes(ifStatementNode);
+            statementRow.setType("If Statement");
+            statementRow.setValue(ctx.ifStatement().getText());
+        }
+        if (ctx.whileStatement() != null) {
+            WhileStatementNode whileStatementNode = visitWhileStatement(ctx.whileStatement());
+            statement.setWhileStatementNodes(whileStatementNode);
+            statementRow.setType("While Statement");
+            statementRow.setValue(ctx.whileStatement().getText());
+        }
+        if (ctx.assignmentStatement() != null) {
+            AssignmentStatementNode assignmentStatementNode = visitAssignmentStatement(ctx.assignmentStatement());
+            statement.setAssignmentStatementNodes(assignmentStatementNode);
+            statementRow.setType("Assignment Statement");
+            statementRow.setValue(ctx.assignmentStatement().getText());
+        }
+        if (ctx.breakStatement() != null) {
+            BreakStatementNode breakStatementNode = visitBreakStatement(ctx.breakStatement());
+            statement.setBreakStatementNodes(breakStatementNode);
+            statementRow.setType("Break Statement");
+            statementRow.setValue(ctx.breakStatement().getText());
+        }
+        if (ctx.continueStatement() != null) {
+            ContinueStatementNode continueStatementNode = visitContinueStatement(ctx.continueStatement());
+            statement.setContinueStatementNodes(continueStatementNode);
+            statementRow.setType("Continue Statement");
+            statementRow.setValue(ctx.continueStatement().getText());
+        }
+        if (ctx.importStatement() != null) {
+            ImportStatementNode importStatementNode = visitImportStatement(ctx.importStatement());
+            statement.setImportStatementNodes(importStatementNode);
+            statementRow.setType("Import Statement");
+            statementRow.setValue(ctx.importStatement().getText());
+        }
+        if (ctx.component() != null) {
+            ComponentNode componentNode = visitComponent(ctx.component());
+            statement.setComponentNodes(componentNode);
+            statementRow.setType("Component");
+            statementRow.setValue(ctx.component().getText());
+        }
+        if (ctx.exportClass() != null) {
+            ExportClassNode exportClassNode = visitExportClass(ctx.exportClass());
+            statement.setExportClassNode(exportClassNode);
+            statementRow.setType("Export Class");
+            statementRow.setValue(ctx.exportClass().getText());
+        }
+        if(ctx.interface_()!=null){
+            InterfaceNode interfaceNode = visitInterface(ctx.interface_());
+            statement.setInterfaceNode(interfaceNode);
+            statementRow.setType("Interface");
+            statementRow.setValue(ctx.interface_().getText());
+        }
         return statement;
     }
 
     @Override
     public ComponentNode visitComponent(AngularParser.ComponentContext ctx) {
-        isInsideComponent = true;
-        try {
-            ComponentNode componentNode = new ComponentNode();
-            String componentName = "UnknownComponent";
-
-            if (ctx.decoratorArgs() != null) {
-                componentNode.setDecorator(visitDecoratorArgs(ctx.decoratorArgs()));
-            }
-
-            if (ctx.exportClass() != null) {
-                ExportClassNode exportClassNode = visitExportClass(ctx.exportClass());
-                componentNode.setExportClass(exportClassNode);
-
-                if (exportClassNode.getClassNode() != null && exportClassNode.getClassNode().getIdentifier() != null) {
-                    componentName = exportClassNode.getClassNode().getIdentifier();
-                }
-            }
-            
-            componentScopeNames.add(componentName);
-
-            Row componentRow = new Row();
-            componentRow.setType(COMPONENT);
-            componentRow.setName(componentName);
-            componentRow.setValue(ctx.decoratorArgs() != null ? ctx.decoratorArgs().getText() : "");
-            componentRow.setScope(componentName);
-            componentSymbolTable.getRows().add(componentRow);
-
-            return componentNode;
-        } finally {
-            isInsideComponent = false;
+        ComponentNode componentNode = new ComponentNode();
+        if (ctx.decoratorArgs() != null) {
+            DecoratorNode decoratorNode = visitDecoratorArgs(ctx.decoratorArgs());
+            componentNode.setDecorator(decoratorNode);
         }
+        if (ctx.exportClass() != null) {
+            componentNode.setExportClass(visitExportClass(ctx.exportClass()));
+        }
+        return componentNode;
     }
 
     @Override
     public DecoratorNode visitDecoratorArgs(AngularParser.DecoratorArgsContext ctx) {
-        return null;
+        DecoratorNode decoratorNode = new DecoratorNode();
+        if (ctx.argument() != null) {
+            for(int i=0;i<ctx.argument().size();i++){
+                decoratorNode.getArguments().add(visitArgument(ctx.argument(i)));
+            }
+        }
+        return decoratorNode;
     }
-
-    // Include all other visitor methods from the original BaseVisitor...
-    // (For brevity, I'm including just a few key methods. The full implementation would include all methods)
 
     @Override
     public ExportClassNode visitExportClass(AngularParser.ExportClassContext ctx) {
         ExportClassNode exportClassNode = new ExportClassNode();
-        if (ctx.class_() != null) {
-            exportClassNode.setClassNode(visitClass(ctx.class_()));
-        }
-
-        if (!isInsideComponent && exportClassNode.getClassNode() != null) {
-            String className = exportClassNode.getClassNode().getIdentifier();
-            if (className != null) {
-                addRowToServiceSymbolTable(className, GLOBAL);
-            }
+        Row exportClassRow = new Row();
+        if (ctx.Class() != null) {
+//            exportClassNode.setClassNode(visitClass(ctx.Class()));
+            exportClassRow.setType("Class");
+            exportClassRow.setValue(ctx.getText());
         }
         return exportClassNode;
     }
@@ -274,60 +310,329 @@ public class BaseVisitorWithCodeGen extends AbstractParseTreeVisitor<ASTNode> im
     @Override
     public ClassNode visitClass(AngularParser.ClassContext ctx) {
         ClassNode classNode = new ClassNode();
-
-        String className = ctx.Identifier().getText();
-        classNode.setIdentifier(className);
-
-        scoopAction(ENTER, className);
-        try {
-            Optional.ofNullable(ctx.classBody())
-                    .ifPresent(classBody -> classNode.setClassBody(visitClassBody(classBody)));
-        } finally {
-            scoopAction(EXIT, className);
+        if (ctx.Identifier() != null) {
+            classNode.setIdentifier(ctx.Identifier().getText());
         }
-
+        if(ctx.classBody()!=null){
+            classNode.setClassBody(visitClassBody(ctx.classBody()));
+        }
+        Row classRow = new Row();
+        classRow.setType(ctx.Identifier().getText());
+        if (ctx.classBody() != null)
+            classRow.setValue("Class Body");
         return classNode;
     }
 
     @Override
     public ClassBodyNode visitClassBody(AngularParser.ClassBodyContext ctx) {
         ClassBodyNode classBodyNode = new ClassBodyNode();
+        Row classBodyRow = new Row();
+        for (int i = 0; i < ctx.variableDeclaration().size(); i++) {
+            if (ctx.variableDeclaration().get(i) != null) {
+                classBodyNode.getVariableDeclarationNodes().add(visitVariableDeclaration(ctx.variableDeclaration(i)));
+                classBodyRow.setType("Variable Declaration");
+                classBodyRow.setValue(ctx.variableDeclaration().get(0).getText());
 
-        ctx.variableDeclaration()
-           .forEach(vd -> classBodyNode.getVariableDeclarationNodes().add(visitVariableDeclaration(vd)));
+            }
+        }
+        for (int i = 0; i < ctx.functionDeclaration().size(); i++) {
+            if (ctx.functionDeclaration().get(i) != null) {
+                classBodyNode.getFunctionDeclarationNodes().add(visitFunctionDeclaration(ctx.functionDeclaration(i)));
+                classBodyRow.setType("Function Declaration");
+                classBodyRow.setValue(ctx.functionDeclaration().get(0).getText());
 
-        ctx.functionDeclaration()
-           .forEach(fd -> classBodyNode.getFunctionDeclarationNodes().add(visitFunctionDeclaration(fd)));
+            }
+        }
+        for (int i = 0; i < ctx.arrayDeclaration().size(); i++) {
+            if (ctx.arrayDeclaration().get(i) != null) {
+                classBodyNode.getArrayDeclarationNodeList().add(visitArrayDeclaration(ctx.arrayDeclaration(i)));
+                classBodyRow.setType("Array Declaration");
+                classBodyRow.setValue(ctx.arrayDeclaration().get(0).getText());
 
-        ctx.arrayDeclaration()
-           .forEach(ad -> classBodyNode.getArrayDeclarationNodeList().add(visitArrayDeclaration(ad)));
-
-        ctx.objectDeclataion()
-           .forEach(od -> classBodyNode.getObjectDeclarationNodes().add(visitObjectDeclataion(od)));
-
+            }
+        }
+        for (int i = 0; i < ctx.objectDeclataion().size(); i++) {
+            if (ctx.objectDeclataion().get(i) != null) {
+                classBodyNode.getObjectDeclarationNodes().add(visitObjectDeclataion(ctx.objectDeclataion(i)));
+                classBodyRow.setType("Array Declaration");
+                classBodyRow.setValue(ctx.arrayDeclaration().get(0).getText());
+            }
+        }
         return classBodyNode;
     }
 
-    // Add placeholder implementations for all required visitor methods
-    // (In a complete implementation, all methods from the original BaseVisitor would be included)
+    @Override
+    public ASTNode visitAbstractClass(AngularParser.AbstractClassContext ctx) {
+        return null;
+    }
+
+    @Override
+    public InterfaceNode visitInterface(AngularParser.InterfaceContext ctx) {
+
+        InterfaceNode interfaceNode = new InterfaceNode();
+        Row interfaceRow = new Row();
+        if (ctx.Identifier() != null) {
+            interfaceNode.setName(ctx.Identifier().getText());
+            interfaceRow.setType("Interface");
+            interfaceRow.setValue(ctx.Identifier().getText());
+        }
+        if (ctx.interfaceBody() != null) {
+            interfaceNode.setClassBody(visitInterfaceBody(ctx.interfaceBody()));
+            interfaceRow.setType("Interface Body");
+            interfaceRow.setValue(ctx.interfaceBody().getText());
+        }
+        return interfaceNode;
+    }
+
+    @Override
+    public ClassBodyNode visitInterfaceBody(AngularParser.InterfaceBodyContext ctx) {
+        return null;
+    }
+
+    @Override
+    public ASTNode visitAccessModifier(AngularParser.AccessModifierContext ctx) {
+        return null;
+    }
 
 
 
     @Override
     public ArgumentNode visitArgument(AngularParser.ArgumentContext ctx) {
-        ArgumentNode node = new ArgumentNode();
-        node.setName(ctx.Identifier().getText());
-        Optional.ofNullable(ctx.literalValue())
-                .ifPresent(val -> node.setValue(visitLiteralValue(val)));
-        return node;
+        ArgumentNode argumentNode = new ArgumentNode();
+        if (ctx.Identifier() != null) {
+            argumentNode.setName(ctx.Identifier().getText());
+        }
+        if(ctx.html()!=null){
+            argumentNode.setHtmlNode(visitHtml(ctx.html()));
+        }
+        if(ctx.css()!=null){
+            argumentNode.setCssNode(visitCss(ctx.css()));
+        }
+        return argumentNode;
+
     }
 
-    // Add all other required visitor method implementations...
-    // (For brevity, I'm showing the pattern. The complete class would include all methods from BaseVisitor)
+    @Override
+    public ImportStatementNode visitImportStatement(AngularParser.ImportStatementContext ctx) {
+        ImportStatementNode importStatementNode = new ImportStatementNode();
+        Row importRow = new Row();
+        if (ctx.Identifier() != null) {
+            importStatementNode.setIdentifier(ctx.Identifier().toString());
+            importRow.setType("Import");
+            importRow.setValue(ctx.Identifier().toString());
+        }
+        if (ctx.StringLiteral() != null) {
+            importStatementNode.setSource(ctx.StringLiteral().getText());
+            importRow.setType("Import from");
+            importRow.setValue(ctx.StringLiteral().getText());
+        }
+        return importStatementNode;
+    }
 
-    // Placeholder implementations for remaining methods
-    @Override public ImportStatementNode visitImportStatement(AngularParser.ImportStatementContext ctx) { return new ImportStatementNode(); }
-    @Override public ThisNewInstanceAssignmentNode visitNewInstanceAssignment(AngularParser.NewInstanceAssignmentContext ctx) { return new ThisNewInstanceAssignmentNode(); }
+    @Override
+    public ASTNode visitConsoleLog(AngularParser.ConsoleLogContext ctx) {
+        return null;
+    }
+
+
+    @Override
+    public ASTNode visitEnum(AngularParser.EnumContext ctx) {
+        return null;
+    }
+
+    @Override
+    public ASTNode visitEnumValues(AngularParser.EnumValuesContext ctx) {
+        return null;
+    }
+
+    @Override
+    public ASTNode visitEnumValue(AngularParser.EnumValueContext ctx) {
+        return null;
+    }
+
+    @Override
+    public ASTNode visitAbstractFunctionDeclaration(AngularParser.AbstractFunctionDeclarationContext ctx) {
+        return null;
+    }
+
+    @Override
+    public VariableDeclarationNode visitVariableDeclaration(AngularParser.VariableDeclarationContext ctx) {
+        VariableDeclarationNode variableDeclarationNode = new VariableDeclarationNode();
+        Row variableRow = new Row();
+        if (ctx.Identifier() != null) {
+            variableDeclarationNode.setIdentifier(ctx.Identifier().getText());
+            variableRow.setType("Variable Declaration");
+            variableRow.setValue(ctx.Identifier().getText());
+        }
+        if (ctx.type() != null) {
+            variableDeclarationNode.setType(visitType(ctx.type()));
+            variableRow.setType("Variable Type");
+            variableRow.setValue(ctx.type().getText());
+        }
+        if (ctx.expression() != null) {
+            variableDeclarationNode.setExpression(visitExpression(ctx.expression()));
+            variableRow.setType("Variable Expression");
+            variableRow.setValue(ctx.expression().getText());
+        }
+        return variableDeclarationNode;
+    }
+
+    public ExpressionNode visitExpression(AngularParser.ExpressionContext ctx) {
+        ExpressionNode expressionNode = new ExpressionNode();
+        Row expressionRow = new Row();
+        if (expressionNode.operator != null) {
+            expressionNode.setOperator(expressionNode.operator);
+            expressionRow.setType("Operator");
+            expressionRow.setValue(expressionNode.operator);
+        }
+        if (expressionNode.left != null) {
+            expressionNode.setLeft(expressionNode.left);
+            expressionRow.setType("Left");
+            expressionRow.setValue(expressionNode.left.toString());
+        }
+        if (expressionNode.right != null) {
+            expressionNode.setRight(expressionNode.right);
+            expressionRow.setType("Right");
+            expressionRow.setValue(expressionNode.right.toString());
+        }
+        return expressionNode;
+    }
+
+    @Override
+    public ArrayDeclarationNode visitArrayDeclaration(AngularParser.ArrayDeclarationContext ctx) {
+        ArrayDeclarationNode arrayDeclarationNode = new ArrayDeclarationNode();
+        Row arrayDeclarationRow = new Row();
+        if (ctx.Identifier() != null) {
+            arrayDeclarationNode.setIdentifier(ctx.Identifier().getText());
+            arrayDeclarationRow.setType("Array Declaration");
+            arrayDeclarationRow.setValue(ctx.Identifier().getText());
+        }
+        if (ctx.type() != null) {
+            arrayDeclarationNode.setType(visitType(ctx.type()));
+            arrayDeclarationRow.setType("Array Type");
+            arrayDeclarationRow.setValue(ctx.type().getText());
+        }
+        return arrayDeclarationNode;
+    }
+
+    @Override
+    public FunctionDeclarationNode visitFunctionDeclaration(AngularParser.FunctionDeclarationContext ctx) {
+        FunctionDeclarationNode functionDeclarationNode = new FunctionDeclarationNode();
+        Row functionDeclarationRow = new Row();
+        if (ctx.Identifier() != null) {
+            functionDeclarationNode.setIdentifier(ctx.Identifier().getText());
+            functionDeclarationRow.setType("Function Declaration");
+            functionDeclarationRow.setValue(ctx.Identifier().getText());
+        }
+        for (int i = 0; i < ctx.parameter().size(); i++) {
+            if (ctx.parameter().get(i) != null) {
+                functionDeclarationNode.getParameters().add(visitParameter(ctx.parameter(i)));
+                functionDeclarationRow.setType("Function Parameter");
+                functionDeclarationRow.setValue(ctx.parameter().get(0).getText());
+            }
+        }
+        return functionDeclarationNode;
+    }
+
+    @Override
+    public TypeNode visitType(AngularParser.TypeContext ctx) {
+        TypeNode typeNode = new TypeNode();
+        Row typeRow = new Row();
+        if (ctx.TypeNumber() != null) {
+            typeNode.setNumber(ctx.TypeNumber().getText());
+            typeRow.setType("Type");
+            typeRow.setValue(ctx.TypeNumber().getText());
+        }
+        if (ctx.TypeBoolean() != null) {
+            typeNode.setAnboolean(ctx.TypeBoolean().getText());
+            typeRow.setType("Type");
+            typeRow.setValue(ctx.TypeBoolean().getText());
+        }
+        if (ctx.TypeString() != null) {
+            typeNode.setString(ctx.TypeString().getText());
+            typeRow.setType("Type");
+            typeRow.setValue(ctx.TypeString().getText());
+        }
+        if (ctx.Array() != null) {
+            typeNode.setArray(ctx.Array().getText());
+            typeRow.setType("Type");
+            typeRow.setValue(ctx.Array().getText());
+        }
+        return typeNode;
+    }
+
+    @Override
+    public ObjectDeclarationNode visitObjectDeclataion(AngularParser.ObjectDeclataionContext ctx) {
+        ObjectDeclarationNode objectDeclarationNode = new ObjectDeclarationNode();
+        if (ctx.Identifier() != null) {
+//            objectDeclarationNode.setIdentifier(ctx.Identifier().getText());}
+        }
+        return objectDeclarationNode;
+    }
+
+    @Override
+    public LiteralValueNode visitLiteralValue(AngularParser.LiteralValueContext ctx) {
+        LiteralValueNode literalValueNode = new LiteralValueNode();
+        Row literalValueRow = new Row();
+        if (ctx.StringLiteral() != null) {
+            literalValueNode.setStirngValue(ctx.StringLiteral().getText());
+            literalValueRow.setType("String");
+            literalValueRow.setValue(ctx.StringLiteral().getText());
+        }
+        if (ctx.NumberLiteral() != null) {
+            literalValueNode.setNumValue(ctx.NumberLiteral().getText());
+            literalValueRow.setType("Number");
+            literalValueRow.setValue(ctx.NumberLiteral().getText());
+        }
+        if (ctx.BooleanLiteral() != null) {
+            literalValueNode.setBooleanValue(ctx.BooleanLiteral().getText());
+            literalValueRow.setType("Boolean");
+            literalValueRow.setValue(ctx.BooleanLiteral().getText());
+        }
+        else {
+            literalValueNode.setNull(true);
+        }
+        if (ctx.listLiteral() != null) {
+            literalValueNode.setListLiteralNode(visitListLiteral(ctx.listLiteral()));
+            literalValueRow.setType("List");
+            literalValueRow.setValue(ctx.listLiteral().getText());
+        }
+        return literalValueNode;
+    }
+
+    @Override
+    public ASTNode visitMapLiteral(AngularParser.MapLiteralContext ctx) {
+        return null;
+    }
+
+    @Override
+    public ListLiteralNode visitListLiteral(AngularParser.ListLiteralContext ctx) {
+        ListLiteralNode listLiteralNode =new ListLiteralNode();
+        Row listLiteralRow = new Row();
+        for (int i = 0; i < ctx.literalValue().size(); i++) {
+            if (ctx.literalValue().get(i) != null) {
+                listLiteralNode.getIdentifiers().add(ctx.getText());
+                listLiteralRow.setType("List");
+                listLiteralRow.setValue(ctx.getText());
+            }
+        }
+        return listLiteralNode;
+    }
+
+    @Override
+    public AssignmentStatementNode visitAssignmentStatement(AngularParser.AssignmentStatementContext ctx) {
+        return null;
+    }
+
+    @Override
+    public ASTNode visitThisAssignment(AngularParser.ThisAssignmentContext ctx) {
+        return null;
+    }
+
+    @Override
+    public ASTNode visitNewInstanceAssignment(AngularParser.NewInstanceAssignmentContext ctx) {
+        return null;
+    }
 
     @Override
     public ASTNode visitNestedThisAccess(AngularParser.NestedThisAccessContext ctx) {
@@ -339,66 +644,281 @@ public class BaseVisitorWithCodeGen extends AbstractParseTreeVisitor<ASTNode> im
         return null;
     }
 
-    @Override public ASTNode visitConsoleLog(AngularParser.ConsoleLogContext ctx) { return new ConsoleLogNode(); }
-    @Override public ASTNode visitAccessModifier(AngularParser.AccessModifierContext ctx) { return new AccessModifierNode(); }
-    @Override public VariableDeclarationNode visitVariableDeclaration(AngularParser.VariableDeclarationContext ctx) { return new VariableDeclarationNode(); }
-    @Override public ExpressionNode visitExpression(AngularParser.ExpressionContext ctx) { return new ExpressionNode(); }
-    @Override public ArrayDeclarationNode visitArrayDeclaration(AngularParser.ArrayDeclarationContext ctx) { return new ArrayDeclarationNode(); }
-    @Override public FunctionDeclarationNode visitFunctionDeclaration(AngularParser.FunctionDeclarationContext ctx) { return new FunctionDeclarationNode(); }
-    @Override public TypeNode visitType(AngularParser.TypeContext ctx) { return new TypeNode(); }
-    @Override public ObjectDeclarationNode visitObjectDeclataion(AngularParser.ObjectDeclataionContext ctx) { return new ObjectDeclarationNode(); }
-    @Override public LiteralValueNode visitLiteralValue(AngularParser.LiteralValueContext ctx) { return new LiteralValueNode(); }
-    @Override public ListLiteralNode visitListLiteral(AngularParser.ListLiteralContext ctx) { return new ListLiteralNode(); }
-    @Override public AssignmentStatementNode visitAssignmentStatement(AngularParser.AssignmentStatementContext ctx) { return new AssignmentStatementNode(); }
-
     @Override
-    public ASTNode visitThisAssignment(AngularParser.ThisAssignmentContext ctx) {
+    public IfStatementNode visitIfStatement(AngularParser.IfStatementContext ctx) {
         return null;
     }
 
-    @Override public ParameterNode visitParameter(AngularParser.ParameterContext ctx) { return new ParameterNode(); }
-    @Override public HtmlNode visitHtml(AngularParser.HtmlContext ctx) { return new HtmlNode(); }
-    @Override public HtmlContentNode visitHtml_content(AngularParser.Html_contentContext ctx) { return new HtmlContentNode(); }
-    @Override public HtmlElementNode visitHtml_element(AngularParser.Html_elementContext ctx) { return new HtmlElementNode(); }
-    @Override public HtmlTagNode visitHtml_tag_name(AngularParser.Html_tag_nameContext ctx) { return new HtmlTagNode(); }
-    @Override public HtmlAttributesNode visitHtml_attributes(AngularParser.Html_attributesContext ctx) { return new HtmlAttributesNode(); }
-    @Override public HtmlAttributeNode visitHtml_attribute(AngularParser.Html_attributeContext ctx) { return new HtmlAttributeNode(); }
-    @Override public ASTNode visitAccess_suffix(AngularParser.Access_suffixContext ctx) { return new AccessSufNode(); }
-    @Override public ASTNode visitHtml_attribute_value(AngularParser.Html_attribute_valueContext ctx) { return new HtmlAttributeValueNode(); }
-    @Override public ASTNode visitCss(AngularParser.CssContext ctx) { return new CssNode(); }
-    @Override public CssContentNode visitCss_content(AngularParser.Css_contentContext ctx) { return new CssContentNode(); }
-    @Override public CssClassContentNode visitCss_class_content(AngularParser.Css_class_contentContext ctx) { return new CssClassContentNode(); }
-    @Override public ASTNode visitNgForAttribute(AngularParser.NgForAttributeContext ctx) { return new NgForNode(); }
-    @Override public ASTNode visitNgIfAttribute(AngularParser.NgIfAttributeContext ctx) { return new NgIfNode(); }
-    @Override public FunctionCallNode visitFunction_call(AngularParser.Function_callContext ctx) { return new FunctionCallNode(); }
-
-    // Add all other required method stubs...
-    @Override public ASTNode visitAbstractFunctionDeclaration(AngularParser.AbstractFunctionDeclarationContext ctx) { return new ExpressionNode(); }
-    @Override public ASTNode visitMapLiteral(AngularParser.MapLiteralContext ctx) { return null; }
-    @Override public ASTNode visitEnum(AngularParser.EnumContext ctx) { return null; }
-    @Override public ASTNode visitEnumValues(AngularParser.EnumValuesContext ctx) { return null; }
-    @Override public ASTNode visitEnumValue(AngularParser.EnumValueContext ctx) { return null; }
-    @Override public ASTNode visitAbstractClass(AngularParser.AbstractClassContext ctx) { return null; }
-    @Override public ASTNode visitInterface(AngularParser.InterfaceContext ctx) { return null; }
-
     @Override
-    public ASTNode visitInterfaceBody(AngularParser.InterfaceBodyContext ctx) {
+    public WhileStatementNode visitWhileStatement(AngularParser.WhileStatementContext ctx) {
         return null;
     }
 
-    @Override public IfStatementNode visitIfStatement(AngularParser.IfStatementContext ctx) { return null; }
-    @Override public WhileStatementNode visitWhileStatement(AngularParser.WhileStatementContext ctx) { return null; }
-    @Override public ASTNode visitElseIfStatement(AngularParser.ElseIfStatementContext ctx) { return null; }
-    @Override public BreakStatementNode visitBreakStatement(AngularParser.BreakStatementContext ctx) { return null; }
-    @Override public ContinueStatementNode visitContinueStatement(AngularParser.ContinueStatementContext ctx) { return null; }
-    @Override public ASTNode visitBlock(AngularParser.BlockContext ctx) { return null; }
-    @Override public ASTNode visitCheckedAttribute(AngularParser.CheckedAttributeContext ctx) { return null; }
-    @Override public ASTNode visitOnChangeAttribute(AngularParser.OnChangeAttributeContext ctx) { return null; }
-    @Override public ASTNode visitOnClickAttribute(AngularParser.OnClickAttributeContext ctx) { return null; }
-    @Override public ASTNode visitOnSubmitAttribute(AngularParser.OnSubmitAttributeContext ctx) { return null; }
-    @Override public ASTNode visitGapAttribute(AngularParser.GapAttributeContext ctx) { return null; }
-    @Override public ASTNode visitDirectionAttribute(AngularParser.DirectionAttributeContext ctx) { return null; }
-    @Override public ASTNode visitDurationAttribute(AngularParser.DurationAttributeContext ctx) { return null; }
-    @Override public ASTNode visitRepeatAttribute(AngularParser.RepeatAttributeContext ctx) { return null; }
+    @Override
+    public ASTNode visitElseIfStatement(AngularParser.ElseIfStatementContext ctx) {
+        return null;
+    }
+
+    @Override
+    public BreakStatementNode visitBreakStatement(AngularParser.BreakStatementContext ctx) {
+        return null;
+    }
+
+    @Override
+    public ContinueStatementNode visitContinueStatement(AngularParser.ContinueStatementContext ctx) {
+        return null;
+    }
+
+    @Override
+    public ASTNode visitBlock(AngularParser.BlockContext ctx) {
+        return null;
+    }
+
+
+
+
+    @Override
+    public ParameterNode visitParameter(AngularParser.ParameterContext ctx) {
+        ParameterNode parameterNode = new ParameterNode();
+        Row parameterRow = new Row();
+        if (ctx.Identifier() != null) {
+            parameterNode.setIdentifier(ctx.Identifier().getText());
+            parameterRow.setType("Parameter");
+            parameterRow.setValue(ctx.Identifier().getText());
+        }
+        if (ctx.type() != null) {
+            parameterNode.setType(visitType(ctx.type()));
+            parameterRow.setType("Type");
+            parameterRow.setValue(ctx.type().getText());
+        }
+        if (ctx.literalValue() != null) {
+            parameterNode.setDefaultValue(visitLiteralValue(ctx.literalValue()));
+            parameterRow.setType("DefaultValue");
+            parameterRow.setValue(ctx.literalValue().getText());
+        }
+         //symbolTable.getRows().add(parameterRow);
+        return parameterNode;
+    }
+
+    @Override
+    public ASTNode visitFunction_call(AngularParser.Function_callContext ctx) {
+        return null;
+    }
+
+    @Override
+    public HtmlNode visitHtml(AngularParser.HtmlContext ctx) {
+        HtmlNode htmlNode = new HtmlNode();
+        Row htmlRow = new Row();
+        if (ctx.html_content() != null) {
+            htmlNode.setContent(visitHtml_content(ctx.html_content()));
+            htmlRow.setType("Content");
+            htmlRow.setValue(ctx.html_content().getText());
+        }
+         //symbolTable.getRows().add(htmlRow);
+        return htmlNode;
+    }
+
+    @Override
+    public HtmlContentNode visitHtml_content(AngularParser.Html_contentContext ctx) {
+        HtmlContentNode htmlContentNode = new HtmlContentNode();
+        if (ctx.html_element() != null) {
+            for (int i = 0; i < ctx.html_element().size(); i++) {
+                htmlContentNode.getHtmlElementNode().add(visitHtml_element(ctx.html_element().get(i)));
+            }
+        }
+//        if (ctx.expression() != null) {
+//            ExpressionNode expressionNode = visitExpression(ctx.expression);
+//            htmlContentNode.setExpression(expressionNode);
+//        }
+        if (ctx.expression() != null) {
+            htmlContentNode.setIdentifierNode("ff");
+        }
+        return htmlContentNode;
+    }
+
+    @Override
+    public nodes.html_node.HtmlElementNode visitHtml_element(AngularParser.Html_elementContext ctx) {
+        nodes.html_node.HtmlElementNode htmlElementNode = new HtmlElementNode();
+        if(ctx.html_tag_name()!=null){
+            htmlElementNode.setTagName(visitHtml_tag_name(ctx.html_tag_name().get(0)));
+        }
+        if (ctx.html_attributes() != null) {
+            htmlElementNode.setAttributes(visitHtml_attributes(ctx.html_attributes()));
+        }
+        if (ctx.html_content() != null) {
+            htmlElementNode.setContent(visitHtml_content(ctx.html_content()));
+        }
+        return htmlElementNode;
+    }
+
+    @Override
+    public HtmlTagNode visitHtml_tag_name(AngularParser.Html_tag_nameContext ctx) {
+        HtmlTagNode htmlTagNode = new HtmlTagNode();
+        Row htmlTagRow = new Row();
+        if (ctx.Identifier() != null) {
+            htmlTagNode.setIdentifierNode(ctx.Identifier().getText());
+            htmlTagRow.setType("Identifier");
+            htmlTagRow.setValue(ctx.Identifier().getText());
+        }
+         //symbolTable.getRows().add(htmlTagRow);
+        return htmlTagNode;
+    }
+
+    @Override
+    public HtmlAttributesNode visitHtml_attributes(AngularParser.Html_attributesContext ctx) {
+        HtmlAttributesNode htmlAttributesNode = new HtmlAttributesNode();
+        Row htmlAttributesRow = new Row();
+        if (ctx.html_attribute() != null) {
+            for (int i = 0; i < ctx.html_attribute().size(); i++) {
+                htmlAttributesNode.getHtmlAttributeNodes().add(visitHtml_attribute(ctx.html_attribute(i)));
+                htmlAttributesRow.setType("Html Attribute");
+                htmlAttributesRow.setValue(ctx.html_attribute(i).getText());
+            }
+        }
+         //symbolTable.getRows().add(htmlAttributesRow);
+        return htmlAttributesNode;
+    }
+
+    @Override
+    public HtmlAttributeNode visitHtml_attribute(AngularParser.Html_attributeContext ctx) {
+        HtmlAttributeNode htmlAttributeNode = new HtmlAttributeNode();
+        Row htmlAttributeRow = new Row();
+        if (ctx.Identifier() != null) {
+            htmlAttributeNode.setIdentifierNode(ctx.Identifier().getText());
+            htmlAttributeRow.setType("Identifier");
+            htmlAttributeRow.setValue(ctx.Identifier().getText());
+        }
+        if (ctx.html_attribute_value() != null) {
+//            htmlAttributeNode.setHtmlAttributeValueNode(visitHtml_attribute_value(ctx.html_attribute_value()));
+        }
+        if (ctx.access_suffix() != null) {
+            for (int i = 0; i < ctx.access_suffix().size(); i++) {
+                htmlAttributeNode.getAccessSufNode().add(visitAccess_suffix(ctx.access_suffix().get(i)));
+                htmlAttributeRow.setType("Access Suffix");
+                htmlAttributeRow.setValue(ctx.access_suffix().get(i).getText());
+            }
+        }
+        if (ctx.Identifier() != null) {
+//            htmlAttributeNode.setClassNode(visitClass(ctx.Identifier().getText()));
+        }
+         //symbolTable.getRows().add(htmlAttributeRow);
+        return htmlAttributeNode;
+    }
+
+    @Override
+    public AccessSufNode visitAccess_suffix(AngularParser.Access_suffixContext ctx) {
+        return null;
+    }
+
+
+    @Override
+    public HtmlAttributeNode visitHtml_attribute_value(AngularParser.Html_attribute_valueContext ctx) {
+        HtmlAttributeNode htmlAttributeNode = new HtmlAttributeNode();
+        Row htmlAttributeRow = new Row();
+        htmlAttributeNode.setClassNode("htmlclass");
+        htmlAttributeNode.setIdentifierNode("html name");
+        htmlAttributeRow.setType("Class");
+        htmlAttributeRow.setValue("htmlclass");
+         //symbolTable.getRows().add(htmlAttributeRow);
+        return htmlAttributeNode;
+    }
+
+    @Override
+    public CssNode visitCss(AngularParser.CssContext ctx) {
+        CssNode cssNode = new CssNode();
+        Row cssRow = new Row();
+        if (ctx.css_content() != null) {
+            for (int i = 0; i < ctx.css_content().size(); i++) {
+                cssNode.getCssContentNode().add(visitCss_content(ctx.css_content(i)));
+                cssRow.setType("Css Content");
+                cssRow.setValue(ctx.css_content(i).getText());
+            }
+        }
+         //symbolTable.getRows().add(cssRow);
+        return cssNode;
+    }
+
+    @Override
+    public CssContentNode visitCss_content(AngularParser.Css_contentContext ctx) {
+        CssContentNode cssContentNode = new CssContentNode();
+        Row cssContentRow = new Row();
+        if (ctx.css_class_content() != null) {
+            for (int i = 0; i < ctx.css_class_content().size(); i++) {
+                cssContentNode.getCssClassContentList().add(visitCss_class_content(ctx.css_class_content(i)));
+                cssContentRow.setType("Css Class Content");
+                cssContentRow.setValue(ctx.css_class_content(i).getText());
+            }
+        }
+        if(ctx.Identifier()!=null){
+            cssContentNode.setIdentifierNode(ctx.Identifier().toString());
+            cssContentRow.setType("Identifier");
+            cssContentRow.setValue(ctx.Identifier().toString());
+        }
+         //symbolTable.getRows().add(cssContentRow);
+        return cssContentNode;
+    }
+
+    @Override
+    public CssClassContentNode visitCss_class_content(AngularParser.Css_class_contentContext ctx) {
+        CssClassContentNode cssClassContentNode = new CssClassContentNode();
+        Row cssClassContentRow = new Row();
+        if (ctx.Identifier() != null) {
+            cssClassContentNode.setName(ctx.Identifier().get(0).getText());
+            cssClassContentRow.setType("Name");
+            cssClassContentRow.setValue(ctx.Identifier().get(0).getText());
+        }
+        return cssClassContentNode;
+    }
+
+    @Override
+    public ASTNode visitCheckedAttribute(AngularParser.CheckedAttributeContext ctx) {
+        return null;
+    }
+
+    @Override
+    public ASTNode visitOnChangeAttribute(AngularParser.OnChangeAttributeContext ctx) {
+        return null;
+    }
+
+    @Override
+    public ASTNode visitOnClickAttribute(AngularParser.OnClickAttributeContext ctx) {
+        return null;
+    }
+
+    @Override
+    public ASTNode visitOnSubmitAttribute(AngularParser.OnSubmitAttributeContext ctx) {
+        return null;
+    }
+
+    @Override
+    public ASTNode visitGapAttribute(AngularParser.GapAttributeContext ctx) {
+        return null;
+    }
+
+    @Override
+    public ASTNode visitDirectionAttribute(AngularParser.DirectionAttributeContext ctx) {
+        return null;
+    }
+
+    @Override
+    public ASTNode visitDurationAttribute(AngularParser.DurationAttributeContext ctx) {
+        return null;
+    }
+
+    @Override
+    public ASTNode visitRepeatAttribute(AngularParser.RepeatAttributeContext ctx) {
+        return null;
+    }
+
+    @Override
+    public ASTNode visitNgForAttribute(AngularParser.NgForAttributeContext ctx) {
+        return null;
+    }
+
+    @Override
+    public ASTNode visitNgIfAttribute(AngularParser.NgIfAttributeContext ctx) {
+        return null;
+    }
+
+
 }
-
