@@ -33,7 +33,7 @@ import static org.antlr.v4.runtime.CharStreams.fromFileName;
 
 public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements AngularParserVisitor<ASTNode> {
 
-//    mainSymbolTable symbolTable = new mainSymbolTable();
+    mainSymbolTable symbolTable = new mainSymbolTable();
     ComponentSymbolTable componentSymbolTable = new ComponentSymbolTable();
     ServiceSemanticValidator serviceSymbolTable = new ServiceSemanticValidator();
     private String currentScope = GLOBAL;
@@ -60,14 +60,14 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
                 throw new IllegalArgumentException("Unknown action: " + action);
         }
     }
-//    private void addRowToSymbolTable(String type, String name, String value) {
-//        Row row = new Row();
-//        row.setType(type);
-//        row.setName(name);
-//        row.setValue(value);
-//        row.setScope(currentScope);
-//        symbolTable.getRows().add(row);
-//    }
+    private void addRowToSymbolTable(String type, String name, String value) {
+        Row row = new Row();
+        row.setType(type);
+        row.setName(name);
+        row.setValue(value);
+        row.setScope(currentScope);
+        symbolTable.getRows().add(row);
+    }
 
     private void addRowToComponentSymbolTable(String type, String name, String value) {
         Row row = new Row();
@@ -736,7 +736,12 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
 
     @Override
     public ExpressionNode visitGreaterThanEqualsComparison(AngularParser.GreaterThanEqualsComparisonContext ctx) {
-        return null;
+        ExpressionNode node = new ExpressionNode();
+        node.setLeft(visitExpression(ctx.expression(0)));
+        node.setRight(visitExpression(ctx.expression(1)));
+        node.setOperator(">=");
+        addRowToSymbolTable(OPERATOR, ">=", ctx.getText());
+        return node;
     }
 
     @Override
@@ -780,190 +785,534 @@ public class BaseVisitor extends AbstractParseTreeVisitor<ASTNode> implements An
 
     @Override
     public ASTNode visitMapLiteral(AngularParser.MapLiteralContext ctx) {
-        return null;
+        LiteralValueNode node = new LiteralValueNode();
+        
+        // For now, we'll store the map literal as a string representation
+        // A more complete implementation would create a specific MapLiteralNode
+        if (ctx.getText() != null) {
+            node.setStirngValue(ctx.getText());
+        }
+        
+        addRowToSymbolTable("MapLiteral", "{", ctx.getText());
+        return node;
     }
 
     @Override
     public ASTNode visitNestedThisAssignment(AngularParser.NestedThisAssignmentContext ctx) {
-        return null;
+        AssignmentStatementNode node = new AssignmentStatementNode();
+        
+        // Handle nested this assignment like this.prop.subprop = value
+        if (ctx.getText() != null) {
+            node.setIdentifier(ctx.getText());
+        }
+        
+        addRowToSymbolTable("NestedThisAssignment", "this", ctx.getText());
+        return node;
     }
 
     @Override
     public ASTNode visitIdentifierOrPropertyAssignment(AngularParser.IdentifierOrPropertyAssignmentContext ctx) {
-        return null;
+        AssignmentStatementNode node = new AssignmentStatementNode();
+        
+        // Handle identifier or property assignment
+        if (ctx.Identifier() != null && !ctx.Identifier().isEmpty()) {
+            node.setIdentifier(ctx.Identifier(0).getText());
+        }
+        
+        addRowToSymbolTable("IdentifierPropertyAssignment", node.getIdentifier(), ctx.getText());
+        return node;
     }
 
     @Override
     public ASTNode visitEnum(AngularParser.EnumContext ctx) {
-        return null;
+        EnumNode node = new EnumNode();
+        
+        if (ctx.Identifier() != null) {
+            node.setIdentifier(ctx.Identifier().getText());
+        }
+        
+        if (ctx.enumValues() != null) {
+            // Process enum values - this would need to be implemented
+            // based on the actual EnumNode structure
+        }
+        
+        addRowToSymbolTable("Enum", node.getIdentifier(), ctx.getText());
+        return node;
     }
 
     @Override
     public ASTNode visitEnumValues(AngularParser.EnumValuesContext ctx) {
-        return null;
+        // This would typically return a list of enum values
+        // For now, we'll return a placeholder node
+        ExpressionNode node = new ExpressionNode();
+        addRowToSymbolTable("EnumValues", "values", ctx.getText());
+        return node;
     }
 
     @Override
     public ASTNode visitEnumValue(AngularParser.EnumValueContext ctx) {
-        return null;
+        // Create an enum value node
+        LiteralValueNode node = new LiteralValueNode();
+        
+        if (ctx.Identifier() != null) {
+            node.setIdentifierValue(ctx.Identifier().getText());
+        }
+        
+        if (ctx.literalValue() != null) {
+            // If there's an assigned value, process it
+            LiteralValueNode assignedValue = visitLiteralValue(ctx.literalValue());
+            // Store the assigned value somehow - this depends on EnumValue node structure
+        }
+        
+        addRowToSymbolTable("EnumValue", node.getIdentifierValue(), ctx.getText());
+        return node;
     }
     @Override
     public ASTNode visitAbstractClass(AngularParser.AbstractClassContext ctx) {
-        return null;
+        ClassNode node = new ClassNode();
+        
+        if (ctx.Identifier() != null) {
+            node.setIdentifier(ctx.Identifier().getText());
+        }
+        
+        if (ctx.classBody() != null) {
+            node.setClassBody(visitClassBody(ctx.classBody()));
+        }
+        
+        addRowToSymbolTable("AbstractClass", node.getIdentifier(), ctx.getText());
+        return node;
     }
 
     @Override
     public ASTNode visitInterface(AngularParser.InterfaceContext ctx) {
-        return null;
+        // Create a class node to represent the interface structure
+        ClassNode node = new ClassNode();
+        
+        if (ctx.Identifier() != null) {
+            node.setIdentifier(ctx.Identifier().getText());
+        }
+        
+        if (ctx.interfaceBody() != null) {
+            // Process interface body - this would need to be handled
+            // based on the actual interface body structure
+            // For now, we'll create an empty class body
+            ClassBodyNode bodyNode = new ClassBodyNode();
+            node.setClassBody(bodyNode);
+        }
+        
+        addRowToSymbolTable("Interface", node.getIdentifier(), ctx.getText());
+        return node;
     }
     @Override
     public IfStatementNode visitIfStatement(AngularParser.IfStatementContext ctx) {
-        return null;
+        IfStatementNode node = new IfStatementNode();
+        
+        // Set condition
+        if (ctx.expression() != null) {
+            node.setCondition(visitExpression(ctx.expression()));
+        }
+        
+        // Set main block
+        if (ctx.block().size() > 0) {
+            node.setBlock((BlockNode) visitBlock(ctx.block(0)));
+        }
+        
+        // Handle else if statements
+        if (ctx.elseIfStatement() != null && !ctx.elseIfStatement().isEmpty()) {
+            List<ElseIfStatementNode> elseIfNodes = new ArrayList<>();
+            for (AngularParser.ElseIfStatementContext elseIfCtx : ctx.elseIfStatement()) {
+                elseIfNodes.add((ElseIfStatementNode) visitElseIfStatement(elseIfCtx));
+            }
+            node.setElseIfStatements(elseIfNodes);
+        }
+        
+        // Handle else block
+        if (ctx.block().size() > 1) {
+            node.setElseBlock((BlockNode) visitBlock(ctx.block(1)));
+        }
+        
+        addRowToSymbolTable("IfStatement", "if", ctx.getText());
+        return node;
     }
 
     @Override
     public WhileStatementNode visitWhileStatement(AngularParser.WhileStatementContext ctx) {
-        return null;
+        WhileStatementNode node = new WhileStatementNode();
+        
+        // Set condition
+        if (ctx.expression() != null) {
+            node.setCondition(visitExpression(ctx.expression()));
+        }
+        
+        // Set block
+        if (ctx.block() != null) {
+            node.setBlock((BlockNode) visitBlock(ctx.block()));
+        }
+        
+        addRowToSymbolTable("WhileStatement", "while", ctx.getText());
+        return node;
     }
 
     @Override
     public ASTNode visitElseIfStatement(AngularParser.ElseIfStatementContext ctx) {
-        return null;
+        ASTNode condition = null;
+        BlockNode block = null;
+        
+        // Set condition
+        if (ctx.expression() != null) {
+            condition = visitExpression(ctx.expression());
+        }
+        
+        // Set block
+        if (ctx.block() != null) {
+            block = (BlockNode) visitBlock(ctx.block());
+        }
+        
+        ElseIfStatementNode node = new ElseIfStatementNode(condition, block);
+        addRowToSymbolTable("ElseIfStatement", "else if", ctx.getText());
+        return node;
     }
 
     @Override
     public BreakStatementNode visitBreakStatement(AngularParser.BreakStatementContext ctx) {
-        return null;
+        BreakStatementNode node = new BreakStatementNode();
+        addRowToSymbolTable("BreakStatement", "break", ctx.getText());
+        return node;
     }
 
     @Override
     public ContinueStatementNode visitContinueStatement(AngularParser.ContinueStatementContext ctx) {
-        return null;
+        ContinueStatementNode node = new ContinueStatementNode();
+        addRowToSymbolTable("ContinueStatement", "continue", ctx.getText());
+        return node;
     }
 
     @Override
     public ASTNode visitBlock(AngularParser.BlockContext ctx) {
-        return null;
+        // Process all statements in the block
+        List<ASTNode> statements = new ArrayList<>();
+        if (ctx.statement() != null && !ctx.statement().isEmpty()) {
+            for (AngularParser.StatementContext stmtCtx : ctx.statement()) {
+                statements.add(visitStatement(stmtCtx));
+            }
+        }
+        
+        BlockNode node = new BlockNode(statements);
+        addRowToSymbolTable("Block", "{", ctx.getText());
+        return node;
     }
 
     @Override
     public ASTNode visitParenthesizedExpression(AngularParser.ParenthesizedExpressionContext ctx) {
-        return null;
+        // For parenthesized expressions, we just return the inner expression
+        if (ctx.expression() != null) {
+            return visitExpression(ctx.expression());
+        }
+        return new ExpressionNode();
     }
 
     @Override
     public ASTNode visitDd(AngularParser.DdContext ctx) {
-        return null;
+        // This appears to be a placeholder method - implementing as empty expression
+        ExpressionNode node = new ExpressionNode();
+        addRowToSymbolTable("DdExpression", "dd", ctx.getText());
+        return node;
     }
 
     @Override
     public ASTNode visitNotEqualsComparison(AngularParser.NotEqualsComparisonContext ctx) {
-        return null;
+        ExpressionNode node = new ExpressionNode();
+        node.setLeft(visitExpression(ctx.expression(0)));
+        node.setRight(visitExpression(ctx.expression(1)));
+        node.setOperator("!=");
+        addRowToSymbolTable(OPERATOR, "!=", ctx.getText());
+        return node;
     }
 
     @Override
     public ASTNode visitLogicalOrExpressionStatement(AngularParser.LogicalOrExpressionStatementContext ctx) {
-        return null;
+        ExpressionNode node = new ExpressionNode();
+        node.setLeft(visitExpression(ctx.expression(0)));
+        node.setRight(visitExpression(ctx.expression(1)));
+        node.setOperator("||");
+        addRowToSymbolTable(OPERATOR, "||", ctx.getText());
+        return node;
     }
 
     @Override
     public ASTNode visitMultiplication(AngularParser.MultiplicationContext ctx) {
-        return null;
+        ExpressionNode node = new ExpressionNode();
+        node.setLeft(visitExpression(ctx.expression(0)));
+        node.setRight(visitExpression(ctx.expression(1)));
+        node.setOperator("*");
+        addRowToSymbolTable(OPERATOR, "*", ctx.getText());
+        return node;
     }
 
     @Override
     public ASTNode visitStrongEqualsComparison(AngularParser.StrongEqualsComparisonContext ctx) {
-        return null;
+        ExpressionNode node = new ExpressionNode();
+        node.setLeft(visitExpression(ctx.expression(0)));
+        node.setRight(visitExpression(ctx.expression(1)));
+        node.setOperator("===");
+        addRowToSymbolTable(OPERATOR, "===", ctx.getText());
+        return node;
     }
 
     @Override
     public ASTNode visitGreaterThanComparison(AngularParser.GreaterThanComparisonContext ctx) {
-        return null;
+        ExpressionNode node = new ExpressionNode();
+        node.setLeft(visitExpression(ctx.expression(0)));
+        node.setRight(visitExpression(ctx.expression(1)));
+        node.setOperator(">");
+        addRowToSymbolTable(OPERATOR, ">", ctx.getText());
+        return node;
     }
 
     @Override
     public ASTNode visitPropertyAccess(AngularParser.PropertyAccessContext ctx) {
-        return null;
+        PropertyAccessNode node = new PropertyAccessNode();
+        
+        // Set the object being accessed
+        if (ctx.expression() != null) {
+            node.setObject(visitExpression(ctx.expression()));
+        }
+        
+        // Set the property name
+        if (ctx.Identifier() != null) {
+            node.setProperty(ctx.Identifier().getText());
+            addRowToSymbolTable("PropertyAccess", ctx.Identifier().getText(), ctx.getText());
+        }
+        
+        return node;
     }
 
     @Override
     public ASTNode visitBracketExpression(AngularParser.BracketExpressionContext ctx) {
-        return null;
+        ExpressionNode node = new ExpressionNode();
+        
+        // Handle array/object access like arr[index] or obj['key']
+        if (ctx.expression() != null && ctx.expression().size() >= 2) {
+            node.setLeft(visitExpression(ctx.expression(0)));  // The array/object
+            node.setRight(visitExpression(ctx.expression(1))); // The index/key
+            node.setOperator("[]");
+        } else if (ctx.Identifier() != null && ctx.expression() != null && ctx.expression().size() >= 1) {
+            // Create identifier node for the left side
+            IdentifierNode identifierNode = new IdentifierNode();
+            identifierNode.setName(ctx.Identifier().getText());
+            node.setLeft(identifierNode);
+            node.setRight(visitExpression(ctx.expression(0))); // The index/key
+            node.setOperator("[]");
+        }
+        
+        addRowToSymbolTable("BracketAccess", "[]", ctx.getText());
+        return node;
     }
 
     @Override
     public ASTNode visitSubtraction(AngularParser.SubtractionContext ctx) {
-        return null;
+        ExpressionNode node = new ExpressionNode();
+        node.setLeft(visitExpression(ctx.expression(0)));
+        node.setRight(visitExpression(ctx.expression(1)));
+        node.setOperator("-");
+        addRowToSymbolTable(OPERATOR, "-", ctx.getText());
+        return node;
     }
 
     @Override
     public ASTNode visitModulus(AngularParser.ModulusContext ctx) {
-        return null;
+        ExpressionNode node = new ExpressionNode();
+        node.setLeft(visitExpression(ctx.expression(0)));
+        node.setRight(visitExpression(ctx.expression(1)));
+        node.setOperator("%");
+        addRowToSymbolTable(OPERATOR, "%", ctx.getText());
+        return node;
     }
 
     @Override
     public ASTNode visitWeakEqualsComparison(AngularParser.WeakEqualsComparisonContext ctx) {
-        return null;
+        ExpressionNode node = new ExpressionNode();
+        node.setLeft(visitExpression(ctx.expression(0)));
+        node.setRight(visitExpression(ctx.expression(1)));
+        node.setOperator("==");
+        addRowToSymbolTable(OPERATOR, "==", ctx.getText());
+        return node;
     }
 
     @Override
     public ASTNode visitDivision(AngularParser.DivisionContext ctx) {
-        return null;
+        ExpressionNode node = new ExpressionNode();
+        node.setLeft(visitExpression(ctx.expression(0)));
+        node.setRight(visitExpression(ctx.expression(1)));
+        node.setOperator("/");
+        addRowToSymbolTable(OPERATOR, "/", ctx.getText());
+        return node;
     }
 
     @Override
     public ASTNode visitLogicalAndExpressionStatement(AngularParser.LogicalAndExpressionStatementContext ctx) {
-        return null;
+        ExpressionNode node = new ExpressionNode();
+        node.setLeft(visitExpression(ctx.expression(0)));
+        node.setRight(visitExpression(ctx.expression(1)));
+        node.setOperator("&&");
+        addRowToSymbolTable(OPERATOR, "&&", ctx.getText());
+        return node;
     }
 
     @Override
     public ASTNode visitLessThanEqualsComparison(AngularParser.LessThanEqualsComparisonContext ctx) {
-        return null;
+        ExpressionNode node = new ExpressionNode();
+        node.setLeft(visitExpression(ctx.expression(0)));
+        node.setRight(visitExpression(ctx.expression(1)));
+        node.setOperator("<=");
+        addRowToSymbolTable(OPERATOR, "<=", ctx.getText());
+        return node;
     }
 
     @Override
     public ASTNode visitLessThanComparison(AngularParser.LessThanComparisonContext ctx) {
-        return null;
+        ExpressionNode node = new ExpressionNode();
+        node.setLeft(visitExpression(ctx.expression(0)));
+        node.setRight(visitExpression(ctx.expression(1)));
+        node.setOperator("<");
+        addRowToSymbolTable(OPERATOR, "<", ctx.getText());
+        return node;
     }
 
     @Override
     public ASTNode visitCheckedAttribute(AngularParser.CheckedAttributeContext ctx) {
-        return null;
+        HtmlAttributeNode node = new HtmlAttributeNode();
+        node.setIdentifierNode("checked");
+        
+        if (ctx.expression() != null) {
+            HtmlAttributeValueNode valueNode = new HtmlAttributeValueNode();
+            valueNode.setExpression(visitExpression(ctx.expression()));
+            node.setHtmlAttributeValueNode(valueNode);
+        }
+        
+        addRowToSymbolTable("HtmlAttribute", "checked", ctx.getText());
+        return node;
     }
 
     @Override
     public ASTNode visitOnChangeAttribute(AngularParser.OnChangeAttributeContext ctx) {
-        return null;
+        HtmlAttributeNode node = new HtmlAttributeNode();
+        node.setIdentifierNode("onChange");
+        
+        if (ctx.StringLiteral() != null) {
+            HtmlAttributeValueNode valueNode = new HtmlAttributeValueNode();
+            LiteralValueNode literalNode = new LiteralValueNode();
+            literalNode.setStirngValue(ctx.StringLiteral().getText());
+            valueNode.setValue(literalNode);
+            node.setHtmlAttributeValueNode(valueNode);
+        }
+        
+        addRowToSymbolTable("HtmlAttribute", "onChange", ctx.getText());
+        return node;
     }
 
     @Override
     public ASTNode visitOnClickAttribute(AngularParser.OnClickAttributeContext ctx) {
-        return null;
+        HtmlAttributeNode node = new HtmlAttributeNode();
+        node.setIdentifierNode("onClick");
+        
+        if (ctx.StringLiteral() != null) {
+            HtmlAttributeValueNode valueNode = new HtmlAttributeValueNode();
+            LiteralValueNode literalNode = new LiteralValueNode();
+            literalNode.setStirngValue(ctx.StringLiteral().getText());
+            valueNode.setValue(literalNode);
+            node.setHtmlAttributeValueNode(valueNode);
+        }
+        
+        addRowToSymbolTable("HtmlAttribute", "onClick", ctx.getText());
+        return node;
     }
 
     @Override
     public ASTNode visitOnSubmitAttribute(AngularParser.OnSubmitAttributeContext ctx) {
-        return null;
+        HtmlAttributeNode node = new HtmlAttributeNode();
+        node.setIdentifierNode("onSubmit");
+        
+        if (ctx.StringLiteral() != null) {
+            HtmlAttributeValueNode valueNode = new HtmlAttributeValueNode();
+            LiteralValueNode literalNode = new LiteralValueNode();
+            literalNode.setStirngValue(ctx.StringLiteral().getText());
+            valueNode.setValue(literalNode);
+            node.setHtmlAttributeValueNode(valueNode);
+        }
+        
+        addRowToSymbolTable("HtmlAttribute", "onSubmit", ctx.getText());
+        return node;
     }
 
     @Override
     public ASTNode visitGapAttribute(AngularParser.GapAttributeContext ctx) {
-        return null;
+        HtmlAttributeNode node = new HtmlAttributeNode();
+        node.setIdentifierNode("gap");
+        
+        if (ctx.expression() != null) {
+            HtmlAttributeValueNode valueNode = new HtmlAttributeValueNode();
+            valueNode.setExpression(visitExpression(ctx.expression()));
+            node.setHtmlAttributeValueNode(valueNode);
+        }
+        
+        addRowToSymbolTable("HtmlAttribute", "gap", ctx.getText());
+        return node;
     }
 
     @Override
     public ASTNode visitDirectionAttribute(AngularParser.DirectionAttributeContext ctx) {
-        return null;
+        HtmlAttributeNode node = new HtmlAttributeNode();
+        node.setIdentifierNode("direction");
+        
+        if (ctx.StringLiteral() != null) {
+            HtmlAttributeValueNode valueNode = new HtmlAttributeValueNode();
+            LiteralValueNode literalNode = new LiteralValueNode();
+            literalNode.setStirngValue(ctx.StringLiteral().getText());
+            valueNode.setValue(literalNode);
+            node.setHtmlAttributeValueNode(valueNode);
+        }
+        
+        addRowToSymbolTable("HtmlAttribute", "direction", ctx.getText());
+        return node;
     }
 
     @Override
     public ASTNode visitDurationAttribute(AngularParser.DurationAttributeContext ctx) {
-        return null;
+        HtmlAttributeNode node = new HtmlAttributeNode();
+        node.setIdentifierNode("duration");
+        
+        if (ctx.StringLiteral() != null) {
+            HtmlAttributeValueNode valueNode = new HtmlAttributeValueNode();
+            LiteralValueNode literalNode = new LiteralValueNode();
+            literalNode.setStirngValue(ctx.StringLiteral().getText());
+            valueNode.setValue(literalNode);
+            node.setHtmlAttributeValueNode(valueNode);
+        }
+        
+        addRowToSymbolTable("HtmlAttribute", "duration", ctx.getText());
+        return node;
     }
 
     @Override
     public ASTNode visitRepeatAttribute(AngularParser.RepeatAttributeContext ctx) {
-        return null;
+        HtmlAttributeNode node = new HtmlAttributeNode();
+        node.setIdentifierNode("repeat");
+        
+        HtmlAttributeValueNode valueNode = new HtmlAttributeValueNode();
+        LiteralValueNode literalNode = new LiteralValueNode();
+        
+        if (ctx.NumberLiteral() != null) {
+            literalNode.setNumValue(ctx.NumberLiteral().getText());
+        } else if (ctx.StringLiteral() != null) {
+            literalNode.setStirngValue(ctx.StringLiteral().getText());
+        }
+        
+        valueNode.setValue(literalNode);
+        node.setHtmlAttributeValueNode(valueNode);
+        
+        addRowToSymbolTable("HtmlAttribute", "repeat", ctx.getText());
+        return node;
     }
 
 }
