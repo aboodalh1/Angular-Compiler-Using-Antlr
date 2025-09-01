@@ -69,7 +69,7 @@ class
 classBody
     :
      (
-     variableDeclaration          #ClassVariableDeclaration|
+     variableDeclaration          |
      objectDeclataion             |
      arrayDeclaration             |
      abstractFunctionDeclaration  |
@@ -285,7 +285,7 @@ listLiteral
            ngForAttribute|
            onChangeAttribute|
            onClickAttribute|
-           HtmlClassAttribute |
+           Class '=' StringLiteral |
             '[' (Identifier | ((Identifier | HtmlClassAttribute) (access_suffix)*)) ']' |
              '(' (Identifier | HtmlClassAttribute) ')' | '*')
           ('=' html_attribute_value)?;
