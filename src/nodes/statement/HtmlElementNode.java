@@ -3,9 +3,8 @@ package nodes.statement;
 import nodes.ASTNode;
 import nodes.html_node.HtmlAttributesNode;
 import nodes.html_node.HtmlContentNode;
-import nodes.html_node.HtmlTagNode;
 
-public class HtmlElementNode extends nodes.html_node.HtmlElementNode implements ASTNode {
+public class HtmlElementNode implements ASTNode {
     private String htmlTagNode;
     private HtmlAttributesNode htmlAttributesNodes;
     private HtmlContentNode htmlContentNode;

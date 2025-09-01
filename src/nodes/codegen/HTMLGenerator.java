@@ -112,15 +112,15 @@ public class HTMLGenerator implements CodeGenerator {
         append("<" + tagName);
         
         // Generate attributes
-        if (element.getHtmlAttributesNodes() != null) {
-            generateAttributes(element.getHtmlAttributesNodes());
+        if (element.getAttributes() != null) {
+            generateAttributes(element.getAttributes());
         }
         
         append(">");
         
         // Generate content
-        if (element.getHtmlContentNode() != null) {
-            generateNode(element.getHtmlContentNode());
+        if (element.getContent() != null) {
+            generateNode(element.getContent());
         }
         
         append("</" + tagName + ">");

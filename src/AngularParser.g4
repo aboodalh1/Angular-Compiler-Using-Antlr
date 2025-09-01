@@ -27,6 +27,7 @@ statement
     | ifStatement
     | whileStatement
     | assignmentStatement
+    | nestedThisAccess
     | breakStatement
     | continueStatement
     | consoleLog
@@ -50,8 +51,8 @@ decoratorArgs
 
 // A single key-value pair argument in a decorator
 argument
-    : Identifier ':' literalValue
-    ;
+    : (Identifier ':' ) (literalValue | html |css);
+
 
 // --- Class and Interface Definitions ---
 
@@ -69,7 +70,7 @@ class
 classBody
     :
      (
-     variableDeclaration          |
+     variableDeclaration         |
      objectDeclataion             |
      arrayDeclaration             |
      abstractFunctionDeclaration  |
@@ -99,12 +100,12 @@ accessModifier
 
 // General variable declaration including 'let', 'const', 'var' or implicit
 variableDeclaration
-    : accessModifier? (Let_Identify)? Identifier (Colon type)? (Assign expression)? SemiColon
+    : Const? accessModifier? (Let_Identify)? Identifier (Colon type)? (Assign expression |Assign nestedThisAccess)? SemiColon?
     ;
 
 // Array declaration
 arrayDeclaration
-    : (Let_Identify)? Identifier Colon type OpenBracket CloseBracket Assign OpenBracket (literalValue (Comma literalValue)*)? CloseBracket SemiColon
+    : Const? (Let_Identify)? Identifier Colon type OpenBracket CloseBracket Assign OpenBracket (literalValue (Comma literalValue)*)? CloseBracket SemiColon
     | Identifier Assign OpenBracket (literalValue (Comma literalValue)*)? CloseBracket SemiColon
     ;
 
@@ -159,7 +160,7 @@ parameter
 
 // Function call (e.g., myFunction(arg1, arg2))
 function_call
-    : Identifier OpenParen (expression (Comma expression)*)? CloseParen
+    : Identifier OpenParen (expression (Comma expression)*)? CloseParen SemiColon
     ;
 
 // --- Statements ---
@@ -237,6 +238,9 @@ expression
     | expression And expression                                         // Logical AND
     | expression Or expression                                          // Logical OR
     | OpenParen expression CloseParen                                   // Parenthesized expression
+    | expression QuestionMark expression Colon expression               // Conditional expression
+    | expression (Assign GreaterThan) expression  // Ternary expression
+    | expression Assign Assign Assign expression                        // Chained assignment
     | Identifier OpenBracket expression CloseBracket                    // Array/object index access: `arr[index]`, `obj['key']`
     | Identifier Dot Identifier                                         // Property access: `obj.prop`
     | function_call                                                     // Function calls
@@ -268,14 +272,14 @@ listLiteral
     html:Backtick html_content Backtick;
 
     html_content: (html_element+ |
-     '{{' expression '}}' |
+     DollarSign? '{{' expression '}}' |
      NumberLiteral* Identifier NumberLiteral*)+;
 
     html_element:
           '<' html_tag_name html_attributes? '>' html_content? '<' '/'html_tag_name '>'
         | '<' html_tag_name html_attributes? '>' | '<' html_tag_name html_attributes '/''>';
 
-    html_tag_name: Identifier;
+    html_tag_name: Identifier ;
 
     html_attributes: html_attribute*;
 
@@ -285,9 +289,10 @@ listLiteral
            ngForAttribute|
            onChangeAttribute|
            onClickAttribute|
-           Class '=' StringLiteral |
-            '[' (Identifier | ((Identifier | HtmlClassAttribute) (access_suffix)*)) ']' |
-             '(' (Identifier | HtmlClassAttribute) ')' | '*')
+           Class |
+            OpenBracket (Identifier | ((Identifier | | Class) (access_suffix)*)) CloseBracket |
+            OpenBracket OpenParen (Identifier | ((Identifier | | Class) (access_suffix)*)) CloseParen CloseBracket |
+             '(' (Identifier | | Class) ')' | '*')
           ('=' html_attribute_value)?;
     access_suffix
         : '.' Identifier
@@ -297,7 +302,7 @@ listLiteral
     html_attribute_value: literalValue | expression;
     css: OpenBracket Backtick css_content* Backtick CloseBracket;
     css_content: Dot? Identifier (Colon Identifier)* OpenBrace css_class_content* CloseBrace;
-    css_class_content: Identifier Colon (Identifier|NumberLiteral (CssPixel | '%')? |function_call)+ (Comma (Identifier|NumberLiteral (CssPixel | '%')? |function_call)+)* SemiColon;
+    css_class_content: Identifier Colon (Hash? Identifier|NumberLiteral (CssPixel | '%')? |function_call)+ (Comma (Identifier|NumberLiteral (CssPixel | '%')? |function_call)+)* SemiColon;
     checkedAttribute
         : CheckedAttributeName Assign OpenBrace expression CloseBrace
         ;

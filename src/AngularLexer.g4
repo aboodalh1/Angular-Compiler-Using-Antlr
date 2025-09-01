@@ -14,10 +14,7 @@ Class: 'class';
 InlineAttributeName: 'inline';
 BackgroundColorAttributeName: 'backgroundColor';
 TextColorAttributeName: 'textColor';
-TypeAttributeName: 'type';
 LabelAttributeName: 'label';
-ValueAttributeName: 'value';
-PlaceHolderAttributeName: 'placeholder';
 CheckedAttributeName: 'chacked';
 TargetAttributeName: 'target';
 OnSubmitAttributeName: 'submit';
@@ -38,6 +35,7 @@ Comma: ',';
 Assign: '=';
 Colon: ':';
 QuestionMark: '?';
+DollarSign: '$';
 Dot: '.';
 Plus: '+';
 Minus: '-';
@@ -79,6 +77,7 @@ Constructor: 'constructor';
 Private: 'private';
 Public: 'public';
 Static: 'static';
+Const:'const';
 Protected: 'protected';
 New: 'new';
 NumberLiteral: [0-9]+ ('.' [0-9]+)?;
@@ -87,7 +86,7 @@ BooleanLiteral: 'true' | 'false';
 Backtick: '`';
 Identifier: [a-zA-Z_][a-zA-Z0-9_-]*;
 CssPixel: 'px';
-
+Hash: '#';
 // Whitespace and Comments (standard for most languages)
 
 // WS            : [ \t\r\n]+ -> skip;

@@ -56,7 +56,7 @@ public class SemanticAnalyzer extends AngularParserBaseListener {
 
     @Override
     public void enterImportStatement(AngularParser.ImportStatementContext ctx) {
-        String importedClass = ctx.Identifier().getText();
+        String importedClass = ctx.Identifier().toString();
 //        symbolTable.addImport(importedClass);
     }
 
@@ -93,8 +93,8 @@ public class SemanticAnalyzer extends AngularParserBaseListener {
     public void enterComponent(AngularParser.ComponentContext ctx) {
         System.out.println("CHCKenterComponent");
         // --- Provider Semantic Check ---
-        if (ctx.decorator() != null && ctx.decorator().argumentList() != null) {
-            for (AngularParser.ArgumentContext arg : ctx.decorator().argumentList().argument()) {
+        if (ctx.decoratorArgs() != null && ctx.decoratorArgs().argument() != null) {
+            for (AngularParser.ArgumentContext arg : ctx.decoratorArgs().argument()) {
                 if (PROVIDERS.equals(arg.Identifier().getText()) && arg.literalValue() != null) {
                     // This assumes the providers are listed in a list literal
                     java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("[A-Za-z_][A-Za-z0-9_]*").matcher(arg.literalValue().getText());
@@ -114,11 +114,11 @@ public class SemanticAnalyzer extends AngularParserBaseListener {
     }
 
     private void checkTemplateAndTemplateUrlConflict(AngularParser.ComponentContext ctx) {
-        if (ctx.decorator() != null && ctx.decorator().argumentList() != null) {
+        if (ctx.decoratorArgs() != null && ctx.decoratorArgs().argument() != null) {
             boolean hasTemplate = false;
             boolean hasTemplateUrl = false;
 
-            for (AngularParser.ArgumentContext arg : ctx.decorator().argumentList().argument()) {
+            for (AngularParser.ArgumentContext arg : ctx.decoratorArgs().argument()) {
 
                 String argName = arg.Identifier().getText();
 

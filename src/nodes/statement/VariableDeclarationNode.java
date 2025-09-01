@@ -6,7 +6,7 @@ import nodes.ASTNode;
 public class VariableDeclarationNode extends StatementNode{
     public  String identifier ;
     public  TypeNode type;
-    public  ASTNode expression;
+    public  ExpressionNode expression;
 
     public AccessModifierNode getAccessModifier() {
         return accessModifier;
@@ -38,11 +38,11 @@ public class VariableDeclarationNode extends StatementNode{
         this.type = type;
     }
 
-    public ASTNode getExpression() {
+    public ExpressionNode getExpression() {
         return expression;
     }
 
-    public void setExpression(ASTNode expression) {
+    public void setExpression(ExpressionNode expression) {
         this.expression = expression;
     }
 }

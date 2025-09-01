@@ -45,13 +45,13 @@ interface Product {
       </div>
 
       <div *ngIf="filteredProducts.length === 0" class="no-products">
-        No products found matching your criteria.
+        No products found matching your criteria
       </div>
 
       <div class="cart-summary">
         <h3>Cart Summary</h3>
-        <p>Items in cart: {{cartItems.length}}</p>
-        <p>Total: ${{cartTotal}}</p>
+        <p>Items in cart{{cartItems.length}}</p>
+        <p>Total ${{cartTotal}}</p>
       </div>
     </div>
   `,
