@@ -17,6 +17,10 @@ import nodes.css_node.CssContentNode;
 import nodes.css_node.CssNode;
 import nodes.html_node.*;
 import nodes.html_node.HtmlElementNode;
+import nodes.html_node.html_content.NgForNode;
+import nodes.html_node.html_content.NgIfNode;
+import nodes.html_node.html_content.OnChangeNodeAttr;
+import nodes.html_node.html_content.OnClickAttrNode;
 import nodes.statement.*;
 
 import org.antlr.v4.runtime.CharStream;
@@ -432,6 +436,7 @@ public class BaseVisitorWithCodeGen extends AbstractParseTreeVisitor<ASTNode> im
             argumentNode.setName(ctx.Identifier().getText());
         }
         if(ctx.html()!=null){
+            System.out.println(ctx.html().getText());
             argumentNode.setHtmlNode(visitHtml(ctx.html()));
         }
         if(ctx.css()!=null){
@@ -565,22 +570,13 @@ public class BaseVisitorWithCodeGen extends AbstractParseTreeVisitor<ASTNode> im
 
     public ExpressionNode visitExpression(AngularParser.ExpressionContext ctx) {
         ExpressionNode expressionNode = new ExpressionNode();
-        Row expressionRow = new Row();
-        if (expressionNode.operator != null) {
-            expressionNode.setOperator(expressionNode.operator);
-            expressionRow.setType("Operator");
-            expressionRow.setValue(expressionNode.operator);
+        if(ctx.Identifier() != null){
+            expressionNode.setIdentifier(ctx.getText());
         }
-        if (expressionNode.left != null) {
-            expressionNode.setLeft(expressionNode.left);
-            expressionRow.setType("Left");
-            expressionRow.setValue(expressionNode.left.toString());
+        if(ctx.literalValue()!=null){
+            expressionNode.setLiteralNode(visitLiteralValue(ctx.literalValue()));
         }
-        if (expressionNode.right != null) {
-            expressionNode.setRight(expressionNode.right);
-            expressionRow.setType("Right");
-            expressionRow.setValue(expressionNode.right.toString());
-        }
+
         return expressionNode;
     }
 
@@ -927,11 +923,8 @@ public class BaseVisitorWithCodeGen extends AbstractParseTreeVisitor<ASTNode> im
     @Override
     public HtmlNode visitHtml(AngularParser.HtmlContext ctx) {
         HtmlNode htmlNode = new HtmlNode();
-//        Row htmlRow = new Row();
         if (ctx.html_content() != null) {
             htmlNode.setContent(visitHtml_content(ctx.html_content()));
-//            htmlRow.setType("Content");
-//            htmlRow.setValue(ctx.html_content().getText());
         }
          //symbolTable.getRows().add(htmlRow);
         return htmlNode;
@@ -945,12 +938,18 @@ public class BaseVisitorWithCodeGen extends AbstractParseTreeVisitor<ASTNode> im
                 htmlContentNode.getHtmlElementNode().add(visitHtml_element(ctx.html_element().get(i)));
             }
         }
-//        if (ctx.expression() != null) {
-//            ExpressionNode expressionNode = visitExpression(ctx.expression);
-//            htmlContentNode.setExpression(expressionNode);
-//        }
-        if (ctx.expression() != null) {
-            htmlContentNode.setIdentifierNode("ff");
+            for(int i=0;i<ctx.expression().size();i++){
+          if(ctx.expression().get(i)!=null){
+              System.out.println(ctx.expression().get(i).getText());
+              htmlContentNode.getExpression().add(visitExpression(ctx.expression().get(i)));
+            }
+        }
+            for(int i=0;i<ctx.Identifier().size();i++){
+            if(ctx.Identifier().get(i)!=null){
+
+              System.out.println(ctx.Identifier().get(i).getText());
+//                htmlContentNode.getIdentifierNode().add(ctx.Identifier().get(i).getText());
+            }
         }
         return htmlContentNode;
     }
@@ -959,7 +958,7 @@ public class BaseVisitorWithCodeGen extends AbstractParseTreeVisitor<ASTNode> im
     public nodes.html_node.HtmlElementNode visitHtml_element(AngularParser.Html_elementContext ctx) {
         nodes.html_node.HtmlElementNode htmlElementNode = new HtmlElementNode();
         if(ctx.html_tag_name()!=null){
-            htmlElementNode.setTagName(visitHtml_tag_name(ctx.html_tag_name().get(0)));
+            htmlElementNode.setTagName(visitHtml_tag_name(ctx.html_tag_name(0)));
         }
         if (ctx.html_attributes() != null) {
             htmlElementNode.setAttributes(visitHtml_attributes(ctx.html_attributes()));
@@ -973,54 +972,53 @@ public class BaseVisitorWithCodeGen extends AbstractParseTreeVisitor<ASTNode> im
     @Override
     public HtmlTagNode visitHtml_tag_name(AngularParser.Html_tag_nameContext ctx) {
         HtmlTagNode htmlTagNode = new HtmlTagNode();
-//        Row htmlTagRow = new Row();
         if (ctx.Identifier() != null) {
             htmlTagNode.setIdentifierNode(ctx.Identifier().getText());
-//            htmlTagRow.setType("Identifier");
-//            htmlTagRow.setValue(ctx.Identifier().getText());
         }
-         //symbolTable.getRows().add(htmlTagRow);
         return htmlTagNode;
     }
 
     @Override
     public HtmlAttributesNode visitHtml_attributes(AngularParser.Html_attributesContext ctx) {
         HtmlAttributesNode htmlAttributesNode = new HtmlAttributesNode();
-        Row htmlAttributesRow = new Row();
         if (ctx.html_attribute() != null) {
             for (int i = 0; i < ctx.html_attribute().size(); i++) {
                 htmlAttributesNode.getHtmlAttributeNodes().add(visitHtml_attribute(ctx.html_attribute(i)));
-                htmlAttributesRow.setType("Html Attribute");
-                htmlAttributesRow.setValue(ctx.html_attribute(i).getText());
             }
         }
-         //symbolTable.getRows().add(htmlAttributesRow);
         return htmlAttributesNode;
     }
 
     @Override
     public HtmlAttributeNode visitHtml_attribute(AngularParser.Html_attributeContext ctx) {
         HtmlAttributeNode htmlAttributeNode = new HtmlAttributeNode();
-        Row htmlAttributeRow = new Row();
         if (ctx.Identifier() != null) {
             htmlAttributeNode.setIdentifierNode(ctx.Identifier().getText());
-            htmlAttributeRow.setType("Identifier");
-            htmlAttributeRow.setValue(ctx.Identifier().getText());
         }
         if (ctx.html_attribute_value() != null) {
-//            htmlAttributeNode.setHtmlAttributeValueNode(visitHtml_attribute_value(ctx.html_attribute_value()));
+            htmlAttributeNode.setHtmlAttributeValueNode(visitHtml_attribute_value(ctx.html_attribute_value()));
         }
+        if(ctx.ngIfAttribute()!=null){
+            htmlAttributeNode.setNgIfNode(visitNgIfAttribute(ctx.ngIfAttribute()));
+        }
+        if(ctx.ngForAttribute()!=null){
+            htmlAttributeNode.setNgForNode(visitNgForAttribute(ctx.ngForAttribute()));
+        }
+        if(ctx.onChangeAttribute()!=null){
+            htmlAttributeNode.setOnChangeNodeAttr(visitOnChangeAttribute(ctx.onChangeAttribute()));
+        }
+        if(ctx.onClickAttribute()!=null){
+            htmlAttributeNode.setOnClickAttrNodel(visitOnClickAttribute(ctx.onClickAttribute()));
+        }
+
         if (ctx.access_suffix() != null) {
             for (int i = 0; i < ctx.access_suffix().size(); i++) {
                 htmlAttributeNode.getAccessSufNode().add(visitAccess_suffix(ctx.access_suffix().get(i)));
-                htmlAttributeRow.setType("Access Suffix");
-                htmlAttributeRow.setValue(ctx.access_suffix().get(i).getText());
             }
         }
         if (ctx.Identifier() != null) {
-//            htmlAttributeNode.setClassNode(visitClass(ctx.Identifier().getText()));
+            htmlAttributeNode.setIdentifierNode(ctx.Identifier().getText());
         }
-         //symbolTable.getRows().add(htmlAttributeRow);
         return htmlAttributeNode;
     }
 
@@ -1039,15 +1037,15 @@ public class BaseVisitorWithCodeGen extends AbstractParseTreeVisitor<ASTNode> im
 
 
     @Override
-    public HtmlAttributeNode visitHtml_attribute_value(AngularParser.Html_attribute_valueContext ctx) {
-        HtmlAttributeNode htmlAttributeNode = new HtmlAttributeNode();
-        Row htmlAttributeRow = new Row();
-        htmlAttributeNode.setClassNode("htmlclass");
-        htmlAttributeNode.setIdentifierNode("html name");
-        htmlAttributeRow.setType("Class");
-        htmlAttributeRow.setValue("htmlclass");
-         //symbolTable.getRows().add(htmlAttributeRow);
-        return htmlAttributeNode;
+    public HtmlAttributeValueNode visitHtml_attribute_value(AngularParser.Html_attribute_valueContext ctx) {
+        HtmlAttributeValueNode htmlAttributeValueNode = new HtmlAttributeValueNode();
+        if(ctx.expression()!=null){
+            htmlAttributeValueNode.setExpression(visitExpression(ctx.expression()));
+        }
+        if(ctx.literalValue()!=null){
+            htmlAttributeValueNode.setValue(visitLiteralValue(ctx.literalValue()));
+        }
+        return htmlAttributeValueNode;
     }
 
     @Override
@@ -1107,20 +1105,14 @@ public class BaseVisitorWithCodeGen extends AbstractParseTreeVisitor<ASTNode> im
     }
 
     @Override
-    public ASTNode visitOnChangeAttribute(AngularParser.OnChangeAttributeContext ctx) {
-        LiteralValueNode onChangeAttributeNode = new LiteralValueNode();
-        Row onChangeRow = new Row();
-        onChangeRow.setType("OnChange Attribute");
-        onChangeRow.setValue(ctx.getText());
+    public OnChangeNodeAttr visitOnChangeAttribute(AngularParser.OnChangeAttributeContext ctx) {
+        OnChangeNodeAttr onChangeAttributeNode = new OnChangeNodeAttr();
         return onChangeAttributeNode;
     }
 
     @Override
-    public ASTNode visitOnClickAttribute(AngularParser.OnClickAttributeContext ctx) {
-        LiteralValueNode onClickAttributeNode = new LiteralValueNode();
-        Row onClickRow = new Row();
-        onClickRow.setType("OnClick Attribute");
-        onClickRow.setValue(ctx.getText());
+    public OnClickAttrNode visitOnClickAttribute(AngularParser.OnClickAttributeContext ctx) {
+        OnClickAttrNode onClickAttributeNode = new OnClickAttrNode();
         return onClickAttributeNode;
     }
 
@@ -1170,20 +1162,14 @@ public class BaseVisitorWithCodeGen extends AbstractParseTreeVisitor<ASTNode> im
     }
 
     @Override
-    public ASTNode visitNgForAttribute(AngularParser.NgForAttributeContext ctx) {
-        LiteralValueNode ngForAttributeNode = new LiteralValueNode();
-        Row ngForRow = new Row();
-        ngForRow.setType("NgFor Attribute");
-        ngForRow.setValue(ctx.getText());
+    public NgForNode visitNgForAttribute(AngularParser.NgForAttributeContext ctx) {
+        NgForNode ngForAttributeNode = new NgForNode();
         return ngForAttributeNode;
     }
 
     @Override
-    public ASTNode visitNgIfAttribute(AngularParser.NgIfAttributeContext ctx) {
-        LiteralValueNode ngIfAttributeNode = new LiteralValueNode();
-        Row ngIfRow = new Row();
-        ngIfRow.setType("NgIf Attribute");
-        ngIfRow.setValue(ctx.getText());
+    public NgIfNode visitNgIfAttribute(AngularParser.NgIfAttributeContext ctx) {
+        NgIfNode ngIfAttributeNode = new NgIfNode();
         return ngIfAttributeNode;
     }
 

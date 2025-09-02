@@ -7,12 +7,9 @@ public class ExpressionNode implements ASTNode {
     public  String operator;
     public  ASTNode left;
     public  ASTNode right;
+    private String identifier;
+    private LiteralValueNode literalNode;
     private int line;
-
-    @Override
-    public String toString() {
-        return "\nExpression(\noperator=" + operator + ", left=" + left + ", right=" + right + "\n)";
-    }
 
     public String getOperator() {
         return operator;
@@ -44,5 +41,33 @@ public class ExpressionNode implements ASTNode {
 
     public void setLine(int line) {
         this.line = line;
+    }
+
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
+
+    public LiteralValueNode getLiteralNode() {
+        return literalNode;
+    }
+
+    public void setLiteralNode(LiteralValueNode literalNode) {
+        this.literalNode = literalNode;
+    }
+
+    @Override
+    public String toString() {
+        return "ExpressionNode{" +
+                "operator='" + operator + '\'' +
+                ", left=" + left +
+                ", right=" + right +
+                ", identifier=" + identifier +
+                ", literalNode=" + literalNode +
+                ", line=" + line +
+                '}';
     }
 }

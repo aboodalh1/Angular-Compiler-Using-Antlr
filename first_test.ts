@@ -4,7 +4,7 @@ import { Component } from '@angular/core';
   selector: 'app-products',
   template: `
     <div class="products-container">
-      <h1>Product Catalog</h1>
+      <h1>{{ dfgfdg }} dasdasdasdas asdasd</h1>
     </div>
   `,
   styles:[`

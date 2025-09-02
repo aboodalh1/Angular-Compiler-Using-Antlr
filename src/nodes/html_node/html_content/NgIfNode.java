@@ -6,6 +6,9 @@ import nodes.statement.ExpressionNode;
 public class NgIfNode implements ASTNode {
     private ExpressionNode expressionNode;
 
+    public NgIfNode() {
+    }
+
     public ExpressionNode getExpressionNode() {
         return expressionNode;
     }
