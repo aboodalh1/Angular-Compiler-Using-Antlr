@@ -7,6 +7,7 @@ import nodes.html_node.html_content.NgForNode;
 import nodes.html_node.html_content.NgIfNode;
 import nodes.statement.*;
 
+
 /**
  * Generates HTML code from Angular AST nodes
  */
@@ -201,20 +202,24 @@ public class HTMLGenerator implements CodeGenerator {
     }
 
     private void generateExpression(ExpressionNode expression) {
-        // Handle expressions that might contain HTML templates
         if (expression.getLeft() instanceof LiteralValueNode) {
             LiteralValueNode literal = (LiteralValueNode) expression.getLeft();
             if (literal.getHtmlNode() != null) {
                 generateNode(literal.getHtmlNode());
             }
         }
-    }
+        if(expression.getIdentifier() != null){
+            append("{{" + expression.getIdentifier() + "}}");
+        }
+        if(expression.getLiteralNode() != null){
+            append("{{" + generateLiteralValue(expression.getLiteralNode()) + "}}");
+    }}
 
     private String generateExpressionString(ExpressionNode expression) {
         if (expression.getLeft() instanceof LiteralValueNode) {
             return generateLiteralValue((LiteralValueNode) expression.getLeft());
         }
-        return "expression";
+        return expression.getIdentifier();
     }
 
     private void appendLine(String content) {

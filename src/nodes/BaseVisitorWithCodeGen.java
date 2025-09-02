@@ -571,6 +571,7 @@ public class BaseVisitorWithCodeGen extends AbstractParseTreeVisitor<ASTNode> im
     public ExpressionNode visitExpression(AngularParser.ExpressionContext ctx) {
         ExpressionNode expressionNode = new ExpressionNode();
         if(ctx.Identifier() != null){
+            System.out.println(ctx.getText());
             expressionNode.setIdentifier(ctx.getText());
         }
         if(ctx.literalValue()!=null){
@@ -940,7 +941,6 @@ public class BaseVisitorWithCodeGen extends AbstractParseTreeVisitor<ASTNode> im
         }
             for(int i=0;i<ctx.expression().size();i++){
           if(ctx.expression().get(i)!=null){
-              System.out.println(ctx.expression().get(i).getText());
               htmlContentNode.getExpression().add(visitExpression(ctx.expression().get(i)));
             }
         }
@@ -948,7 +948,7 @@ public class BaseVisitorWithCodeGen extends AbstractParseTreeVisitor<ASTNode> im
             if(ctx.Identifier().get(i)!=null){
 
               System.out.println(ctx.Identifier().get(i).getText());
-//                htmlContentNode.getIdentifierNode().add(ctx.Identifier().get(i).getText());
+                htmlContentNode.getIdentifierNode().add(ctx.Identifier().get(i).getText());
             }
         }
         return htmlContentNode;
