@@ -1,6 +1,7 @@
 package nodes.statement;
 
 import nodes.ASTNode;
+import nodes.html_node.HtmlElementNode;
 import nodes.html_node.HtmlNode;
 // Statement node
 public class StatementNode implements ASTNode {

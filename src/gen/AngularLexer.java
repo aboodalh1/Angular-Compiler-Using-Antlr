@@ -1,4 +1,4 @@
-// Generated from C:/Users/Abd-LP/Desktop/home/ubuntu/angular_compiler/src/AngularLexer.g4 by ANTLR 4.13.2
+// Generated from C:/Users/KEMO/OneDrive/Desktop/compiler 2/Angular-Compiler-Using-Antlr/src/AngularLexer.g4 by ANTLR 4.13.2
 package gen;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;

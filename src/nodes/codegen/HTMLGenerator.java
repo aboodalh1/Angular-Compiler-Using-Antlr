@@ -67,16 +67,10 @@ public class HTMLGenerator implements CodeGenerator {
         indentLevel++;
         
         for (StatementNode statement : program.getStatements()) {
-//            if (statement.getComponentNodes() != null) {
-//                generateNode(statement.getComponentNodes());
-//            }
-            if(statement.getComponentNodes()!=null){
-                HtmlNode node = statement.getComponentNodes().getHtmlNodes();
-                System.out.println(node.getContent());
-                generateNode(node);
+            if(statement.getComponentNodes() != null){
+                ComponentNode component = statement.getComponentNodes();
+                generateComponent(component);
             }
-            System.out.println(statement.getComponentNodes());
-            System.out.println("ffffffffffffff");
         }
         
         appendLine("<script src=\"app.js\"></script>");
@@ -86,23 +80,20 @@ public class HTMLGenerator implements CodeGenerator {
     }
     
     private void generateComponent(ComponentNode component) {
-        appendLine("<div class=\"component\">");
-        indentLevel++;
-        
-        if (component.getExportClass() != null && 
-            component.getExportClass().getClassNode() != null &&
-            component.getExportClass().getClassNode().getClassBody() != null) {
-            
-            ClassBodyNode classBody = component.getExportClass().getClassNode().getClassBody();
-            
-            // Look for template in variable declarations
-            for (VariableDeclarationNode varDecl : classBody.getVariableDeclarationNodes()) {
-                if (varDecl.getExpression() != null) {
-                    generateExpression(varDecl.getExpression());
+        // Look for template in decorator arguments
+        if (component.getDecorator() != null && component.getDecorator().getArguments() != null) {
+            for (ArgumentNode argument : component.getDecorator().getArguments()) {
+                if ("template".equals(argument.getName()) && argument.getHtmlNode() != null) {
+                    generateNode(argument.getHtmlNode());
+                    return; // Found template, generate it and exit
                 }
             }
         }
         
+        // Fallback: generate a default component structure
+        appendLine("<div class=\"component\">");
+        indentLevel++;
+        appendLine("<!-- Component content -->");
         indentLevel--;
         appendLine("</div>");
     }
@@ -114,7 +105,7 @@ public class HTMLGenerator implements CodeGenerator {
     }
     
     private void generateHtmlElement(HtmlElementNode element) {
-        String tagName = "div"; // Default tag
+        String tagName = element.getTagName().getIdentifierNode();
         
         append("<" + tagName);
         
