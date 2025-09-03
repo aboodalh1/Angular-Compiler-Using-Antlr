@@ -6,7 +6,16 @@ import nodes.ASTNode;
 public class ExportClassNode extends StatementNode {
     private String name;
     private ClassBodyNode classBody;
+    private ClassNode classNode;
 
+
+    public ClassNode getClassNode() {
+        return classNode;
+    }
+
+    public void setClassNode(ClassNode classNode) {
+        this.classNode = classNode;
+    }
     public ExportClassNode(String name, ClassBodyNode classBody) {
         this.name = name;
         this.classBody = classBody;
@@ -36,6 +45,7 @@ public class ExportClassNode extends StatementNode {
         return "ExportClassNode{" +
                 "name='" + name + '\'' +
                 ", classBody=" + classBody +
+                ", classNode=" + classNode +
                 '}';
     }
 }

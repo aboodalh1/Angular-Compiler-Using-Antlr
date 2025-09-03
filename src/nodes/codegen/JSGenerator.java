@@ -1,17 +1,14 @@
 package nodes.codegen;
 
 import nodes.ASTNode;
-import nodes.html_node.HtmlAttributeNode;
-import nodes.html_node.HtmlAttributesNode;
-import nodes.html_node.HtmlContentNode;
-import nodes.html_node.HtmlElementNode;
-import nodes.html_node.HtmlNode;
+import nodes.html_node.*;
 import nodes.html_node.html_content.NgForNode;
 import nodes.html_node.html_content.NgIfNode;
 import nodes.html_node.html_content.OnChangeNodeAttr;
 import nodes.html_node.html_content.OnClickAttrNode;
 import nodes.statement.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -157,12 +154,49 @@ public class JSGenerator implements CodeGenerator {
         if (variable.getExpression() != null) {
             varValue = generateExpressionValue(variable.getExpression());
         }
+        if(variable.getArrayDeclarationNodeList()!=null){
+            for(int i=0;i<variable.getArrayDeclarationNodeList().getValues().size();i++){
+                String varValue2=variable.getArrayDeclarationNodeList().getValues().get(i).getArrayValue();
+                String varValue1="null";
+                if (variable.getArrayDeclarationNodeList().getIdentifier() != null) {
+                    varValue1 = variable.getIdentifier();
+                }
+                appendLine("public " + varValue1 + "[" + i + "]" + " = " + varValue2 + ";");
+            }
+        }
         appendLine("public " + varName + " = " + varValue + ";");
     }
 
     private String generateExpressionValue(ExpressionNode expression) {
         if (expression.getLiteralNode() != null) {
-            return expression.getLiteralNode().toString();
+            if(expression.getLiteralNode().getStirngValue()!=null){
+                return expression.getLiteralNode().getStirngValue();
+            }
+            if(expression.getLiteralNode().getNumValue()!=null){
+                return expression.getLiteralNode().getNumValue();
+            }
+            if(expression.getLiteralNode().getBooleanValue()!=null){
+                return expression.getLiteralNode().getBooleanValue();
+            }
+            if(expression.getLiteralNode().getIdentifierValue()!=null){
+                return expression.getLiteralNode().getIdentifierValue();
+            }
+            if(expression.getLiteralNode().getArrayValue()!=null){
+                return expression.getLiteralNode().getArrayValue();
+            }
+            if(expression.getLiteralNode().getListLiteralNode()!=null){
+                for(int i=0;i<expression.getLiteralNode().getListLiteralNode().getIdentifiers().size();i++){
+                    List<String> identifiers=expression.getLiteralNode().getListLiteralNode().getIdentifiers();
+                    return identifiers.get(i);
+                }
+            }
+            if(expression.getLiteralNode().getHtmlNode()!=null){
+                return generateHtml(expression.getLiteralNode().getHtmlNode());
+            }
+            if(expression.getLiteralNode().getClass().getName()!=null){
+                return expression.getLiteralNode().getClass().getName();
+            }
+
         }
         if (expression.getIdentifier() != null) {
             return "this." + expression.getIdentifier();
@@ -219,31 +253,88 @@ public class JSGenerator implements CodeGenerator {
         String tagName = element.getTagName() != null ? element.getTagName().getIdentifierNode() : "div";
         String elementId = "id-" + UUID.randomUUID().toString().substring(0, 8);
 
-        // Check for NgIf and NgFor attributes
-        NgIfNode ngIf = null;
-        NgForNode ngFor = null;
+        // Attribute holders
+        String identifierNode = null;
+        String classNode = null;
+        List<AccessSufNode> accessSufNode = null;
+        HtmlAttributeValueNode htmlAttributeValueNode = null;
+        NgIfNode ngIfNode = null;
+        NgForNode ngForNode = null;
+        OnChangeNodeAttr onChangeNodeAttr = null;
+        OnClickAttrNode onClickAttrNode = null;
+        StringBuilder extraAttributes = new StringBuilder();
+        String onClickHandler = null;
+        String onChangeHandler = null;
+
         if (element.getAttributes() != null) {
             for (HtmlAttributeNode attr : element.getAttributes().getHtmlAttributeNodes()) {
                 if (attr.getNgIfNode() != null) {
-                    ngIf = attr.getNgIfNode();
+                    ngIfNode = attr.getNgIfNode();
                 }
                 if (attr.getNgForNode() != null) {
-                    ngFor = attr.getNgForNode();
+                    ngForNode = attr.getNgForNode();
+                }
+                if (attr.getHtmlAttributeValueNode() != null) {
+                    htmlAttributeValueNode = attr.getHtmlAttributeValueNode();
+                }
+                if (attr.getAccessSufNode() != null) {
+                    accessSufNode = attr.getAccessSufNode();
+                }
+                if (attr.getIdentifierNode() != null) {
+                    identifierNode = attr.getIdentifierNode();
+                }
+                if (attr.getClassNode() != null) {
+                    classNode = attr.getClassNode();
+                }
+                if (attr.getOnChangeNodeAttr() != null) {
+                    onChangeNodeAttr = attr.getOnChangeNodeAttr();
+                    if (onChangeNodeAttr.getAttrValue() != null) {
+                        onChangeHandler = onChangeNodeAttr.getAttrValue();
+                    }
+                }
+                if (attr.getOnClickAttrNodel() != null) {
+                    onClickAttrNode = attr.getOnClickAttrNodel();
+                    if (onClickAttrNode.getValue() != null) {
+                        onClickHandler = onClickAttrNode.getValue();
+                    }
+                }
+                // Standard HTML attributes
+                if (attr.getIdentifierNode() != null && attr.getHtmlAttributeValueNode() != null) {
+                    String attrName = attr.getIdentifierNode();
+                    String attrValue = "";
+                    if (attr.getHtmlAttributeValueNode().getValue() != null) {
+                        attrValue = attr.getHtmlAttributeValueNode().getValue().getStirngValue();
+                    } else if (attr.getHtmlAttributeValueNode().getExpression() != null) {
+                        attrValue = generateExpressionValue(attr.getHtmlAttributeValueNode().getExpression());
+                    }
+                    extraAttributes.append(" ").append(attrName).append("=\"").append(attrValue).append("\"");
                 }
             }
         }
 
         // NgFor and NgIf placeholders
-        if (ngFor != null) {
-            html.append(generateNgFor(ngFor, tagName, element.getAttributes(), element.getContent()));
-        } else if (ngIf != null) {
-            html.append(generateNgIf(ngIf, tagName, element.getAttributes(), element.getContent()));
+        if (ngForNode != null) {
+            html.append(generateNgFor(ngForNode, tagName, element.getAttributes(), element.getContent()));
+        } else if (ngIfNode != null) {
+            html.append(generateNgIf(ngIfNode, tagName, element.getAttributes(), element.getContent()));
         } else {
             html.append("<").append(tagName);
-            if (element.getAttributes() != null) {
-                html.append(" id=\"" + elementId + "\""); // Add a unique ID for event binding
-                html.append(generateHtmlAttributes(element.getAttributes()));
+            // Always add a unique ID for event binding
+            html.append(" id=\"").append(elementId).append("\"");
+            if (classNode != null) {
+                html.append(" class=\"").append(classNode).append("\"");
             }
+            if (identifierNode != null) {
+                html.append(" name=\"").append(identifierNode).append("\"");
+            }
+            if (onClickHandler != null) {
+                html.append(" data-onclick=\"").append(onClickHandler).append("\"");
+            }
+            if (onChangeHandler != null) {
+                html.append(" data-onchange=\"").append(onChangeHandler).append("\"");
+            }
+            // Add any extra attributes
+            html.append(extraAttributes);
             html.append(">");
             if (element.getContent() != null) {
                 html.append(generateHtmlContent(element.getContent()));
