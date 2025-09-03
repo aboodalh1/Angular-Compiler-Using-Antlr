@@ -137,44 +137,41 @@ public class CSSGenerator implements CodeGenerator {
     }
     
     private void generateCssContent(CssContentNode content) {
-        if (content.getCssClassContentList() != null) {
-            for (CssClassContentNode classContent : content.getCssClassContentList()) {
-                generateNode(classContent);
-            }
-        }
-    }
-    
-    private void generateCssClassContent(CssClassContentNode classContent) {
-        if (classContent.getName() != null) {
-            appendLine("." + classContent.getName() + " {");
+        // Generate CSS class with its name
+        if (content.getIdentifierNode() != null) {
+            appendLine("." + content.getIdentifierNode() + " {");
             indentLevel++;
             
-            // Generate CSS properties dynamically from the parsed content
-            if (classContent.getProperties() != null && !classContent.getProperties().isEmpty()) {
-                for (int i = 0; i < classContent.getProperties().size(); i++) {
-                    String property = classContent.getProperties().get(i);
-                    String value = "";
-                    
-                    // Get corresponding value if available
-                    if (classContent.getValues() != null && i < classContent.getValues().size()) {
-                        value = classContent.getValues().get(i);
-                    }
-                    
-                    // Generate CSS property line
-                    if (!value.isEmpty()) {
-                        appendLine(property + ": " + value + ";");
-                    } else {
-                        appendLine(property + ";");
-                    }
+            // Generate CSS properties from the class content
+            if (content.getCssClassContentList() != null) {
+                for (CssClassContentNode classContent : content.getCssClassContentList()) {
+                    generateNode(classContent);
                 }
-            } else {
-                // Don't add default properties - only generate what's in the component
-                // This ensures we only generate CSS from the input
             }
             
             indentLevel--;
             appendLine("}");
             appendLine("");
+        }
+    }
+    
+    private void generateCssClassContent(CssClassContentNode classContent) {
+        // Generate CSS properties directly from the parsed content
+        if (classContent.getName() != null) {
+            String propertyName = classContent.getName();
+            String value = "";
+            
+            // Join all values with spaces (for properties like margin: 10px 20px)
+            if (classContent.getValues() != null && !classContent.getValues().isEmpty()) {
+                value = String.join("", classContent.getValues());
+            }
+            
+            // Generate CSS property line
+            if (!value.isEmpty()) {
+                appendLine(propertyName + ": " + value + ";");
+            } else {
+                appendLine(propertyName + ";");
+            }
         }
     }
     

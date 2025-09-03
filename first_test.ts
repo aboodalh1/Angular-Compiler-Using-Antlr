@@ -8,7 +8,7 @@ import { Component } from '@angular/core';
     </div>
   `,
   styles:[`
-  .product-container {
+  product-container {
     max-width: 1200px;
     padding: 20px;
     background: white;

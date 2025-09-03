@@ -1067,6 +1067,16 @@ public class BaseVisitorWithCodeGen extends AbstractParseTreeVisitor<ASTNode> im
     public CssContentNode visitCss_content(AngularParser.Css_contentContext ctx) {
         CssContentNode cssContentNode = new CssContentNode();
         Row cssContentRow = new Row();
+        
+        // Parse CSS class name (first identifier)
+        if (ctx.Identifier() != null && ctx.Identifier().size() > 0) {
+            String className = ctx.Identifier().get(0).getText();
+            cssContentNode.setIdentifierNode(className);
+            cssContentRow.setType("CSS Class Name");
+            cssContentRow.setValue(className);
+        }
+        
+        // Parse CSS class content (properties and values)
         if (ctx.css_class_content() != null) {
             for (int i = 0; i < ctx.css_class_content().size(); i++) {
                 cssContentNode.getCssClassContentList().add(visitCss_class_content(ctx.css_class_content(i)));
@@ -1074,12 +1084,7 @@ public class BaseVisitorWithCodeGen extends AbstractParseTreeVisitor<ASTNode> im
                 cssContentRow.setValue(ctx.css_class_content(i).getText());
             }
         }
-        if(ctx.Identifier()!=null){
-            cssContentNode.setIdentifierNode(ctx.Identifier().toString());
-            cssContentRow.setType("Identifier");
-            cssContentRow.setValue(ctx.Identifier().toString());
-        }
-         //symbolTable.getRows().add(cssContentRow);
+        
         return cssContentNode;
     }
 
@@ -1088,27 +1093,33 @@ public class BaseVisitorWithCodeGen extends AbstractParseTreeVisitor<ASTNode> im
         CssClassContentNode cssClassContentNode = new CssClassContentNode();
         Row cssClassContentRow = new Row();
         
-        // Parse CSS class name (first identifier)
+        // Parse CSS property name (first identifier)
         if (ctx.Identifier() != null && ctx.Identifier().size() > 0) {
             cssClassContentNode.setName(ctx.Identifier().get(0).getText());
-            cssClassContentRow.setType("Name");
+            cssClassContentRow.setType("CSS Property Name");
             cssClassContentRow.setValue(ctx.Identifier().get(0).getText());
         }
         
-        // Parse CSS properties and values dynamically
-        // The grammar: Identifier Colon (Hash? Identifier|NumberLiteral (CssPixel | '%')? |function_call)+
-        if (ctx.Identifier() != null && ctx.Identifier().size() > 1) {
-            // Extract CSS properties from the parsed content
-            for (int i = 1; i < ctx.Identifier().size(); i++) {
-                String property = ctx.Identifier().get(i).getText();
-                cssClassContentNode.getProperties().add(property);
-            }
-        }
-        
-        // Parse CSS values (numbers, pixels, etc.)
+        // Parse CSS values with units (numbers + pixels, etc.)
         if (ctx.NumberLiteral() != null) {
             for (int i = 0; i < ctx.NumberLiteral().size(); i++) {
                 String value = ctx.NumberLiteral().get(i).getText();
+                
+                // Check if there's a CSS unit after the number
+                if (ctx.CssPixel() != null && i < ctx.CssPixel().size()) {
+                    value += ctx.CssPixel().get(i).getText(); // Add 'px'
+                } else if (ctx.getText().contains("%") && i < ctx.getText().split("%").length - 1) {
+                    value += "%"; // Add '%' if present
+                }
+                
+                cssClassContentNode.getValues().add(value);
+            }
+        }
+        
+        // Parse additional identifiers as values
+        if (ctx.Identifier() != null && ctx.Identifier().size() > 1) {
+            for (int i = 1; i < ctx.Identifier().size(); i++) {
+                String value = ctx.Identifier().get(i).getText();
                 cssClassContentNode.getValues().add(value);
             }
         }
