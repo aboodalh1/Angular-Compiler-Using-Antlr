@@ -121,10 +121,14 @@ public class HTMLGenerator implements CodeGenerator {
         // Generate content
         if (element.getContent() != null) {
             System.out.println(element.getContent());
+            indentLevel++;
             generateNode(element.getContent());
+            indentLevel--;
         }
 
         append("</" + tagName + ">");
+         
+        append("\n");
     }
 
     private void generateHtmlContent(HtmlContentNode content) {
@@ -139,10 +143,24 @@ public class HTMLGenerator implements CodeGenerator {
                 append("{{" + generateExpressionString(expressionNode) + "}}");
             }
         }
+        
+        // Handle text content - identifiers in HTML content should be treated as plain text
+        // unless they are part of Angular expressions
         if(content.getIdentifierNode() != null){
-            for(String identifierNode:content.getIdentifierNode()){
-                append("{{" + identifierNode + "}}");
+            StringBuilder textContent = new StringBuilder();
+            for(int i = 0; i < content.getIdentifierNode().size(); i++){
+                String identifierNode = content.getIdentifierNode().get(i);
+                // Check if this is part of an Angular expression or plain text
+                // For now, treat all identifiers as plain text since the grammar
+                // incorrectly parses plain text as identifiers
+                textContent.append(identifierNode);
+                // Add space between words if not the last element
+                if (i < content.getIdentifierNode().size() - 1) {
+                    textContent.append(" ");
+                }
             }
+            // Trim the content to remove extra spaces
+            append(textContent.toString().trim());
         }
     }
 

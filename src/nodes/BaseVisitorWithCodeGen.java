@@ -995,6 +995,9 @@ public class BaseVisitorWithCodeGen extends AbstractParseTreeVisitor<ASTNode> im
         if (ctx.Identifier() != null) {
             htmlAttributeNode.setIdentifierNode(ctx.Identifier().getText());
         }
+        if (ctx.Class() != null) {
+            htmlAttributeNode.setIdentifierNode(ctx.Class().getText());
+        }
         if (ctx.html_attribute_value() != null) {
             htmlAttributeNode.setHtmlAttributeValueNode(visitHtml_attribute_value(ctx.html_attribute_value()));
         }
@@ -1015,9 +1018,6 @@ public class BaseVisitorWithCodeGen extends AbstractParseTreeVisitor<ASTNode> im
             for (int i = 0; i < ctx.access_suffix().size(); i++) {
                 htmlAttributeNode.getAccessSufNode().add(visitAccess_suffix(ctx.access_suffix().get(i)));
             }
-        }
-        if (ctx.Identifier() != null) {
-            htmlAttributeNode.setIdentifierNode(ctx.Identifier().getText());
         }
         return htmlAttributeNode;
     }
@@ -1087,11 +1087,32 @@ public class BaseVisitorWithCodeGen extends AbstractParseTreeVisitor<ASTNode> im
     public CssClassContentNode visitCss_class_content(AngularParser.Css_class_contentContext ctx) {
         CssClassContentNode cssClassContentNode = new CssClassContentNode();
         Row cssClassContentRow = new Row();
-        if (ctx.Identifier() != null) {
+        
+        // Parse CSS class name (first identifier)
+        if (ctx.Identifier() != null && ctx.Identifier().size() > 0) {
             cssClassContentNode.setName(ctx.Identifier().get(0).getText());
             cssClassContentRow.setType("Name");
             cssClassContentRow.setValue(ctx.Identifier().get(0).getText());
         }
+        
+        // Parse CSS properties and values dynamically
+        // The grammar: Identifier Colon (Hash? Identifier|NumberLiteral (CssPixel | '%')? |function_call)+
+        if (ctx.Identifier() != null && ctx.Identifier().size() > 1) {
+            // Extract CSS properties from the parsed content
+            for (int i = 1; i < ctx.Identifier().size(); i++) {
+                String property = ctx.Identifier().get(i).getText();
+                cssClassContentNode.getProperties().add(property);
+            }
+        }
+        
+        // Parse CSS values (numbers, pixels, etc.)
+        if (ctx.NumberLiteral() != null) {
+            for (int i = 0; i < ctx.NumberLiteral().size(); i++) {
+                String value = ctx.NumberLiteral().get(i).getText();
+                cssClassContentNode.getValues().add(value);
+            }
+        }
+        
         return cssClassContentNode;
     }
 

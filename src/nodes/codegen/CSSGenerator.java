@@ -48,54 +48,31 @@ public class CSSGenerator implements CodeGenerator {
     }
     
     private void generateProgram(ProgramNode program) {
-        // Add base styles
+        // Only generate CSS from component styles - no static CSS
         appendLine("/* Generated CSS from Angular Components */");
         appendLine("");
-        appendLine("* {");
-        appendLine("  box-sizing: border-box;");
-        appendLine("  margin: 0;");
-        appendLine("  padding: 0;");
-        appendLine("}");
-        appendLine("");
-        appendLine("body {");
-        appendLine("  font-family: Arial, sans-serif;");
-        appendLine("  line-height: 1.6;");
-        appendLine("  color: #333;");
-        appendLine("}");
-        appendLine("");
-        appendLine(".component {");
-        appendLine("  padding: 20px;");
-        appendLine("  margin: 10px;");
-        appendLine("  border: 1px solid #ddd;");
-        appendLine("  border-radius: 5px;");
-        appendLine("}");
-        appendLine("");
         
-        // Generate component-specific styles
+        // Generate component-specific styles only
         for (StatementNode statement : program.getStatements()) {
             if (statement.getComponentNodes() != null) {
                 generateNode(statement.getComponentNodes());
             }
         }
-        
-        // Add utility classes
-        appendLine("/* Utility Classes */");
-        appendLine(".ng-for-container {");
-        appendLine("  display: flex;");
-        appendLine("  flex-wrap: wrap;");
-        appendLine("  gap: 10px;");
-        appendLine("}");
-        appendLine("");
-        appendLine(".ng-if-container {");
-        appendLine("  display: block;");
-        appendLine("}");
-        appendLine("");
-        appendLine(".hidden {");
-        appendLine("  display: none !important;");
-        appendLine("}");
     }
     
     private void generateComponent(ComponentNode component) {
+        // First, extract styles from component decorator
+        if (component.getDecorator() != null && component.getDecorator().getArguments() != null) {
+            for (ArgumentNode argument : component.getDecorator().getArguments()) {
+                if ("styles".equals(argument.getName()) && argument.getCssNode() != null) {
+                    // Generate the CSS from the styles array
+                    generateNode(argument.getCssNode());
+                    return; // Found styles, generate them and exit
+                }
+            }
+        }
+        
+        // Fallback: generate default component styles
         if (component.getExportClass() != null && 
             component.getExportClass().getClassNode() != null) {
             
@@ -149,6 +126,9 @@ public class CSSGenerator implements CodeGenerator {
     }
     
     private void generateCss(CssNode css) {
+        // Generate CSS content directly from the parsed text
+        // This is a simplified approach that extracts CSS from the component styles
+        
         if (css.getCssContentNode() != null) {
             for (CssContentNode content : css.getCssContentNode()) {
                 generateNode(content);
@@ -168,9 +148,30 @@ public class CSSGenerator implements CodeGenerator {
         if (classContent.getName() != null) {
             appendLine("." + classContent.getName() + " {");
             indentLevel++;
-            // Add default properties
-            appendLine("display: block;");
-            appendLine("margin: 5px 0;");
+            
+            // Generate CSS properties dynamically from the parsed content
+            if (classContent.getProperties() != null && !classContent.getProperties().isEmpty()) {
+                for (int i = 0; i < classContent.getProperties().size(); i++) {
+                    String property = classContent.getProperties().get(i);
+                    String value = "";
+                    
+                    // Get corresponding value if available
+                    if (classContent.getValues() != null && i < classContent.getValues().size()) {
+                        value = classContent.getValues().get(i);
+                    }
+                    
+                    // Generate CSS property line
+                    if (!value.isEmpty()) {
+                        appendLine(property + ": " + value + ";");
+                    } else {
+                        appendLine(property + ";");
+                    }
+                }
+            } else {
+                // Don't add default properties - only generate what's in the component
+                // This ensures we only generate CSS from the input
+            }
+            
             indentLevel--;
             appendLine("}");
             appendLine("");
