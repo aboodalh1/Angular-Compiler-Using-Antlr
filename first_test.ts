@@ -68,7 +68,7 @@ interface Product {
     }
      .filters_select {
       padding: 10px;
-      border: 1px  #ddd;
+      border: 1px  ;
       border-radius: 5px;
       font-size: 16px;
     }
@@ -78,7 +78,7 @@ interface Product {
       margin-bottom: 30px;
     }
      .product-card {
-      border: 1px solid #ddd;
+      border: 1px solid ;
       border-radius: 8px;
       padding: 15px;
       background: white;
@@ -154,7 +154,7 @@ interface Product {
       background: #f8f9fa;
       padding: 20px;
       border-radius: 8px;
-      border: 1px solid #ddd;
+      border: 1px solid ;
     }
     `]
 })

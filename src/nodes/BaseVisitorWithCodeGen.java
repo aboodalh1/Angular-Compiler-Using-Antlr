@@ -885,15 +885,14 @@ public class BaseVisitorWithCodeGen extends AbstractParseTreeVisitor<ASTNode> im
     public CssClassContentNode visitCss_class_content(AngularParser.Css_class_contentContext ctx) {
         CssClassContentNode cssClassContentNode = new CssClassContentNode();
         Row cssClassContentRow = new Row();
-        
+
         // Parse CSS property name (first identifier)
         if (ctx.Identifier() != null && ctx.Identifier().size() > 0) {
-        if (ctx.Identifier() != null) {
             cssClassContentNode.setName(ctx.Identifier().get(0).getText());
             cssClassContentRow.setType("CSS Property Name");
             cssClassContentRow.setValue(ctx.Identifier().get(0).getText());
         }
-        
+
         // Parse CSS values with units (numbers + pixels, etc.)
         if (ctx.NumberLiteral() != null) {
             for (int i = 0; i < ctx.NumberLiteral().size(); i++) {
@@ -917,7 +916,7 @@ public class BaseVisitorWithCodeGen extends AbstractParseTreeVisitor<ASTNode> im
                 cssClassContentNode.getValues().add(value);
             }
         }
-        
+
         return cssClassContentNode;
     }
 
