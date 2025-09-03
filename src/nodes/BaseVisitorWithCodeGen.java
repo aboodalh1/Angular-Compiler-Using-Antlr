@@ -793,6 +793,9 @@ public class BaseVisitorWithCodeGen extends AbstractParseTreeVisitor<ASTNode> im
         if (ctx.Identifier() != null) {
             htmlAttributeNode.setIdentifierNode(ctx.Identifier().getText());
         }
+        if (ctx.Class() != null) {
+            htmlAttributeNode.setIdentifierNode(ctx.Class().getText());
+        }
         if (ctx.html_attribute_value() != null) {
             htmlAttributeNode.setHtmlAttributeValueNode(visitHtml_attribute_value(ctx.html_attribute_value()));
         }
@@ -813,9 +816,6 @@ public class BaseVisitorWithCodeGen extends AbstractParseTreeVisitor<ASTNode> im
             for (int i = 0; i < ctx.access_suffix().size(); i++) {
                 htmlAttributeNode.getAccessSufNode().add(visitAccess_suffix(ctx.access_suffix().get(i)));
             }
-        }
-        if (ctx.Identifier() != null) {
-            htmlAttributeNode.setIdentifierNode(ctx.Identifier().getText());
         }
         return htmlAttributeNode;
     }

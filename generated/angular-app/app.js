@@ -1,1 +1,0 @@
-// Error generating code: Cannot invoke "nodes.statement.ClassNode.getIdentifier()" because the return value of "nodes.statement.ExportClassNode.getClassNode()" is null
