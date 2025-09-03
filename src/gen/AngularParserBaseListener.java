@@ -1,4 +1,4 @@
-// Generated from C:/Users/KEMO/OneDrive/Desktop/compiler 2/Angular-Compiler-Using-Antlr/src/AngularParser.g4 by ANTLR 4.13.2
+// Generated from C:/Users/Abd-LP/Desktop/home/ubuntu/angular_compiler/src/AngularParser.g4 by ANTLR 4.13.2
 package gen;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -89,13 +89,13 @@ public class AngularParserBaseListener implements AngularParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterClass(AngularParser.ClassContext ctx) { }
+	@Override public void enterClassRule(AngularParser.ClassRuleContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitClass(AngularParser.ClassContext ctx) { }
+	@Override public void exitClassRule(AngularParser.ClassRuleContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

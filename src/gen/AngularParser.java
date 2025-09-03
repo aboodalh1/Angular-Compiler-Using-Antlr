@@ -1,4 +1,4 @@
-// Generated from C:/Users/KEMO/OneDrive/Desktop/compiler 2/Angular-Compiler-Using-Antlr/src/AngularParser.g4 by ANTLR 4.13.2
+// Generated from C:/Users/Abd-LP/Desktop/home/ubuntu/angular_compiler/src/AngularParser.g4 by ANTLR 4.13.2
 package gen;
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
@@ -38,7 +38,7 @@ public class AngularParser extends Parser {
 		Service=96, Star=97, As=98, GapAttributeName=99;
 	public static final int
 		RULE_program = 0, RULE_statement = 1, RULE_component = 2, RULE_decoratorArgs = 3, 
-		RULE_argument = 4, RULE_exportClass = 5, RULE_class = 6, RULE_classBody = 7, 
+		RULE_argument = 4, RULE_exportClass = 5, RULE_classRule = 6, RULE_classBody = 7, 
 		RULE_abstractClass = 8, RULE_interface = 9, RULE_interfaceBody = 10, RULE_accessModifier = 11, 
 		RULE_variableDeclaration = 12, RULE_arrayDeclaration = 13, RULE_objectDeclataion = 14, 
 		RULE_type = 15, RULE_enum = 16, RULE_enumValues = 17, RULE_enumValue = 18, 
@@ -59,7 +59,7 @@ public class AngularParser extends Parser {
 	private static String[] makeRuleNames() {
 		return new String[] {
 			"program", "statement", "component", "decoratorArgs", "argument", "exportClass", 
-			"class", "classBody", "abstractClass", "interface", "interfaceBody", 
+			"classRule", "classBody", "abstractClass", "interface", "interfaceBody", 
 			"accessModifier", "variableDeclaration", "arrayDeclaration", "objectDeclataion", 
 			"type", "enum", "enumValues", "enumValue", "abstractFunctionDeclaration", 
 			"functionDeclaration", "parameter", "function_call", "assignmentStatement", 
@@ -242,8 +242,8 @@ public class AngularParser extends Parser {
 		public ComponentContext component() {
 			return getRuleContext(ComponentContext.class,0);
 		}
-		public ClassContext class_() {
-			return getRuleContext(ClassContext.class,0);
+		public ClassRuleContext classRule() {
+			return getRuleContext(ClassRuleContext.class,0);
 		}
 		public AbstractClassContext abstractClass() {
 			return getRuleContext(AbstractClassContext.class,0);
@@ -335,7 +335,7 @@ public class AngularParser extends Parser {
 				enterOuterAlt(_localctx, 4);
 				{
 				setState(133);
-				class_();
+				classRule();
 				}
 				break;
 			case 5:
@@ -743,7 +743,7 @@ public class AngularParser extends Parser {
 	}
 
 	@SuppressWarnings("CheckReturnValue")
-	public static class ClassContext extends ParserRuleContext {
+	public static class ClassRuleContext extends ParserRuleContext {
 		public TerminalNode Class() { return getToken(AngularParser.Class, 0); }
 		public TerminalNode Identifier() { return getToken(AngularParser.Identifier, 0); }
 		public TerminalNode OpenBrace() { return getToken(AngularParser.OpenBrace, 0); }
@@ -751,28 +751,28 @@ public class AngularParser extends Parser {
 			return getRuleContext(ClassBodyContext.class,0);
 		}
 		public TerminalNode CloseBrace() { return getToken(AngularParser.CloseBrace, 0); }
-		public ClassContext(ParserRuleContext parent, int invokingState) {
+		public ClassRuleContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
-		@Override public int getRuleIndex() { return RULE_class; }
+		@Override public int getRuleIndex() { return RULE_classRule; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof AngularParserListener ) ((AngularParserListener)listener).enterClass(this);
+			if ( listener instanceof AngularParserListener ) ((AngularParserListener)listener).enterClassRule(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof AngularParserListener ) ((AngularParserListener)listener).exitClass(this);
+			if ( listener instanceof AngularParserListener ) ((AngularParserListener)listener).exitClassRule(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof AngularParserVisitor ) return ((AngularParserVisitor<? extends T>)visitor).visitClass(this);
+			if ( visitor instanceof AngularParserVisitor ) return ((AngularParserVisitor<? extends T>)visitor).visitClassRule(this);
 			else return visitor.visitChildren(this);
 		}
 	}
 
-	public final ClassContext class_() throws RecognitionException {
-		ClassContext _localctx = new ClassContext(_ctx, getState());
-		enterRule(_localctx, 12, RULE_class);
+	public final ClassRuleContext classRule() throws RecognitionException {
+		ClassRuleContext _localctx = new ClassRuleContext(_ctx, getState());
+		enterRule(_localctx, 12, RULE_classRule);
 		try {
 			enterOuterAlt(_localctx, 1);
 			{

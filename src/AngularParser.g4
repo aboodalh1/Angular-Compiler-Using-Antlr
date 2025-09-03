@@ -18,7 +18,7 @@ statement
     : importStatement
     | exportClass      // Covers classes that are exported
     | component        // Special rule for Angular @Component, @Service etc.
-    | class            // Non-exported classes
+    | classRule            // Non-exported classes
     | abstractClass
     | interface
     | enum
@@ -62,7 +62,7 @@ exportClass
     ;
 
 // Non-exported class
-class
+classRule
     : Class Identifier OpenBrace classBody CloseBrace
     ;
 

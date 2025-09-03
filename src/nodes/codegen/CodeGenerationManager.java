@@ -43,12 +43,6 @@ public class CodeGenerationManager {
             
             try {
                 String code = generator.generateCode(rootNode);
-                System.out.println("gggggggggg");
-                System.out.println(rootNode);
-                System.out.println(code);
-                System.out.println(format);
-                System.out.println("gggggggggg");
-                generatedCode.put(format, code);
                 System.out.println("Generated " + format.toUpperCase() + " code successfully");
             } catch (Exception e) {
                 System.err.println("Error generating " + format.toUpperCase() + " code: " + e.getMessage());

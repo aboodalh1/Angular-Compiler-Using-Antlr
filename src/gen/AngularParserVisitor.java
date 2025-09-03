@@ -1,4 +1,4 @@
-// Generated from C:/Users/KEMO/OneDrive/Desktop/compiler 2/Angular-Compiler-Using-Antlr/src/AngularParser.g4 by ANTLR 4.13.2
+// Generated from C:/Users/Abd-LP/Desktop/home/ubuntu/angular_compiler/src/AngularParser.g4 by ANTLR 4.13.2
 package gen;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
@@ -47,11 +47,11 @@ public interface AngularParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitExportClass(AngularParser.ExportClassContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link AngularParser#class}.
+	 * Visit a parse tree produced by {@link AngularParser#classRule}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitClass(AngularParser.ClassContext ctx);
+	T visitClassRule(AngularParser.ClassRuleContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link AngularParser#classBody}.
 	 * @param ctx the parse tree

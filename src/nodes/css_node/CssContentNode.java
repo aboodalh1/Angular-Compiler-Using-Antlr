@@ -1,7 +1,6 @@
 package nodes.css_node;
 
 import nodes.ASTNode;
-import nodes.statement.IdentifierNode;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,328 +1,339 @@
 package nodes.codegen;
 
 import nodes.ASTNode;
+import nodes.html_node.HtmlAttributeNode;
+import nodes.html_node.HtmlAttributesNode;
+import nodes.html_node.HtmlContentNode;
+import nodes.html_node.HtmlElementNode;
+import nodes.html_node.HtmlNode;
 import nodes.html_node.html_content.NgForNode;
 import nodes.html_node.html_content.NgIfNode;
+import nodes.html_node.html_content.OnChangeNodeAttr;
+import nodes.html_node.html_content.OnClickAttrNode;
 import nodes.statement.*;
 
+import java.util.List;
+import java.util.UUID;
+
 /**
- * Generates JavaScript code from Angular AST nodes
+ * Generates JavaScript code from Angular AST nodes.
+ * This generator is specifically designed to work with the AST produced by BaseVisitorWithCodeGen.
+ * It translates components, classes, variables, functions, and HTML templates into a single JavaScript file.
  */
 public class JSGenerator implements CodeGenerator {
-    
+
     private StringBuilder jsBuilder;
     private int indentLevel = 0;
-    
+    private boolean isInsideComponent = false;
+
     @Override
     public String generateCode(ASTNode node) {
         jsBuilder = new StringBuilder();
-        generateNode(node);
+        if (node instanceof ProgramNode) {
+            generateProgram((ProgramNode) node);
+        } else {
+            jsBuilder.append("// Error: Expected ProgramNode as root for JavaScript generation.");
+        }
         return jsBuilder.toString();
     }
-    
+
     @Override
     public String getFileExtension() {
         return "js";
     }
-    
+
     @Override
     public String getContentType() {
         return "application/javascript";
     }
-    
-    private void generateNode(ASTNode node) {
-        if (node == null) return;
-        
-        if (node instanceof ProgramNode) {
-            generateProgram((ProgramNode) node);
-        } else if (node instanceof ComponentNode) {
-            generateComponent((ComponentNode) node);
-        } else if (node instanceof ClassNode) {
-            generateClass((ClassNode) node);
-        } else if (node instanceof FunctionDeclarationNode) {
-            generateFunction((FunctionDeclarationNode) node);
-        } else if (node instanceof VariableDeclarationNode) {
-            generateVariable((VariableDeclarationNode) node);
-        } else if (node instanceof NgForNode) {
-            generateNgFor((NgForNode) node);
-        } else if (node instanceof NgIfNode) {
-            generateNgIf((NgIfNode) node);
-        }
-    }
-    
+
     private void generateProgram(ProgramNode program) {
-        appendLine("// Generated JavaScript from Angular Components");
+        appendLine("// Generated JavaScript from Angular-like AST");
         appendLine("'use strict';");
         appendLine("");
-        appendLine("// Application namespace");
-        appendLine("const App = {};");
-        appendLine("");
-        
-        // Generate components
+
+        // Find and generate the component
         for (StatementNode statement : program.getStatements()) {
             if (statement.getComponentNodes() != null) {
-                generateNode(statement.getComponentNodes());
+                isInsideComponent = true;
+                generateComponent(statement.getComponentNodes());
+                isInsideComponent = false;
             }
         }
-        
-        // Add initialization code
-        appendLine("// Initialize application");
-        appendLine("document.addEventListener('DOMContentLoaded', function() {");
-        indentLevel++;
-        appendLine("App.init();");
-        indentLevel--;
-        appendLine("});");
         appendLine("");
-        
-        // Add utility functions
-        generateUtilityFunctions();
     }
-    
+
     private void generateComponent(ComponentNode component) {
-        if (component.getExportClass() != null && 
-            component.getExportClass().getClassNode() != null) {
-            
-            ClassNode classNode = component.getExportClass().getClassNode();
-            String componentName = classNode.getIdentifier();
-            
-            if (componentName != null) {
-                appendLine("// " + componentName);
-                appendLine("App." + componentName + " = {");
-                indentLevel++;
-                
-                // Generate component properties and methods
-                if (classNode.getClassBody() != null) {
-                    generateClassBody(classNode.getClassBody());
-                }
-                
-                // Add init method
-                appendLine("init: function() {");
-                indentLevel++;
-                appendLine("this.render();");
-                appendLine("this.bindEvents();");
-                indentLevel--;
-                appendLine("},");
-                appendLine("");
-                
-                // Add render method
-                appendLine("render: function() {");
-                indentLevel++;
-                appendLine("// Render component template");
-                appendLine("console.log('Rendering " + componentName + "');");
-                indentLevel--;
-                appendLine("},");
-                appendLine("");
-                
-                // Add event binding method
-                appendLine("bindEvents: function() {");
-                indentLevel++;
-                appendLine("// Bind component events");
-                appendLine("console.log('Binding events for " + componentName + "');");
-                indentLevel--;
-                appendLine("}");
-                
-                indentLevel--;
-                appendLine("};");
-                appendLine("");
+        if (component.getExportClass() != null) {
+            String componentName = component.getExportClass().getName();
+            appendLine("class " + componentName + " {");
+            increaseIndent();
+
+            // Generate class properties and methods from the class body
+            if (component.getExportClass().getClassBody() != null) {
+                generateClassBody(component.getExportClass().getClassBody());
             }
-        }
-    }
-    
-    private void generateClass(ClassNode classNode) {
-        String className = classNode.getIdentifier();
-        
-        appendLine("// Class: " + className);
-        appendLine("function " + className + "() {");
-        indentLevel++;
-        
-        if (classNode.getClassBody() != null) {
-            generateClassBody(classNode.getClassBody());
-        }
-        
-        indentLevel--;
-        appendLine("}");
-        appendLine("");
-    }
-    
-    private void generateClassBody(ClassBodyNode classBody) {
-        // Generate properties
-        for (VariableDeclarationNode varDecl : classBody.getVariableDeclarationNodes()) {
-            generateNode(varDecl);
-        }
-        
-        // Generate methods
-        for (FunctionDeclarationNode funcDecl : classBody.getFunctionDeclarationNodes()) {
-            generateNode(funcDecl);
-        }
-    }
-    
-    private void generateFunction(FunctionDeclarationNode function) {
-        String functionName = function.getIdentifier();
-        
-        if ("Constructor".equals(functionName)) {
-            // Handle constructor
-            appendLine("// Constructor");
-        } else {
-            appendLine(functionName + ": function(");
-            
-            // Generate parameters
-            if (function.getParameters() != null && !function.getParameters().isEmpty()) {
-                for (int i = 0; i < function.getParameters().size(); i++) {
-                    ParameterNode param = function.getParameters().get(i);
-                    append(param.getIdentifier());
-                    if (i < function.getParameters().size() - 1) {
-                        append(", ");
+
+            // Generate the template as a string
+            String template = "";
+            String selector = "app-root"; // Default selector
+            if (component.getDecorator() != null) {
+                DecoratorNode decorator = component.getDecorator();
+                for (ArgumentNode arg : decorator.getArguments()) {
+                    if (arg.getHtmlNode() != null) {
+                        template = generateHtml(arg.getHtmlNode());
+                    }
+                    if (arg.getName() != null && arg.getName().equals("selector")) {
+                        // The visitor currently does not seem to pass a specific selector value,
+                        // so this is a placeholder for future implementation.
                     }
                 }
             }
-            
-            appendLine(") {");
-            indentLevel++;
-            appendLine("// Function implementation");
-            appendLine("console.log('Executing " + functionName + "');");
-            indentLevel--;
-            appendLine("},");
+
+            // Add a constructor
+            appendLine("constructor() {");
+            increaseIndent();
+            appendLine("// Component properties are initialized here");
+            decreaseIndent();
+            appendLine("}");
+            appendLine("");
+
+            // Add render method
+            appendLine("render() {");
+            increaseIndent();
+            appendLine("const container = document.querySelector('" + selector + "');");
+            appendLine("if (container) {");
+            increaseIndent();
+            appendLine("container.innerHTML = `" + template + "`;");
+            appendLine("this.bindEvents();");
+            decreaseIndent();
+            appendLine("}");
+            decreaseIndent();
+            appendLine("}");
+            appendLine("");
+
+            // Add event binding method to handle `(click)` attributes
+            appendLine("bindEvents() {");
+            increaseIndent();
+            if (component.getDecorator() != null) {
+                DecoratorNode decorator = component.getDecorator();
+                for (ArgumentNode arg : decorator.getArguments()) {
+                    if (arg.getHtmlNode() != null) {
+                        generateEventBindings(arg.getHtmlNode());
+                    }
+                }
+            }
+            decreaseIndent();
+            appendLine("}");
+            decreaseIndent();
+            appendLine("}");
+            appendLine("");
+
+            appendLine("document.addEventListener('DOMContentLoaded', () => {");
+            increaseIndent();
+            appendLine("const app = new " + componentName + "();");
+            appendLine("app.render();");
+            decreaseIndent();
+            appendLine("});");
             appendLine("");
         }
     }
-    
-    private void generateVariable(VariableDeclarationNode variable) {
-        String varName = variable.getIdentifier();
-        
-        if (variable.getExpression() != null) {
-            appendLine(varName + ": " + generateExpressionValue(variable.getExpression()) + ",");
-        } else {
-            appendLine(varName + ": null,");
+
+    private void generateClassBody(ClassBodyNode classBody) {
+        if (classBody == null) return;
+        // Generate properties
+        for (VariableDeclarationNode varDecl : classBody.getVariableDeclarationNodes()) {
+            generateVariable(varDecl);
+        }
+        // Generate methods
+        for (FunctionDeclarationNode funcDecl : classBody.getFunctionDeclarationNodes()) {
+            generateFunction(funcDecl);
         }
     }
-    
+
+    private void generateVariable(VariableDeclarationNode variable) {
+        String varName = variable.getIdentifier();
+        String varValue = "null";
+        if (variable.getExpression() != null) {
+            varValue = generateExpressionValue(variable.getExpression());
+        }
+        appendLine("public " + varName + " = " + varValue + ";");
+    }
+
     private String generateExpressionValue(ExpressionNode expression) {
-        if (expression.getLeft() instanceof LiteralValueNode) {
-            LiteralValueNode literal = (LiteralValueNode) expression.getLeft();
-            if (literal.getStirngValue() != null) {
-                return literal.getStirngValue();
-            } else if (literal.getNumValue() != null) {
-                return literal.getNumValue();
-            } else if (literal.getBooleanValue() != null) {
-                return literal.getBooleanValue();
-            } else if (literal.getIdentifierValue() != null) {
-                return "'" + literal.getIdentifierValue() + "'";
-            }
+        if (expression.getLiteralNode() != null) {
+            return expression.getLiteralNode().toString();
+        }
+        if (expression.getIdentifier() != null) {
+            return "this." + expression.getIdentifier();
         }
         return "undefined";
     }
-    
-    private void generateNgFor(NgForNode ngFor) {
-        appendLine("// Generated from *ngFor directive");
-        appendLine("forEach: function(items, callback) {");
-        indentLevel++;
-        appendLine("if (Array.isArray(items)) {");
-        indentLevel++;
-        appendLine("items.forEach(callback);");
-        indentLevel--;
+
+    private void generateFunction(FunctionDeclarationNode function) {
+        String functionName = function.getIdentifier();
+        List<ParameterNode> parameters = function.getParameters();
+
+        append("public " + functionName + "(");
+        if (parameters != null && !parameters.isEmpty()) {
+            for (int i = 0; i < parameters.size(); i++) {
+                append(parameters.get(i).getIdentifier());
+                if (i < parameters.size() - 1) {
+                    append(", ");
+                }
+            }
+        }
+        appendLine(") {");
+        increaseIndent();
+        appendLine("// Function body generated here");
+        decreaseIndent();
         appendLine("}");
-        indentLevel--;
-        appendLine("},");
-        appendLine("");
     }
-    
-    private void generateNgIf(NgIfNode ngIf) {
-        appendLine("// Generated from *ngIf directive");
-        appendLine("conditionalRender: function(condition, element) {");
-        indentLevel++;
-        appendLine("if (condition) {");
-        indentLevel++;
-        appendLine("element.style.display = 'block';");
-        indentLevel--;
-        appendLine("} else {");
-        indentLevel++;
-        appendLine("element.style.display = 'none';");
-        indentLevel--;
-        appendLine("}");
-        indentLevel--;
-        appendLine("},");
-        appendLine("");
+
+    // --- HTML Template Generation ---
+
+    private String generateHtml(HtmlNode htmlNode) {
+        if (htmlNode.getContent() == null) {
+            return "";
+        }
+        return generateHtmlContent(htmlNode.getContent());
     }
-    
-    private void generateUtilityFunctions() {
-        appendLine("// Utility functions");
-        appendLine("App.utils = {");
-        indentLevel++;
-        
-        appendLine("getElementById: function(id) {");
-        indentLevel++;
-        appendLine("return document.getElementById(id);");
-        indentLevel--;
-        appendLine("},");
-        appendLine("");
-        
-        appendLine("querySelector: function(selector) {");
-        indentLevel++;
-        appendLine("return document.querySelector(selector);");
-        indentLevel--;
-        appendLine("},");
-        appendLine("");
-        
-        appendLine("querySelectorAll: function(selector) {");
-        indentLevel++;
-        appendLine("return document.querySelectorAll(selector);");
-        indentLevel--;
-        appendLine("},");
-        appendLine("");
-        
-        appendLine("addClass: function(element, className) {");
-        indentLevel++;
-        appendLine("if (element && element.classList) {");
-        indentLevel++;
-        appendLine("element.classList.add(className);");
-        indentLevel--;
-        appendLine("}");
-        indentLevel--;
-        appendLine("},");
-        appendLine("");
-        
-        appendLine("removeClass: function(element, className) {");
-        indentLevel++;
-        appendLine("if (element && element.classList) {");
-        indentLevel++;
-        appendLine("element.classList.remove(className);");
-        indentLevel--;
-        appendLine("}");
-        indentLevel--;
-        appendLine("}");
-        
-        indentLevel--;
-        appendLine("};");
-        appendLine("");
-        
-        // Add main init function
-        appendLine("App.init = function() {");
-        indentLevel++;
-        appendLine("console.log('Initializing Angular App...');");
-        appendLine("// Initialize all components");
-        appendLine("for (let componentName in App) {");
-        indentLevel++;
-        appendLine("if (App[componentName] && typeof App[componentName].init === 'function') {");
-        indentLevel++;
-        appendLine("App[componentName].init();");
-        indentLevel--;
-        appendLine("}");
-        indentLevel--;
-        appendLine("}");
-        indentLevel--;
-        appendLine("};");
+
+    private String generateHtmlContent(HtmlContentNode content) {
+        StringBuilder html = new StringBuilder();
+        if (content.getHtmlElementNode() != null) {
+            for (HtmlElementNode element : content.getHtmlElementNode()) {
+                html.append(generateHtmlElement(element));
+            }
+        }
+        if (content.getIdentifierNode() != null) {
+            for (String identifier : content.getIdentifierNode()) {
+                html.append("{{").append(identifier).append("}}");
+            }
+        }
+        return html.toString();
     }
-    
+
+    private String generateHtmlElement(HtmlElementNode element) {
+        StringBuilder html = new StringBuilder();
+        String tagName = element.getTagName() != null ? element.getTagName().getIdentifierNode() : "div";
+        String elementId = "id-" + UUID.randomUUID().toString().substring(0, 8);
+
+        // Check for NgIf and NgFor attributes
+        NgIfNode ngIf = null;
+        NgForNode ngFor = null;
+        if (element.getAttributes() != null) {
+            for (HtmlAttributeNode attr : element.getAttributes().getHtmlAttributeNodes()) {
+                if (attr.getNgIfNode() != null) {
+                    ngIf = attr.getNgIfNode();
+                }
+                if (attr.getNgForNode() != null) {
+                    ngFor = attr.getNgForNode();
+                }
+            }
+        }
+
+        // NgFor and NgIf placeholders
+        if (ngFor != null) {
+            html.append(generateNgFor(ngFor, tagName, element.getAttributes(), element.getContent()));
+        } else if (ngIf != null) {
+            html.append(generateNgIf(ngIf, tagName, element.getAttributes(), element.getContent()));
+        } else {
+            html.append("<").append(tagName);
+            if (element.getAttributes() != null) {
+                html.append(" id=\"" + elementId + "\""); // Add a unique ID for event binding
+                html.append(generateHtmlAttributes(element.getAttributes()));
+            }
+            html.append(">");
+            if (element.getContent() != null) {
+                html.append(generateHtmlContent(element.getContent()));
+            }
+            html.append("</").append(tagName).append(">");
+        }
+
+        return html.toString();
+    }
+
+    private String generateHtmlAttributes(HtmlAttributesNode attributes) {
+        StringBuilder attrs = new StringBuilder();
+        if (attributes.getHtmlAttributeNodes() != null) {
+            for (HtmlAttributeNode attr : attributes.getHtmlAttributeNodes()) {
+                if (attr.getNgIfNode() == null && attr.getNgForNode() == null &&
+                        attr.getOnClickAttrNodel() == null && attr.getOnChangeNodeAttr() == null) {
+
+                    attrs.append(" ");
+                    String attrName = attr.getIdentifierNode();
+                    String attrValue = attr.getHtmlAttributeValueNode() != null
+                            ? attr.getHtmlAttributeValueNode().getValue().toString() : "";
+
+                    attrs.append(attrName).append("=\"").append(attrValue).append("\"");
+                }
+            }
+        }
+        return attrs.toString();
+    }
+
+    // --- Event Binding Generation ---
+
+    private void generateEventBindings(HtmlNode htmlNode) {
+        if (htmlNode.getContent() == null) {
+            return;
+        }
+        generateEventBindingsFromContent(htmlNode.getContent());
+    }
+
+    private void generateEventBindingsFromContent(HtmlContentNode content) {
+        if (content.getHtmlElementNode() != null) {
+            for (HtmlElementNode element : content.getHtmlElementNode()) {
+                if (element.getAttributes() != null) {
+                    for (HtmlAttributeNode attr : element.getAttributes().getHtmlAttributeNodes()) {
+                        if (attr.getOnClickAttrNodel() != null) {
+                            // This part of the visitor code is incomplete and needs to be improved
+                            // to get a specific ID or class for the element.
+                            // For now, it's a placeholder.
+                        }
+                    }
+                }
+                if (element.getContent() != null) {
+                    generateEventBindingsFromContent(element.getContent());
+                }
+            }
+        }
+    }
+
+    // --- Placeholder Methods for Angular Directives ---
+
+    private String generateNgFor(NgForNode ngFor, String tagName, HtmlAttributesNode attrs, HtmlContentNode content) {
+        String innerHtml = generateHtmlContent(content);
+        return "<!-- *ngFor loop placeholder -->";
+    }
+
+    private String generateNgIf(NgIfNode ngIf, String tagName, HtmlAttributesNode attrs, HtmlContentNode content) {
+        String innerHtml = generateHtmlContent(content);
+        return "<!-- *ngIf conditional placeholder -->";
+    }
+
+    // --- Helper Methods ---
+
+    private void increaseIndent() {
+        indentLevel++;
+    }
+
+    private void decreaseIndent() {
+        if (indentLevel > 0) {
+            indentLevel--;
+        }
+    }
+
     private void appendLine(String content) {
         append(getIndent() + content + "\n");
     }
-    
+
     private void append(String content) {
         jsBuilder.append(content);
     }
-    
+
     private String getIndent() {
         return "  ".repeat(indentLevel);
     }
 }
-

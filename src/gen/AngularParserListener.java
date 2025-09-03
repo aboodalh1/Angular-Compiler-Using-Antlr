@@ -1,4 +1,4 @@
-// Generated from C:/Users/KEMO/OneDrive/Desktop/compiler 2/Angular-Compiler-Using-Antlr/src/AngularParser.g4 by ANTLR 4.13.2
+// Generated from C:/Users/Abd-LP/Desktop/home/ubuntu/angular_compiler/src/AngularParser.g4 by ANTLR 4.13.2
 package gen;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
@@ -68,15 +68,15 @@ public interface AngularParserListener extends ParseTreeListener {
 	 */
 	void exitExportClass(AngularParser.ExportClassContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link AngularParser#class}.
+	 * Enter a parse tree produced by {@link AngularParser#classRule}.
 	 * @param ctx the parse tree
 	 */
-	void enterClass(AngularParser.ClassContext ctx);
+	void enterClassRule(AngularParser.ClassRuleContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link AngularParser#class}.
+	 * Exit a parse tree produced by {@link AngularParser#classRule}.
 	 * @param ctx the parse tree
 	 */
-	void exitClass(AngularParser.ClassContext ctx);
+	void exitClassRule(AngularParser.ClassRuleContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link AngularParser#classBody}.
 	 * @param ctx the parse tree
