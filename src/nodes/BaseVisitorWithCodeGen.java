@@ -857,6 +857,17 @@ public class BaseVisitorWithCodeGen extends AbstractParseTreeVisitor<ASTNode> im
     @Override
     public CssContentNode visitCss_content(AngularParser.Css_contentContext ctx) {
         CssContentNode cssContentNode = new CssContentNode();
+        Row cssContentRow = new Row();
+
+        // Parse CSS class name (first identifier)
+        if (ctx.Identifier() != null && ctx.Identifier().size() > 0) {
+            String className = ctx.Identifier().get(0).getText();
+            cssContentNode.setIdentifierNode(className);
+            cssContentRow.setType("CSS Class Name");
+            cssContentRow.setValue(className);
+        }
+
+        // Parse CSS class content (properties and values)
         if (ctx.css_class_content() != null) {
             for (int i = 0; i < ctx.css_class_content().size(); i++) {
                 cssContentNode.getCssClassContentList().add(visitCss_class_content(ctx.css_class_content(i)));
@@ -866,15 +877,47 @@ public class BaseVisitorWithCodeGen extends AbstractParseTreeVisitor<ASTNode> im
             cssContentNode.setIdentifierNode(ctx.Identifier().toString());
         }
          //symbolTable.getRows().add(cssContentRow);
+
         return cssContentNode;
     }
 
     @Override
     public CssClassContentNode visitCss_class_content(AngularParser.Css_class_contentContext ctx) {
         CssClassContentNode cssClassContentNode = new CssClassContentNode();
+        Row cssClassContentRow = new Row();
+        
+        // Parse CSS property name (first identifier)
+        if (ctx.Identifier() != null && ctx.Identifier().size() > 0) {
         if (ctx.Identifier() != null) {
             cssClassContentNode.setName(ctx.Identifier().get(0).getText());
+            cssClassContentRow.setType("CSS Property Name");
+            cssClassContentRow.setValue(ctx.Identifier().get(0).getText());
         }
+        
+        // Parse CSS values with units (numbers + pixels, etc.)
+        if (ctx.NumberLiteral() != null) {
+            for (int i = 0; i < ctx.NumberLiteral().size(); i++) {
+                String value = ctx.NumberLiteral().get(i).getText();
+
+                // Check if there's a CSS unit after the number
+                if (ctx.CssPixel() != null && i < ctx.CssPixel().size()) {
+                    value += ctx.CssPixel().get(i).getText(); // Add 'px'
+                } else if (ctx.getText().contains("%") && i < ctx.getText().split("%").length - 1) {
+                    value += "%"; // Add '%' if present
+                }
+
+                cssClassContentNode.getValues().add(value);
+            }
+        }
+
+        // Parse additional identifiers as values
+        if (ctx.Identifier() != null && ctx.Identifier().size() > 1) {
+            for (int i = 1; i < ctx.Identifier().size(); i++) {
+                String value = ctx.Identifier().get(i).getText();
+                cssClassContentNode.getValues().add(value);
+            }
+        }
+        
         return cssClassContentNode;
     }
 
