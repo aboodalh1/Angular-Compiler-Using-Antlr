@@ -302,7 +302,7 @@ listLiteral
     html_attribute_value: literalValue | expression;
     css: OpenBracket Backtick css_content* Backtick CloseBracket;
     css_content: Dot? Identifier (Colon Identifier)* OpenBrace css_class_content* CloseBrace;
-    css_class_content: Identifier Colon (Hash? Identifier|NumberLiteral (CssPixel | '%')? |function_call)+ (Comma (Identifier|NumberLiteral (CssPixel | '%')? |function_call)+)* SemiColon;
+    css_class_content: Identifier Colon (Hash? (Identifier|NumberLiteral) (CssPixel | '%')? |function_call)+ (Comma (Identifier|NumberLiteral (CssPixel | '%')? |function_call)+)* SemiColon;
     checkedAttribute
         : CheckedAttributeName Assign OpenBrace expression CloseBrace
         ;

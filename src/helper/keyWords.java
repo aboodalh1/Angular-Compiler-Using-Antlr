@@ -40,5 +40,5 @@ public class keyWords {
     public static final String VARIABLE_DECLARATION = "Variable Declaration";
     public static final String NOT_PROVIDED_SERVICE_X = "NotProvidedServiceX";
 
-        public static final String DEFAULT_SOURCE_FILE = Paths.get(System.getProperty("user.dir"),  "first_test.ts").toString();
+    public static final String DEFAULT_SOURCE_FILE =  "C:/Users/KEMO/OneDrive/Desktop/compiler 2/Angular-Compiler-Using-Antlr/first_test.ts";
 }
