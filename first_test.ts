@@ -1,18 +1,18 @@
 import { Component, computed, signal } from '@angular/core';
 
 interface Product {
-  id: number;
-  name: string;
-  price: number;
-  description: string;
-  category: string;
-  inStock: boolean;
-  imageUrl: string;
+    id: number;
+    name: string;
+    price: number;
+    description: string;
+    category: string;
+    inStock: boolean;
+    imageUrl: string;
 }
 
 @Component({
-  selector: 'app-products',
-  template: `
+    selector:"app-root",
+    tamplate: `
     <div class="products-container">
       <h1>Product Catalog</h1>
       
@@ -54,9 +54,9 @@ interface Product {
         <p>Total ${{cartTotal}}</p>
       </div>
     </div>
-  `,
-  styles:[`
-  .products-container {
+    `,
+    styles:[`
+     .products-container {
       max-width: 1200px;
       margin: 0 auto;
       padding: 20px;
@@ -148,56 +148,58 @@ interface Product {
       padding: 40px;
       color: #ccc666;
       font-size: 18px;
-    } .cart-summary {
+    }
+
+    .cart-summary {
       background: #f8f9fa;
       padding: 20px;
       border-radius: 8px;
       border: 1px solid #ddd;
     }
-  `]
+    `]
 })
 export class ProductsComponent{
-  const products: Procudt[]=[
-    {
-      id: 1,
-      name: 'Wireless Headphones',
-      price: 99.99,
-      description: 'High-quality wireless headphones with noise cancellation',
-      category: 'electronics',
-      inStock: true
-    },
-    {
-      id: 2,
-      name: 'Cotton T-Shirt',
-      price: 24.99,
-      description: 'Comfortable 100% cotton t-shirt in various colors',
-      category: 'clothing',
-      inStock: true
-    },
-    {
-      id: 3,
-      name: 'JavaScript Guide',
-      price: 39.99,
-      description: 'Complete guide to modern JavaScript development',
-      category: 'books',
-      inStock: false
-    }
-  ];
-  addToCart(product: Product): void {
-    if (product.inStock) {
-      this.cartItems.push(product);
+    const products: Procudt[]=[
+        {
+            id: 1,
+            name: 'Wireless Headphones',
+            price: 99.99,
+            description: 'High-quality wireless headphones with noise cancellation',
+            category: 'electronics',
+            inStock: true
+        },
+        {
+            id: 2,
+            name: 'Cotton T-Shirt',
+            price: 24.99,
+            description: 'Comfortable 100% cotton t-shirt in various colors',
+            category: 'clothing',
+            inStock: true
+        },
+        {
+            id: 3,
+            name: 'JavaScript Guide',
+            price: 39.99,
+            description: 'Complete guide to modern JavaScript development',
+            category: 'books',
+            inStock: false
+        }
+    ];
+    addToCart(product: Product): void {
+        if (product.inStock) {
+            this.cartItems.push(product);
 
+        }
+
+        removeFromCart(productId: number): void {
+            const index = this.cartItems.findIndex(item => item.id === productId);
+            if (index >= 0) {
+            this.cartItems.splice(index, 1);
+        }
+    }
     }
 
-    removeFromCart(productId: number): void {
-      const index = this.cartItems.findIndex(item => item.id === productId);
-      if (index >= 0) {
-      this.cartItems.splice(index, 1);
+    clearCart(): void {
+        this.cartItems = [];
     }
-  }
-  }
-
-  clearCart(): void {
-    this.cartItems = [];
-  }
 }

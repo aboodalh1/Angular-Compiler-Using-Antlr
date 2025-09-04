@@ -139,7 +139,7 @@ public class CSSGenerator implements CodeGenerator {
     private void generateCssContent(CssContentNode content) {
         // Generate CSS class with its name
         if (content.getIdentifierNode() != null) {
-            appendLine("." + content.getIdentifierNode() + " {");
+            appendLine("." + content.getIdentifierNode().substring(1, content.getIdentifierNode().length() - 1) + " {");
             indentLevel++;
 
             // Generate CSS properties from the class content
@@ -161,9 +161,40 @@ public class CSSGenerator implements CodeGenerator {
             String propertyName = classContent.getName();
             String value = "";
 
-            // Join all values with spaces (for properties like margin: 10px 20px)
-            if (classContent.getValues() != null && !classContent.getValues().isEmpty()) {
-                value = String.join("", classContent.getValues());
+            // Try to get value from getValue() first, then from getValues()
+            if (classContent.getValue() != null && !classContent.getValue().isEmpty()) {
+                value = classContent.getValue();
+            } else if (classContent.getValues() != null && !classContent.getValues().isEmpty()) {
+                // Join values with spaces for properties like margin: 10px 20px
+                value = String.join(" ", classContent.getValues());
+            }
+
+            // Special handling for color properties
+            if ("background".equals(propertyName) || "background-color".equals(propertyName)) {
+                // For background, combine hex color parts
+                value = value.replaceAll("\\s+", ""); // Remove all spaces
+                value = value.replaceAll("([a-fA-F0-9]+)", "#$1"); // Add # to hex colors
+            } else if ("color".equals(propertyName) || "border-color".equals(propertyName)) {
+                // For color properties, combine hex color parts
+                value = value.replaceAll("\\s+", ""); // Remove all spaces
+                value = value.replaceAll("([a-fA-F0-9]+)", "#$1"); // Add # to hex colors
+            } else if ("padding".equals(propertyName) || "padding-top".equals(propertyName) || "padding-bottom".equals(propertyName) ||
+                      "padding-left".equals(propertyName) || "padding-right".equals(propertyName)) {
+                // Special handling for padding properties
+                // Fix cases like "4 8px px" -> "4px 8px"
+                value = value.replaceAll("(\\d+)\\s+(\\d+)(px|%|em|rem)\\s+\\3", "$1$3 $2$3"); // Fix "4 8px px" to "4px 8px"
+                value = value.replaceAll("(\\d+)\\s+(px|%|em|rem)", "$1$2"); // Fix "12 px" to "12px"
+            } else if ("margin".equals(propertyName) || "margin-top".equals(propertyName) || "margin-bottom".equals(propertyName) ||
+                      "margin-left".equals(propertyName) || "margin-right".equals(propertyName)) {
+                // Special handling for margin properties
+                // Fix cases like "4 8px px" -> "4px 8px"
+                value = value.replaceAll("(\\d+)\\s+(\\d+)(px|%|em|rem)\\s+\\3", "$1$3 $2$3"); // Fix "4 8px px" to "4px 8px"
+                value = value.replaceAll("(\\d+)\\s+(px|%|em|rem)", "$1$2"); // Fix "12 px" to "12px"
+            } else if ("font-size".equals(propertyName) || "width".equals(propertyName) || "height".equals(propertyName) || 
+                      "border-radius".equals(propertyName) || "border-width".equals(propertyName) ||
+                      "top".equals(propertyName) || "bottom".equals(propertyName) || "left".equals(propertyName) || "right".equals(propertyName)) {
+                // For other size properties, combine numbers with units
+                value = value.replaceAll("(\\d+)\\s+(px|%|em|rem)", "$1$2"); // Fix "12 px" to "12px"
             }
 
             // Generate CSS property line
