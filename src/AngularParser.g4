@@ -246,7 +246,8 @@ expression
     | function_call                                                     // Function calls
     | literalValue                                                      // Basic literals (number, string, boolean, null, list, map)
     | Identifier                                                        // Simple identifier (variable, constant)
-    | This                                                              // 'this' keyword
+    | This
+    | This (Dot Identifier)+ OpenParen expression?  CloseParen                                               // 'this' keyword
     ;
 
 // --- Literal Values (Pure JS/TS literals, NO HTML/CSS here) ---
@@ -279,12 +280,12 @@ listLiteral
           '<' html_tag_name html_attributes? '>' html_content? '<' '/'html_tag_name '>'
         | '<' html_tag_name html_attributes? '>' | '<' html_tag_name html_attributes '/''>';
 
-    html_tag_name: Identifier ;
+    html_tag_name: (Identifier | LabelAttributeName);
 
     html_attributes: html_attribute*;
 
     html_attribute:
-          (Identifier
+         '#'? (Identifier
            |ngIfAttribute|
            ngForAttribute|
            onChangeAttribute|
@@ -293,7 +294,7 @@ listLiteral
             OpenBracket (Identifier | ((Identifier | | Class) (access_suffix)*)) CloseBracket |
             OpenBracket OpenParen (Identifier | ((Identifier | | Class) (access_suffix)*)) CloseParen CloseBracket |
              '(' (Identifier | | Class) ')' | '*')
-          ('=' html_attribute_value)?;
+          ( '=' html_attribute_value)?;
     access_suffix
         : '.' Identifier
         | '[' expression ']'
