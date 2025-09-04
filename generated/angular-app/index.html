@@ -7,28 +7,10 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div class="products-container"><h1>Product Catalog</h1>
-<div class="filters"><input type="text" ngModel="searchTerm" placeholder="Search products..."><select ngModel="selectedCategory"><option value="">All Categories</option>
-<option value="electronics">Electronics</option>
-<option value="clothing">Clothing</option>
-<option value="books">Books</option>
-</select>
-</input>
-<div class="product-grid"><div class="product-card"><img src="product.imageUrl" alt="product.name"><div class="product-info"><h3>{{product.name}}</h3>
-<p class="description">{{product.description}}</p>
-<div class="price">{{product.price}}</div>
-<div class="category">{{product.category}}</div>
-<div class="stock-status" class="product.inStock" class="!product.inStock">{{product.inStock?'In Stock':'Out of Stock'}}</div>
-<button disabled="!product.inStock">Add to Cart</button>
+<div class="page"><h1>Product List</h1>
+<div class="product-list"><div class="product-card"><h3>{{p.name}}</h3>
+<p class="description">{{p.description}}</p>
 </div>
-</img>
-</div>
-<div class="no-products">No products found matching your criteria</div>
-<div class="cart-summary"><h3>Cart Summary</h3>
-<p></p>
-{{cartItems.length}}Items in cart</div>
-<p></p>
-{{cartTotal}}Total</div>
 </div>
 </div>
   <script src="app.js"></script>

@@ -1,207 +1,227 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component } from '@angular/core';
 
 interface Product {
-  id: number;
-  name: string;
-  price: number;
-  description: string;
-  category: string;
-  inStock: boolean;
-  imageUrl: string;
+    id: number;
+    name: string;
+    price: number;
+    description: string;
 }
 
 @Component({
-  selector: 'app-products',
-  template: `
-    <div class="products-container">
-      <h1>Product Catalog</h1>
-      
-      <div class="filters">
-        <input type="text" [(ngModel)]="searchTerm" placeholder="Search products...">
-        <select [(ngModel)]="selectedCategory">
-          <option value="">All Categories</option>
-          <option value="electronics">Electronics</option>
-          <option value="clothing">Clothing</option>
-          <option value="books">Books</option>
-        </select>
-      </div>
+    selector: 'app-root',
+    template: `
+    <div class="page">
+      <h1>Product List</h1>
 
-      <div class="product-grid">
-        <div class="product-card" *ngFor="let product of filteredProducts">
-          <img [src]="product.imageUrl" [alt]="product.name">
-          <div class="product-info">
-            <h3>{{product.name}}</h3>
-            <p class="description">{{product.description}}</p>
-            <div class="price">${{product.price}}</div>
-            <div class="category">{{product.category}}</div>
-            <div class="stock-status" [class.in-stock]="product.inStock" [class.out-of-stock]="!product.inStock">
-              {{product.inStock ? 'In Stock' : 'Out of Stock'}}
-            </div>
-            <button (click)="addToCart(product)" [disabled]="!product.inStock">
-              Add to Cart
-            </button>
+      <!-- Add Product Form -->
+      <div class="add-product-form">
+        <h2>Add New Product</h2>
+        <form (ngSubmit)="addProduct()" #productForm="ngForm">
+          <div class="form-group">
+            <label for="productName">Product Name:</label>
+            <input 
+              type="text" 
+              id="productName" 
+              name="productName" 
+              [(ngModel)]="newProduct.name" 
+              required 
+              class="form-input"
+              placeholder="Enter product name">
           </div>
+          
+          <div class="form-group">
+            <label for="productPrice">Price:</label>
+            <input 
+              type="number" 
+              id="productPrice" 
+              name="productPrice" 
+              [(ngModel)]="newProduct.price" 
+              required 
+              step="0.01"
+              class="form-input"
+              placeholder="Enter price">
+          </div>
+          
+          <div class="form-group">
+            <label for="productDescription">Description:</label>
+            <textarea 
+              id="productDescription" 
+              name="productDescription" 
+              [(ngModel)]="newProduct.description" 
+              required 
+              class="form-textarea"
+              placeholder="Enter product description"></textarea>
+          </div>
+          
+          <button type="submit" class="add-button" [disabled]="!productForm.valid">
+            Add Product
+          </button>
+        </form>
+      </div>
+
+      <!-- Product List -->
+      <div class="product-list">
+        <div class="product-card" *ngFor="let p of products">
+          <h3>{{ p.name }}</h3>
+          <p class="description">{{ p.description }}</p>
+          <p class="price">${{ p.price | number: '1.2-2' }}</p>
+          <button class="remove-button" (click)="removeProduct(p.id)">Remove</button>
         </div>
-      </div>
-
-      <div *ngIf="filteredProducts.length === 0" class="no-products">
-        No products found matching your criteria
-      </div>
-
-      <div class="cart-summary">
-        <h3>Cart Summary</h3>
-        <p>Items in cart{{cartItems.length}}</p>
-        <p>Total ${{cartTotal}}</p>
       </div>
     </div>
   `,
-  styles:[`
-  .products-container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    .filters {
-      display: flex;
-      gap: 15px;
-      margin-bottom: 30px;
-    }
-     .filters_select {
-      padding: 10px;
-      border: 1px  #ddd;
-      border-radius: 5px;
-      font-size: 16px;
-    }
-    .product-grid {
-      display: grid;
-      gap: 20px;
-      margin-bottom: 30px;
-    }
-     .product-card {
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 15px;
-      background: white;
-    }
-.product-info_h3 {
-      margin: 0 0 10px 0;
-      color: #FFF333;
-    }
-      .description {
-      color: #FFF666;
-      margin-bottom: 10px;
-      line-height: 1.4;
-    }
- .price {
-      font-size: 18px;
-      font-weight: bold;
-      color: #bff007;
-      margin-bottom: 5px;
-    }
-
-    .category {
+    styles: [
+        `
+    .page { padding: 20px; max-width: 800px; margin: 0 auto; font-family: Arial, sans-serif; }
+    
+    .add-product-form {
       background: #f8f9fa;
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 12px;
-      color: #ccc666;
-      display: inline-block;
-      margin-bottom: 10px;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      border: 1px solid #ddd;
     }
-
-    .stock-status {
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 12px;
+    
+    .add-product-form h2 {
+      margin: 0 0 20px 0;
+      color: #333;
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
       font-weight: bold;
-      margin-bottom: 10px;
+      color: #555;
     }
-
-    .in-stock {
-      background: #d4edda;
-      color: #c15572;
+    
+    .form-input, .form-textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      box-sizing: border-box;
     }
-
-    .out-of-stock {
-      background: #f8d7da;
-      color: #c24721;
+    
+    .form-textarea {
+      height: 80px;
+      resize: vertical;
     }
-
-    button {
-      background: #bff007;
+    
+    .add-button {
+      background: #007bff;
       color: white;
       border: none;
-      padding: 10px 15px;
-      border-radius: 5px;
+      padding: 12px 24px;
+      border-radius: 4px;
       cursor: pointer;
-      font-size: 14px;
-      transition: background 0.2s;
+      font-size: 16px;
+      font-weight: bold;
     }
-
-    button:disabled {
+    
+    .add-button:hover:not(:disabled) {
+      background: #0056b3;
+    }
+    
+    .add-button:disabled {
       background: #ccc;
       cursor: not-allowed;
     }
-
-    .no-products {
-      text-align: center;
-      padding: 40px;
-      color: #ccc666;
+    
+    .product-list { display: grid; gap: 16px; margin-top: 20px; }
+    .product-card { 
+      border: 1px solid #ddd; 
+      border-radius: 8px; 
+      padding: 15px; 
+      background: #fff;
+      position: relative;
+    }
+    
+    .product-card h3 { margin: 0 0 10px 0; color: #333; }
+    .description { margin: 0 0 10px 0; color: #555; }
+    .price { 
+      font-weight: bold; 
+      color: #0d6efd; 
       font-size: 18px;
-    } .cart-summary {
-      background: #f8f9fa;
-      padding: 20px;
-      border-radius: 8px;
-      border: 1px solid #ddd;
+      margin: 0 0 15px 0;
     }
-  `]
+    
+    .remove-button {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    .remove-button:hover {
+      background: #c82333;
+    }
+  `
+    ],
 })
-export class ProductsComponent{
-    productNumber:number=10;
-    header:string="The products";
-    isCurrentProduct:boolean=true;
-    products:Procudt[]=[];
-  const products: Procudt[]=[
-    {
-      id: 1,
-      name: 'Wireless Headphones',
-      price: 99.99,
-      description: 'High-quality wireless headphones with noise cancellation',
-      category: 'electronics',
-      inStock: true
-    },
-    {
-      id: 2,
-      name: 'Cotton T-Shirt',
-      price: 24.99,
-      description: 'Comfortable 100% cotton t-shirt in various colors',
-      category: 'clothing',
-      inStock: true
-    },
-    {
-      id: 3,
-      name: 'JavaScript Guide',
-      price: 39.99,
-      description: 'Complete guide to modern JavaScript development',
-      category: 'books',
-      inStock: false
-    }
-  ];
-  addToCart(product: Product): void {
-    if (product.inStock) {
-      this.cartItems.push(product);
+export class AppComponent {
+    products: Product[] = [
+        {
+            id: 1,
+            name: 'Wireless Headphones',
+            price: 99.99,
+            description: 'High-quality wireless headphones with noise cancellation',
+        },
+        {
+            id: 2,
+            name: 'Cotton T-Shirt',
+            price: 24.99,
+            description: 'Comfortable 100% cotton t-shirt in various colors',
+        },
+        {
+            id: 3,
+            name: 'JavaScript Guide',
+            price: 39.99,
+            description: 'Complete guide to modern JavaScript development',
+        }
+    ];
 
+    newProduct: Product = {
+        id: 0,
+        name: '',
+        price: 0,
+        description: ''
+    };
+
+    private nextId = 4; // Next available ID
+
+    addProduct() {
+        if (this.newProduct.name.trim() && this.newProduct.description.trim() && this.newProduct.price > 0) {
+            // Create a new product with a unique ID
+            const product: Product = {
+                id: this.nextId++,
+                name: this.newProduct.name.trim(),
+                price: this.newProduct.price,
+                description: this.newProduct.description.trim()
+            };
+
+            // Add the product to the list
+            this.products.push(product);
+
+            // Reset the form
+            this.newProduct = {
+                id: 0,
+                name: '',
+                price: 0,
+                description: ''
+            };
+        }
     }
 
-    removeFromCart(productId: number): void {
-      const index = this.cartItems.findIndex(item => item.id === productId);
-      if (index >= 0) {
-      this.cartItems.splice(index, 1);
+    removeProduct(id: number) {
+        // Remove the product with the specified ID
+        this.products = this.products.filter(p => p.id !== id);
     }
-  }
-  }
-
-  clearCart(): void {
-    this.cartItems = [];
-  }
 }

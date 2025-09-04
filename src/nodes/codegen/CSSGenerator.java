@@ -136,7 +136,7 @@ public class CSSGenerator implements CodeGenerator {
     private void generateCssContent(CssContentNode content) {
         // Generate CSS class with its name
         if (content.getIdentifierNode() != null) {
-            appendLine("." + content.getIdentifierNode() + " {");
+            appendLine("." + content.getIdentifierNode().substring(1, content.getIdentifierNode().length() - 1) + " {");
             indentLevel++;
 
             // Generate CSS properties from the class content
@@ -158,10 +158,83 @@ public class CSSGenerator implements CodeGenerator {
             String propertyName = classContent.getName();
             String value = "";
 
-            // Join all values with spaces (for properties like margin: 10px 20px)
-            if (classContent.getValues() != null && !classContent.getValues().isEmpty()) {
-                value = String.join("", classContent.getValues());
+            // Try to get value from getValue() first, then from getValues()
+            if (classContent.getValue() != null && !classContent.getValue().isEmpty()) {
+                value = classContent.getValue();
+            } else if (classContent.getValues() != null && !classContent.getValues().isEmpty()) {
+                // Join values with spaces for properties like margin: 10px 20px
+                value = String.join(" ", classContent.getValues());
             }
+
+            // Clean up the value by removing extra spaces and fixing common issues
+            value = value.trim();
+
+            // Special handling for color properties
+            if ("background".equals(propertyName) || "background-color".equals(propertyName)) {
+                // For background, combine hex color parts
+                value = value.replaceAll("\\s+", ""); // Remove all spaces
+                value = value.replaceAll("([a-fA-F0-9]+)", "#$1"); // Add # to hex colors
+            } else if ("color".equals(propertyName) || "border-color".equals(propertyName)) {
+                // For color properties, combine hex color parts
+                value = value.replaceAll("\\s+", ""); // Remove all spaces
+                value = value.replaceAll("([a-fA-F0-9]+)", "#$1"); // Add # to hex colors
+            } else if ("padding".equals(propertyName) || "padding-top".equals(propertyName) || "padding-bottom".equals(propertyName) ||
+                      "padding-left".equals(propertyName) || "padding-right".equals(propertyName)) {
+                // Special handling for padding properties
+                // Fix cases like "4 8px px" -> "4px 8px"
+                value = value.replaceAll("(\\d+)\\s+(\\d+)(px|%|em|rem)\\s+\\3", "$1$3 $2$3"); // Fix "4 8px px" to "4px 8px"
+                value = value.replaceAll("(\\d+)\\s+(px|%|em|rem)", "$1$2"); // Fix "12 px" to "12px"
+                value = value.replaceAll("(\\d+)\\s+(px|%|em|rem)\\s+(px|%|em|rem)", "$1$2 $3"); // Fix "4 px px" to "4px"
+            } else if ("margin".equals(propertyName) || "margin-top".equals(propertyName) || "margin-bottom".equals(propertyName) ||
+                      "margin-left".equals(propertyName) || "margin-right".equals(propertyName)) {
+                // Special handling for margin properties
+                // Fix cases like "0 0 6 0px" -> "0 0 6px 0"
+                value = value.replaceAll("(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)(px|%|em|rem)", "$1 $2 $3$5 $4"); // Fix "0 0 6 0px" to "0 0 6px 0"
+                // Fix cases like "4 8px px" -> "4px 8px"
+                value = value.replaceAll("(\\d+)\\s+(\\d+)(px|%|em|rem)\\s+\\3", "$1$3 $2$3"); // Fix "4 8px px" to "4px 8px"
+                value = value.replaceAll("(\\d+)\\s+(px|%|em|rem)", "$1$2"); // Fix "12 px" to "12px"
+                value = value.replaceAll("(\\d+)\\s+(px|%|em|rem)\\s+(px|%|em|rem)", "$1$2 $3"); // Fix "4 px px" to "4px"
+            } else if ("font-size".equals(propertyName) || "width".equals(propertyName) || "height".equals(propertyName) || 
+                      "border-radius".equals(propertyName) || "border-width".equals(propertyName) ||
+                      "top".equals(propertyName) || "bottom".equals(propertyName) || "left".equals(propertyName) || "right".equals(propertyName)) {
+                // For other size properties, combine numbers with units
+                value = value.replaceAll("(\\d+)\\s+(px|%|em|rem)", "$1$2"); // Fix "12 px" to "12px"
+            } else if ("border".equals(propertyName)) {
+                // Special handling for border properties
+                // Fix cases like "1 px ddd" -> "1px solid #ddd"
+                value = value.replaceAll("(\\d+)\\s+(px|%|em|rem)", "$1$2"); // Fix "1 px" to "1px"
+                // Fix "1px solid #solid #ddd" -> "1px solid #ddd"
+                value = value.replaceAll("(\\d+px)\\s+solid\\s+#solid\\s+#([a-zA-Z0-9]+)", "$1 solid #$2");
+                // Fix "1px solid solid ddd" -> "1px solid #ddd"
+                value = value.replaceAll("(\\d+px)\\s+solid\\s+solid\\s+([a-zA-Z0-9]+)", "$1 solid #$2");
+                // Fix "1px solid ddd" -> "1px solid #ddd"
+                value = value.replaceAll("(\\d+px)\\s+solid\\s+([a-zA-Z0-9]+)", "$1 solid #$2");
+                // Fix "1px ddd" -> "1px solid #ddd"
+                value = value.replaceAll("(\\d+px)\\s+([a-zA-Z0-9]+)", "$1 solid #$2");
+                // Add # to hex colors that don't have it
+                value = value.replaceAll("(\\d+px\\s+solid)\\s+([a-fA-F0-9]{3,6})(?!\\w)", "$1 #$2");
+            } else if ("max-width".equals(propertyName) || "min-width".equals(propertyName) || 
+                      "max-height".equals(propertyName) || "min-height".equals(propertyName)) {
+                // For width/height properties, combine numbers with units
+                value = value.replaceAll("(\\d+)\\s+(px|%|em|rem)", "$1$2"); // Fix "1200 px" to "1200px"
+            } else if ("gap".equals(propertyName)) {
+                // For gap properties, combine numbers with units
+                value = value.replaceAll("(\\d+)\\s+(px|%|em|rem)", "$1$2"); // Fix "15 px" to "15px"
+            } else if ("transition".equals(propertyName)) {
+                // For transition properties, fix spacing issues
+                value = value.replaceAll("(\\d+\\.?\\d*)\\s+(s|ms)", "$1$2"); // Fix "0.2 s" to "0.2s"
+                value = value.replaceAll("(\\d+\\.?\\d*)(s|ms)\\s+([a-zA-Z-]+)", "$1$2 $3"); // Fix "0.2sbackground" to "0.2s background"
+            } else if ("line-height".equals(propertyName)) {
+                // For line-height, combine numbers with units or keep as decimal
+                value = value.replaceAll("(\\d+\\.?\\d*)\\s+(px|%|em|rem)", "$1$2"); // Fix "1.4 px" to "1.4px"
+            } else if ("box-shadow".equals(propertyName)) {
+                // For box-shadow, fix spacing in rgba values
+                value = value.replaceAll("rgba\\s*\\(\\s*(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+\\.?\\d*)\\s*\\)", 
+                                      "rgba($1, $2, $3, $4)"); // Fix rgba spacing
+            }
+
+            // Final cleanup: remove any remaining extra spaces
+            value = value.replaceAll("\\s+", " ").trim();
 
             // Generate CSS property line
             if (!value.isEmpty()) {
