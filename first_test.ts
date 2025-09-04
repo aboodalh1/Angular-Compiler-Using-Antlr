@@ -159,35 +159,39 @@ interface Product {
     `]
 })
 export class ProductsComponent{
-    const products: Procudt[]=[
-        {
-            id: 1,
-            name: 'Wireless Headphones',
-            price: 99.99,
-            description: 'High-quality wireless headphones with noise cancellation',
-            category: 'electronics',
-            inStock: true
-        },
-        {
-            id: 2,
-            name: 'Cotton T-Shirt',
-            price: 24.99,
-            description: 'Comfortable 100% cotton t-shirt in various colors',
-            category: 'clothing',
-            inStock: true
-        },
-        {
-            id: 3,
-            name: 'JavaScript Guide',
-            price: 39.99,
-            description: 'Complete guide to modern JavaScript development',
-            category: 'books',
-            inStock: false
-        }
-    ];
-    addToCart(product: Product): void {
-        if (product.inStock) {
-            this.cartItems.push(product);
+    productNumber:number=10;
+    header:string="The products";
+    isCurrentProduct:boolean=true;
+    products:Procudt[]=[];
+  const products: Procudt[]=[
+    {
+      id: 1,
+      name: 'Wireless Headphones',
+      price: 99.99,
+      description: 'High-quality wireless headphones with noise cancellation',
+      category: 'electronics',
+      inStock: true
+    },
+    {
+      id: 2,
+      name: 'Cotton T-Shirt',
+      price: 24.99,
+      description: 'Comfortable 100% cotton t-shirt in various colors',
+      category: 'clothing',
+      inStock: true
+    },
+    {
+      id: 3,
+      name: 'JavaScript Guide',
+      price: 39.99,
+      description: 'Complete guide to modern JavaScript development',
+      category: 'books',
+      inStock: false
+    }
+  ];
+  addToCart(product: Product): void {
+    if (product.inStock) {
+      this.cartItems.push(product);
 
         }
 

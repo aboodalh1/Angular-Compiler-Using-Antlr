@@ -11,7 +11,7 @@ public class LiteralValueNode implements ASTNode {
     public String booleanValue;
     public String identifierValue;
     public ListLiteralNode listLiteralNode;
-
+    public  MapLiteralNode mapLiteralNode;
     public HtmlNode getHtmlNode() {
         return htmlNode;
     }
@@ -79,16 +79,26 @@ public class LiteralValueNode implements ASTNode {
         isNull = aNull;
     }
 
+    public MapLiteralNode getMapLiteralNode() {
+        return mapLiteralNode;
+    }
+
+    public void setMapLiteralNode(MapLiteralNode mapLiteralNode) {
+        this.mapLiteralNode = mapLiteralNode;
+    }
+
     @Override
     public String toString() {
-        return "\nLiteralValueNode{\n" +
-                "stirngValue='" + stirngValue + '\'' +"\n"+
-                ", numValue='" + numValue + '\'' +"\n"+
-                ", arrayValue='" + arrayValue + '\'' + "\n"+
-                ", booleanValue='" + booleanValue + '\'' + "\n"+
-                ", identifierValue='" + identifierValue + '\'' + "\n"+
-                ", listLiteralNode=" + listLiteralNode +"\n"+
-                ", isNull=" + isNull + "\n"+
-                "\n}";
+        return "LiteralValueNode{" +
+                "stirngValue='" + stirngValue + '\'' +
+                ", numValue='" + numValue + '\'' +
+                ", arrayValue='" + arrayValue + '\'' +
+                ", booleanValue='" + booleanValue + '\'' +
+                ", identifierValue='" + identifierValue + '\'' +
+                ", listLiteralNode=" + listLiteralNode +
+                ", mapLiteralNode=" + mapLiteralNode +
+                ", htmlNode=" + htmlNode +
+                ", isNull=" + isNull +
+                '}';
     }
 }
