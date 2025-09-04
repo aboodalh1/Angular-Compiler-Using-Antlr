@@ -126,9 +126,6 @@ public class CSSGenerator implements CodeGenerator {
     }
     
     private void generateCss(CssNode css) {
-        // Generate CSS content directly from the parsed text
-        // This is a simplified approach that extracts CSS from the component styles
-        
         if (css.getCssContentNode() != null) {
             for (CssContentNode content : css.getCssContentNode()) {
                 generateNode(content);

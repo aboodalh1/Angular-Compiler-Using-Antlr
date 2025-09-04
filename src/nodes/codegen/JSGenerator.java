@@ -8,7 +8,6 @@ import nodes.html_node.html_content.OnChangeNodeAttr;
 import nodes.html_node.html_content.OnClickAttrNode;
 import nodes.statement.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -193,9 +192,16 @@ public class JSGenerator implements CodeGenerator {
             if(expression.getLiteralNode().getHtmlNode()!=null){
                 return generateHtml(expression.getLiteralNode().getHtmlNode());
             }
-            if(expression.getLiteralNode().getClass().getName()!=null){
-                return expression.getLiteralNode().getClass().getName();
+            if(expression.getLiteralNode().getArrayValue()!=null){
+                return expression.getLiteralNode().getArrayValue();
             }
+            if(expression.getLiteralNode().getMapLiteralNode()!=null){
+                return expression.getLiteralNode().getMapLiteralNode().toString();
+            }
+            if(expression.getLiteralNode().getListLiteralNode()!=null){
+                return expression.getLiteralNode().getListLiteralNode().toString();
+            }
+            return expression.getLiteralNode().getClass().getName();
 
         }
         if (expression.getIdentifier() != null) {
@@ -208,7 +214,7 @@ public class JSGenerator implements CodeGenerator {
         String functionName = function.getIdentifier();
         List<ParameterNode> parameters = function.getParameters();
 
-        append("public " + functionName + "(");
+        append("function " + functionName + "(");
         if (parameters != null && !parameters.isEmpty()) {
             for (int i = 0; i < parameters.size(); i++) {
                 append(parameters.get(i).getIdentifier());
@@ -311,13 +317,13 @@ public class JSGenerator implements CodeGenerator {
                 }
             }
         }
-
         // NgFor and NgIf placeholders
         if (ngForNode != null) {
             html.append(generateNgFor(ngForNode, tagName, element.getAttributes(), element.getContent()));
         } else if (ngIfNode != null) {
             html.append(generateNgIf(ngIfNode, tagName, element.getAttributes(), element.getContent()));
-        } else {
+        }
+        else {
             html.append("<").append(tagName);
             // Always add a unique ID for event binding
             html.append(" id=\"").append(elementId).append("\"");
@@ -330,6 +336,7 @@ public class JSGenerator implements CodeGenerator {
             if (onClickHandler != null) {
                 html.append(" data-onclick=\"").append(onClickHandler).append("\"");
             }
+
             if (onChangeHandler != null) {
                 html.append(" data-onchange=\"").append(onChangeHandler).append("\"");
             }

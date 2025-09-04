@@ -157,6 +157,10 @@ interface Product {
   `]
 })
 export class ProductsComponent{
+    productNumber:number=10;
+    header:string="The products";
+    isCurrentProduct:boolean=true;
+    products:Procudt[]=[];
   const products: Procudt[]=[
     {
       id: 1,

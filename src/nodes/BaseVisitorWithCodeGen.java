@@ -551,6 +551,9 @@ public class BaseVisitorWithCodeGen extends AbstractParseTreeVisitor<ASTNode> im
     @Override
     public ListLiteralNode visitListLiteral(AngularParser.ListLiteralContext ctx) {
         ListLiteralNode listLiteralNode =new ListLiteralNode();
+        if(ctx.literalValue()!=null){
+            listLiteralNode.getIdentifiers().add(ctx.getText());
+        }
         for (int i = 0; i < ctx.literalValue().size(); i++) {
             if (ctx.literalValue().get(i) != null) {
                 listLiteralNode.getIdentifiers().add(ctx.getText());
